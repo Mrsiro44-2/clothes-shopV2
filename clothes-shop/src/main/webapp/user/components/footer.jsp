@@ -276,12 +276,6 @@
 
 <!-- jQuery Plugins -->
 
-<script>
-
-    var baseURL = window.location.origin + window.location.pathname;
-
-    window.history.replaceState({}, document.title, baseURL);</script>
-
 <script src="./user/js/jquery.min.js"></script>
 
 <script src="./user/js/bootstrap.min.js"></script>

@@ -25,34 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
-/**
-
- *
-
- * @author HP
-
- */
-
 @WebServlet(name = "ProductUserController", urlPatterns = {"/product/*"})
-
 public class ProductUserController extends HttpServlet {
 
-
-
     private static CategoryDAO categoryDao;
-
     private static BrandDAO brandDao;
-
     private static ProductDAO productDao;
-
     private static Validation validate;
-
     private static FeedbackDAO feedbackDao;
-
     private static final int numberProductInPage = 9;
-
-
 
     public ProductUserController() {
         this.categoryDao = new CategoryDAO();
@@ -60,13 +41,10 @@ public class ProductUserController extends HttpServlet {
         this.validate = new Validation();
         this.feedbackDao = new FeedbackDAO();
         this.brandDao = new BrandDAO();
-
     }
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-
             throws ServletException, IOException {
         if (ServletPaths.relativeEquals(request, "/product")
                 || ServletPaths.relativeEquals(request, "/product/")) {
