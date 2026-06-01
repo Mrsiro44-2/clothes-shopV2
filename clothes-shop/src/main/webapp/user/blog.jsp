@@ -17,8 +17,9 @@
 <div class="section mb-blog-page">
     <div class="container">
         <div class="mb-blog-hero">
-            <h1>Blog Mom & Baby</h1>
-            <p>Kiến thức, mẹo hay và tin tức dành cho mẹ và bé</p>
+            <span class="mb-kicker">Editorial</span>
+            <h1>Blog Clothes Shop</h1>
+            <p>Cảm hứng phối đồ, mẹo chọn chất liệu và các cập nhật mới từ cửa hàng.</p>
         </div>
 
         <form class="mb-blog-toolbar" method="get" action="${ctx}/blog">
@@ -47,7 +48,7 @@
         </form>
 
         <c:if test="${not empty keyword or categoryId > 0}">
-            <p style="margin:-12px 0 20px;color:#6b7280;font-size:14px">
+            <p class="mb-blog-result-note">
                 Tìm thấy <strong>${totalPosts}</strong> bài viết
                 <c:if test="${not empty keyword}"> cho "<em>${keyword}</em>"</c:if>
             </p>

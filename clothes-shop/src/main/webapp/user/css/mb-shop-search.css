@@ -7,43 +7,47 @@
     gap: 10px;
     align-items: stretch;
     max-width: 100%;
+    padding: 12px;
+    border: 1px solid var(--mb-border);
+    border-radius: var(--mb-radius);
+    background: var(--mb-soft);
 }
 
 .mb-shop-search .input {
     flex: 1 1 auto;
-    height: 44px;
+    height: 46px;
     margin: 0;
     padding: 10px 16px;
-    border: 1px solid #e4e7ed;
-    border-radius: 8px;
+    border: 1px solid var(--mb-border);
+    border-radius: var(--mb-radius);
     font-size: 14px;
     width: auto !important;
 }
 
 .mb-shop-search-btn {
     flex: 0 0 auto;
-    height: 44px;
+    height: 46px;
     padding: 0 22px;
     border: none;
-    border-radius: 8px;
-    background: var(--mb-primary, #DB4444);
+    border-radius: var(--mb-radius);
+    background: var(--mb-primary);
     color: #fff;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 850;
     cursor: pointer;
     white-space: nowrap;
 }
 
 .mb-shop-search-btn:hover {
-    background: var(--mb-primary-hover, #b83333);
+    background: var(--mb-primary-hover);
 }
 
 .mb-shop-empty {
     text-align: center;
     padding: 48px 24px;
     background: #fff;
-    border-radius: 12px;
-    border: 1px dashed #e4e7ed;
+    border-radius: var(--mb-radius);
+    border: 1px dashed var(--mb-border-strong);
     margin: 16px 0 32px;
 }
 
@@ -55,13 +59,13 @@
 
 .mb-shop-empty h3 {
     font-size: 18px;
-    font-weight: 700;
-    color: #111;
+    font-weight: 850;
+    color: var(--mb-ink);
     margin: 0 0 8px;
 }
 
 .mb-shop-empty p {
-    color: #8d99ae;
+    color: var(--mb-muted);
     margin: 0 0 20px;
     font-size: 14px;
 }
@@ -69,15 +73,15 @@
 .mb-shop-empty-btn {
     display: inline-block;
     padding: 12px 24px;
-    background: var(--mb-primary, #DB4444);
+    background: var(--mb-primary);
     color: #fff !important;
-    border-radius: 8px;
-    font-weight: 700;
+    border-radius: var(--mb-radius);
+    font-weight: 850;
     text-decoration: none;
 }
 
 .mb-shop-empty-btn:hover {
-    background: var(--mb-primary-hover, #b83333);
+    background: var(--mb-primary-hover);
 }
 
 @media (max-width: 575px) {

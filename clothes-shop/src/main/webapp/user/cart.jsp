@@ -42,7 +42,7 @@
                             <span>Sản phẩm</span>
                             <span>Số lượng</span>
                             <span>Đơn giá</span>
-                            <span style="text-align:right">Thành tiền</span>
+                            <span class="mb-cart-table-total">Thành tiền</span>
                         </div>
 
                         <c:forEach items="${carts}" var="cart">
@@ -76,7 +76,7 @@
                                     </div>
                                 </div>
                                 <div class="mb-cart-price">${currency.currencyFormat(unitPrice)}</div>
-                                <div class="mb-cart-line-total" style="text-align:right">
+                                <div class="mb-cart-line-total">
                                     ${currency.currencyFormat(lineTotal)}
                                 </div>
                             </div>
@@ -105,13 +105,13 @@
                         <button type="submit" name="use-voucher">ÁP DỤNG</button>
                     </form>
                     <c:if test="${sessionScope.couponStatus == 'invalid'}">
-                        <p style="color:#d10024;font-size:12px;margin-top:8px">Mã không hợp lệ.</p>
+                        <p class="mb-cart-promo-message mb-cart-promo-message--error">Mã không hợp lệ.</p>
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'expired'}">
-                        <p style="color:#d10024;font-size:12px;margin-top:8px">Mã đã hết hạn.</p>
+                        <p class="mb-cart-promo-message mb-cart-promo-message--error">Mã đã hết hạn.</p>
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'applied'}">
-                        <p style="color:#DB4444;font-size:12px;margin-top:8px">Đã áp dụng mã giảm giá.</p>
+                        <p class="mb-cart-promo-message mb-cart-promo-message--success">Đã áp dụng mã giảm giá.</p>
                     </c:if>
                 </div>
                 <c:if test="${sessionScope.discount != null && sessionScope.discount > 0}">

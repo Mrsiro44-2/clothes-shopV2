@@ -14,11 +14,9 @@ public class AppImages {
       "https://images.unsplash.com/photo-1515488042361-ee00e945a1be?w=800&q=80";
 
   public static final String[] HOME_BANNER_URLS = {
-    "https://upcontent.vn/wp-content/uploads/2024/06/banner-shop-thoi-trang-1.jpg",
-    "https://upcontent.vn/wp-content/uploads/2024/06/banner-shop-thoi-trang-2.jpg",
-      "https://upcontent.vn/wp-content/uploads/2024/06/banner-thoi-trang-nu-3.jpg",
-      "https://upcontent.vn/wp-content/uploads/2024/06/banner-shop-thoi-trang-5.jpg",
-      "https://upcontent.vn/wp-content/uploads/2024/06/banner-shop-thoi-trang-4.jpg"
+    "user/img/home-banner-1.png",
+    "user/img/home-banner-2.png",
+    "user/img/home-banner-3.png"
   };
 
   public AppImages() {

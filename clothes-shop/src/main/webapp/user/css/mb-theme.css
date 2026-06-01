@@ -1,8 +1,322 @@
-/* Mom & Baby — màu chủ đạo #DB4444 */
+/* Clothes Shop design tokens */
 :root {
-    --mb-primary: #DB4444;
-    --mb-primary-dark: #c41e3a;
-    --mb-primary-hover: #b83333;
-    --mb-primary-light: #fff0f0;
-    --mb-primary-muted: #fce8e8;
+    --mb-font: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    --mb-primary: #d93f3f;
+    --mb-primary-dark: #a82828;
+    --mb-primary-hover: #bd3333;
+    --mb-primary-light: #fff1f1;
+    --mb-primary-muted: #fbe1e1;
+    --mb-accent: #0f766e;
+    --mb-accent-light: #e8f6f4;
+    --mb-ink: #161616;
+    --mb-muted: #6f7682;
+    --mb-soft: #f6f4f1;
+    --mb-surface: #ffffff;
+    --mb-border: #e9e4de;
+    --mb-border-strong: #d8d1c8;
+    --mb-shadow: 0 18px 50px rgba(22, 22, 22, 0.08);
+    --mb-shadow-soft: 0 10px 28px rgba(22, 22, 22, 0.06);
+    --mb-radius: 8px;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--mb-font);
+    color: var(--mb-ink);
+    background: #fff;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+a {
+    color: var(--mb-ink);
+    transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+
+a:hover,
+a:focus {
+    color: var(--mb-primary);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid rgba(217, 63, 63, 0.22);
+    outline-offset: 2px;
+}
+
+.container {
+    width: min(1180px, calc(100% - 32px));
+}
+
+.section {
+    padding: 44px 0;
+}
+
+.input,
+.form-control,
+select.input-select,
+textarea.input {
+    min-height: 46px;
+    border: 1px solid var(--mb-border);
+    border-radius: var(--mb-radius);
+    background: #fff;
+    color: var(--mb-ink);
+    box-shadow: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.input:focus,
+.form-control:focus,
+select.input-select:focus,
+textarea.input:focus {
+    border-color: rgba(217, 63, 63, 0.5);
+    box-shadow: 0 0 0 4px rgba(217, 63, 63, 0.1);
+}
+
+.mb-btn,
+.primary-btn,
+.btn.btn-primary,
+.btn.btn-default {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: var(--mb-radius);
+    border: 1px solid transparent;
+    font-weight: 750;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.mb-btn:hover,
+.primary-btn:hover,
+.btn.btn-primary:hover,
+.btn.btn-default:hover {
+    transform: translateY(-1px);
+}
+
+.mb-btn-primary,
+.primary-btn,
+.btn.btn-primary,
+.btn.btn-default {
+    background: var(--mb-primary);
+    color: #fff !important;
+    border-color: var(--mb-primary);
+    box-shadow: 0 10px 20px rgba(217, 63, 63, 0.18);
+}
+
+.mb-btn-primary:hover,
+.primary-btn:hover,
+.btn.btn-primary:hover,
+.btn.btn-default:hover {
+    background: var(--mb-primary-hover);
+    border-color: var(--mb-primary-hover);
+    color: #fff !important;
+}
+
+.mb-btn-ghost {
+    background: #fff;
+    color: var(--mb-ink) !important;
+    border-color: var(--mb-border);
+    box-shadow: none;
+}
+
+.mb-btn-ghost:hover {
+    border-color: var(--mb-ink);
+    color: var(--mb-ink) !important;
+}
+
+#breadcrumb.section {
+    padding: 22px 0 0;
+    background: #fff;
+}
+
+.breadcrumb-tree {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: var(--mb-muted);
+    font-size: 13px;
+}
+
+.breadcrumb-tree li + li:before {
+    content: "/";
+    margin-right: 8px;
+    color: #c3bbb1;
+}
+
+.breadcrumb-tree a {
+    color: var(--mb-muted);
+}
+
+.breadcrumb-tree .active {
+    color: var(--mb-ink);
+    font-weight: 700;
+}
+
+.section-title,
+.mb-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+.section-title .title,
+.mb-section-heading h2,
+.mb-section-heading h3 {
+    margin: 0;
+    color: var(--mb-ink);
+    font-size: clamp(24px, 2.6vw, 36px);
+    font-weight: 850;
+    line-height: 1.16;
+}
+
+.mb-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--mb-primary);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.mb-kicker:before {
+    content: "";
+    width: 24px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--mb-primary);
+}
+
+.mb-section-heading p {
+    max-width: 560px;
+    margin: 8px 0 0;
+    color: var(--mb-muted);
+}
+
+.slick-prev,
+.slick-next {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: #fff !important;
+    border: 1px solid var(--mb-border);
+    box-shadow: var(--mb-shadow-soft);
+    z-index: 4;
+}
+
+.slick-prev:before,
+.slick-next:before {
+    color: var(--mb-ink);
+    font-family: FontAwesome;
+    font-size: 14px;
+    opacity: 1;
+}
+
+.slick-prev:before {
+    content: "\f104";
+}
+
+.slick-next:before {
+    content: "\f105";
+}
+
+.products-slick-nav .slick-prev,
+.products-slick-nav .slick-next {
+    position: static;
+    transform: none;
+    margin-left: 8px;
+}
+
+.store-pagination,
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 32px;
+}
+
+.store-pagination li,
+.pagination li {
+    display: inline-flex;
+}
+
+.store-pagination li a,
+.store-pagination li span,
+.pagination li a,
+.pagination li span {
+    min-width: 40px;
+    height: 40px;
+    border-radius: var(--mb-radius) !important;
+    border: 1px solid var(--mb-border) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mb-ink);
+    background: #fff;
+    font-weight: 750;
+}
+
+.store-pagination li.active a,
+.store-pagination li.active span,
+.pagination li.active a,
+.pagination li.active span {
+    background: var(--mb-primary) !important;
+    color: #fff !important;
+    border-color: var(--mb-primary) !important;
+}
+
+@media (max-width: 767px) {
+    .container {
+        width: min(100% - 24px, 1180px);
+    }
+
+    .section {
+        padding: 32px 0;
+    }
+
+    .section-title,
+    .mb-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }

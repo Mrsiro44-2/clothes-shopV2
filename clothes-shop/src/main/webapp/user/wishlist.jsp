@@ -35,18 +35,12 @@
         </c:if>
 
         <c:if test="${not empty items}">
-            <div class="row mb-wishlist-grid render-product">
-                <c:forEach items="${items}" var="w" varStatus="status">
-                    <div class="col-md-4 col-xs-6">
+            <div class="mb-wishlist-grid render-product">
+                <c:forEach items="${items}" var="w">
+                    <div>
                         <c:set var="wishlistItem" value="${w}" scope="request"/>
                         <jsp:include page="components/wishlist-item-card.jsp"/>
                     </div>
-                    <c:if test="${(status.index + 1) % 3 == 0}">
-                        <div class="clearfix visible-md visible-lg"></div>
-                    </c:if>
-                    <c:if test="${(status.index + 1) % 2 == 0}">
-                        <div class="clearfix visible-sm visible-xs"></div>
-                    </c:if>
                 </c:forEach>
             </div>
         </c:if>

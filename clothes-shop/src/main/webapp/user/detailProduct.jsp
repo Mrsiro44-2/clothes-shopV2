@@ -26,7 +26,7 @@
                 <div class="mb-pd-main-wrap">
                     <div class="mb-pd-side-actions">
                         <c:if test="${not empty defaultVariant}">
-                            <form method="post" action="${ctx}/wishlist/add" style="margin:0">
+                            <form method="post" action="${ctx}/wishlist/add" class="mb-pd-wishlist-form">
                                 <input type="hidden" name="productVariantID" id="mb-wish-variant-id" value="${defaultVariant.ID}"/>
                                 <input type="hidden" name="pathUrl" value="${ctx}/product/detail/${product.ID}"/>
                                 <button type="submit" class="mb-pd-icon-btn" title="Yêu thích" aria-label="Yêu thích">
@@ -68,7 +68,7 @@
                 <h1 class="mb-pd-title">${product.name}</h1>
 
                 <div class="mb-pd-price-row">
-                    <div id="mb-detail-price" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                    <div id="mb-detail-price" class="mb-detail-price">
                         <c:choose>
                             <c:when test="${not empty defaultVariant}">
                                 <c:set var="dvNew" value="${defaultVariant.newPrice > 0 ? defaultVariant.newPrice : defaultVariant.oldPrice}" />
@@ -105,7 +105,7 @@
                     <div class="mb-pd-desc-block">
                         <h4>Mô tả:</h4>
                         <div class="mb-pd-desc-text" id="mb-pd-desc">${product.description}</div>
-                        <button type="button" class="mb-pd-see-more" id="mb-pd-see-more" style="display:none">Xem thêm...</button>
+                        <button type="button" class="mb-pd-see-more" id="mb-pd-see-more" hidden>Xem thêm...</button>
                     </div>
                 </c:if>
 
@@ -131,7 +131,7 @@
                     <input name="pathUrl" value="${ctx}/product/detail/${product.ID}" type="hidden"/>
 
                     <div class="mb-pd-qty-row">
-                        <label style="margin:0;font-weight:600">Số lượng</label>
+                        <label class="mb-pd-qty-label">Số lượng</label>
                         <div class="mb-pd-qty-wrap">
                             <button type="button" class="value-button" id="decrease">−</button>
                             <input class="qty-input" type="number" name="quantity" id="number" value="1" min="1"
@@ -145,23 +145,26 @@
                                 ${empty variants ? 'disabled' : ''}>
                             <i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng
                         </button>
-                        <a href="${ctx}/checkout" class="mb-pd-btn-outline">Mua ngay</a>
+                        <a href="${ctx}/cart" class="mb-pd-btn-outline">Xem giỏ hàng</a>
                     </div>
                     <p class="mb-pd-delivery-note">
-                        <a href="${ctx}/contact">Chính sách giao hàng &amp; đổi trả</a>
+                        <a href="mailto:hotro@clothesshop.vn">Cần tư vấn size hoặc giao hàng?</a>
                     </p>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<div class="section">
-    <!-- container -->
-    <div class="container" style="margin-bottom: 20px; margin-top: 20px">
-        <!-- row -->
+<div class="section mb-pd-content-section">
+    <div class="container">
         <div class="row">
             <div class="col-md-12">
-                <h4>Đánh giá từ khách hàng</h4>
+                <div class="mb-section-heading">
+                    <div>
+                        <span class="mb-kicker">Reviews</span>
+                        <h3>Đánh giá từ khách hàng</h3>
+                    </div>
+                </div>
                 <div class="feedback-container">
                     <div class="statatis-feedback">
                         <div class="feadback-total">
@@ -188,7 +191,7 @@
                         <div class="number-feedback">
                             <c:choose>
                                 <c:when test="${feedbacks.size() > 0}">
-                                    Have <c:out value="${feedbacks.size()}" /> feedbacks
+                                    Có <c:out value="${feedbacks.size()}" /> đánh giá
                                 </c:when>
                                 <c:otherwise>
                                     Chưa có đánh giá cho sản phẩm này
@@ -249,21 +252,24 @@
                     </c:if>
                 </div>
             </div>
-            <!-- product -->
             <div class="col-md-12">
-                <h4>Mô tả sản phẩm</h4>
-                ${product.description}
+                <div class="mb-section-heading">
+                    <div>
+                        <span class="mb-kicker">Details</span>
+                        <h3>Mô tả sản phẩm</h3>
+                    </div>
+                </div>
+                <div class="mb-pd-description-panel">
+                    ${product.description}
+                </div>
             </div>
-            <!-- /product -->
         </div>
-        <!-- /row -->
     </div>
-    <!-- /container -->
 </div>
 <!-- Section -->
 <div class="section">
     <!-- container -->
-    <div class="container" style="margin-bottom: 100px; margin-top: 40px">
+    <div class="container">
         <!-- row -->
         <div class="row">
             <div class="col-md-12">
@@ -319,7 +325,7 @@
         var desc = document.getElementById("mb-pd-desc");
         var seeMore = document.getElementById("mb-pd-see-more");
         if (desc && seeMore && desc.scrollHeight > 80) {
-            seeMore.style.display = "inline-block";
+            seeMore.hidden = false;
             seeMore.addEventListener("click", function () {
                 desc.classList.toggle("expanded");
                 seeMore.textContent = desc.classList.contains("expanded") ? "Thu gọn" : "Xem thêm...";
@@ -347,4 +353,3 @@
     });
 </script>
 <%@include file="./components/footer.jsp" %>
-

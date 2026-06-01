@@ -1,60 +1,65 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@include file="./components/header.jsp" %>
-<div class="section">
-    <div class="container">
-        <div class="row" style="margin-bottom: 80px; margin-top: 30px">
-            <div class="col-md-6">
-                <img src="./user/img/signUp.png" alt="Đăng ký Mom &amp; Baby" style="width: 100%" />
-            </div>
-            <form action="${ctx}/register" method="post">
-                <div class="col-md-6" style="padding: 100px">
-                    <h2>Tạo tài khoản</h2>
-                    <p>Điền thông tin bên dưới để đăng ký</p>
-                    <div style="width: 400px; margin-bottom: 20px; margin-top: 20px">
-                        <input class="input" type="text" name="fullname" placeholder="Họ và tên" />
-                    </div>
-                    <div style="width: 400px; margin-bottom: 20px">
-                        <input class="input" type="text" name="username" placeholder="Tên đăng nhập" />
-                    </div>
-                    <div style="width: 400px; margin-bottom: 20px">
-                        <input class="input" type="text" name="email" placeholder="Email" />
-                    </div>
-                    <div style="width: 400px; margin-bottom: 20px">
-                        <input class="input" type="text" name="phone" placeholder="Số điện thoại" />
-                    </div>
-                    <div style="width: 400px; margin-bottom: 20px">
-                        <input class="input" type="password" name="password" placeholder="Mật khẩu" />
-                    </div>
-                       <div style="width: 400px">
-                        <input class="input form-control" type="password" id="confirmPassword" name="confirmPassword"
-                               placeholder="Nhập lại mật khẩu" minlength="6" required autocomplete="new-password" style="width:100%"/>
-                    </div>
-                    <div style="margin-top: 40px">
-                        <button
-                            class="btn btn-default"
-                            name="register"
-                            style="
-                            width: 400px;
-                            padding: 10px;
-                            color: #fff;
-                            background-color: #db4444;
-                            margin-bottom: 20px;
-                            "
-                            >
-                            Đăng ký
-                        </button>
-                    </div>
-                    <div>
-                        <span style="display: block;color: red; text-align: center">
-                            ${messageFailRegister}
-                        </span>
-                    </div>
-                    <div class="text-center">
-                        <p>Đã có tài khoản? <a href="${ctx}/login">Đăng nhập</a></p>
+
+<main class="mb-auth-page">
+    <section class="section">
+        <div class="container">
+            <div class="mb-auth-shell">
+                <div class="mb-auth-visual">
+                    <img src="./user/img/signUp.png" alt="Đăng ký Clothes Shop"/>
+                    <div class="mb-auth-visual-copy">
+                        <span class="mb-kicker">Join us</span>
+                        <h2>Tạo tài khoản mua sắm gọn hơn</h2>
+                        <p>Lưu wishlist, quản lý giỏ hàng và nhận các cập nhật phù hợp với bạn.</p>
                     </div>
                 </div>
-            </form>
+
+                <div class="mb-auth-panel">
+                    <span class="mb-kicker">Tài khoản</span>
+                    <h1>Tạo tài khoản</h1>
+                    <p>Điền thông tin bên dưới để bắt đầu.</p>
+
+                    <form action="${ctx}/register" method="post" class="mb-auth-form">
+                        <div class="mb-auth-field">
+                            <label for="registerFullname">Họ và tên</label>
+                            <input id="registerFullname" class="input" type="text" name="fullname" placeholder="Nguyễn Văn A"/>
+                        </div>
+                        <div class="mb-auth-field">
+                            <label for="registerUsername">Tên đăng nhập</label>
+                            <input id="registerUsername" class="input" type="text" name="username" placeholder="nguyenvana"/>
+                        </div>
+                        <div class="mb-auth-field">
+                            <label for="registerEmail">Email</label>
+                            <input id="registerEmail" class="input" type="text" name="email" placeholder="email@example.com"/>
+                        </div>
+                        <div class="mb-auth-field">
+                            <label for="registerPhone">Số điện thoại</label>
+                            <input id="registerPhone" class="input" type="text" name="phone" placeholder="0912345678"/>
+                        </div>
+                        <div class="mb-auth-field">
+                            <label for="registerPassword">Mật khẩu</label>
+                            <input id="registerPassword" class="input" type="password" name="password" placeholder="Tối thiểu 6 ký tự"/>
+                        </div>
+                        <div class="mb-auth-field">
+                            <label for="confirmPassword">Nhập lại mật khẩu</label>
+                            <input id="confirmPassword" class="input" type="password" name="confirmPassword"
+                                   placeholder="Nhập lại mật khẩu" minlength="6" required autocomplete="new-password"/>
+                        </div>
+
+                        <button class="mb-btn mb-btn-primary" name="register" type="submit">
+                            Đăng ký <i class="fa fa-arrow-right"></i>
+                        </button>
+
+                        <c:if test="${not empty messageFailRegister}">
+                            <p class="mb-form-message">${messageFailRegister}</p>
+                        </c:if>
+                    </form>
+
+                    <p class="mb-auth-switch">Đã có tài khoản? <a href="${ctx}/login">Đăng nhập</a></p>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </section>
+</main>
+
 <%@include file="./components/footer.jsp" %>

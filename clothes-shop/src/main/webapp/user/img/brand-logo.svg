@@ -1,0 +1,10 @@
+<svg width="360" height="108" viewBox="0 0 360 108" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Clothes Shop">
+  <rect x="8" y="14" width="80" height="80" rx="22" fill="#161616"/>
+  <path d="M30 69.5C38.2 77.2 56.9 77.2 66 69.5" stroke="#F7F3ED" stroke-width="4" stroke-linecap="round"/>
+  <path d="M29 64L48 42L67 64" stroke="#F7F3ED" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M48 42V34.5C48 30.6 51.1 28 54.5 28C58.1 28 61 30.6 61 34" stroke="#D93F3F" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="28" cy="36" r="4" fill="#0F766E"/>
+  <circle cx="68" cy="36" r="4" fill="#D93F3F"/>
+  <text x="106" y="51" fill="#161616" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="31" font-weight="900" letter-spacing="0">Clothes Shop</text>
+  <text x="108" y="76" fill="#6F7682" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2">MODERN ESSENTIALS</text>
+</svg>

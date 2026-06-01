@@ -49,13 +49,13 @@
             </a>
             <c:choose>
                 <c:when test="${not empty cardVariant}">
-                    <a class="mb-product-card__cart add-to-cart-btn" style="border: none"
+                    <a class="mb-product-card__cart add-to-cart-btn"
                        href="${cardCtx}/cart/add?productVariantID=${cardVariant.ID}&quantity=1&pathUrl=${cardPathUrl}">
                         <i class="fa fa-shopping-cart"></i>
                     </a>
                 </c:when>
                 <c:otherwise>
-                    <a class="mb-product-card__cart add-to-cart-btn" style="border: none" href="${cardCtx}/product/detail/${cardProduct.ID}">
+                    <a class="mb-product-card__cart add-to-cart-btn" href="${cardCtx}/product/detail/${cardProduct.ID}">
                         <i class="fa fa-shopping-cart"></i>
                     </a>
                 </c:otherwise>
