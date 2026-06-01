@@ -14,7 +14,7 @@ import java.sql.SQLException;
  */
 public class DBConnection {
     /* Đổi databasename cho khớp SQL Server của bạn (ví dụ: ClothesShop theo script v2). */
-    private static final String urlConnect = "jdbc:sqlserver://localhost:1433;databaseName=ClothesShop;user=sa;password=sa;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
+    private static final String urlConnect = "jdbc:sqlserver://localhost:1433;databaseName=ClothesShop;user=sa;password=123456;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
 
     static {
         try {
@@ -33,7 +33,13 @@ public class DBConnection {
         return null;
     }
     
-//    public static void main(String args[]) {
-//        System.out.println(connect());
-//    }
+   public static void main(String[] args) {
+    Connection conn = connect();
+
+    if (conn != null) {
+        System.out.println("Connect SQL Server SUCCESS!");
+    } else {
+        System.out.println("Connect SQL Server FAILED!");
+    }
+}
 }
