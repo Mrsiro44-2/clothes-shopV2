@@ -125,15 +125,28 @@
         if (img) {
             var src = img;
             if (img.indexOf("http") !== 0) {
-                if (img.indexOf("/") === 0) {
+                // If it already starts with ctx, don't prepend again
+                if (ctx && img.indexOf(ctx + "/") === 0) {
+                    src = img;
+                } else if (img.indexOf("/") === 0) {
                     src = ctx + img;
                 } else {
                     src = ctx + "/" + img.replace(/^\.\//, "");
                 }
             }
-            document.querySelectorAll("#product-main-img img, #product-imgs .product-preview img").forEach(function (el, idx) {
-                if (idx === 0 || v.variantImg) {
-                    el.src = src;
+            var targetImgSelectors = [
+                "#product-main-img .slick-slide[data-slick-index='0'] img",
+                "#product-imgs .slick-slide[data-slick-index='0'] img"
+            ];
+            var elements = document.querySelectorAll(targetImgSelectors.join(', '));
+            if (elements.length === 0) {
+                // Fallback before slick is initialized
+                elements = document.querySelectorAll("#product-main-img .product-preview:first-child img, #product-imgs .product-preview:first-child img");
+            }
+            elements.forEach(function (el) {
+                el.src = src;
+                if (el.parentElement && el.parentElement.tagName === 'A') {
+                    el.parentElement.href = src;
                 }
             });
         }

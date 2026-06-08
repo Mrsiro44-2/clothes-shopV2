@@ -45,8 +45,8 @@ public final class ProductCardJsp {
             }
         }
 
-        Integer cardWishlistId = attrInt(request, "cardWishlistId");
-        if (cardWishlistId == null || cardWishlistId <= 0) {
+        Integer cardWishlistId = null; // Do not read from request to prevent leaks across loop iterations
+        if (true) {
             Map<Integer, int[]> wishByProduct = WishlistLib.wishlistMapForRequest(request);
             if (wishByProduct == null) {
                 wishByProduct = Collections.emptyMap();

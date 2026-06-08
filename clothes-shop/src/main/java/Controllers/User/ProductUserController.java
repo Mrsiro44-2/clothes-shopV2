@@ -66,7 +66,7 @@ public class ProductUserController extends HttpServlet {
                 ProductVariantDAO variantDao = new ProductVariantDAO();
                 List<ImgDescription> imgDesc = imgDescDao.getAllImgDescriptionByProduct(id);
                 List<Product> productsRelative = productDao.getAllProductActiveRelative(p);
-                List<Feedback> feedbacks = feedbackDao.allFeedbackByProduct(id);
+                List<Feedback> feedbacks = feedbackDao.allFeedbackActiveByProduct(id);
                 List<ProductVariant> variants = variantDao.findByProductId(id);
                 ProductVariant defaultVariant = variantDao.findDefaultOrFirst(id);
                 request.setAttribute("feedbacks", feedbacks);
@@ -87,32 +87,43 @@ public class ProductUserController extends HttpServlet {
 
 
     private void productPage(HttpServletRequest request, HttpServletResponse response, int page, int pageSize)
-
             throws IOException, ServletException {
         try {
-            String type = request.getParameter("type");
-            int id = validate.getInt(request.getParameter("id"));
+            String keyword = request.getParameter("keyword");
+            String[] categoryIds = request.getParameterValues("category");
+            String[] brandIds = request.getParameterValues("brand");
+            float minPrice = validate.getFloat(request.getParameter("minPrice"));
+            float maxPrice = validate.getFloat(request.getParameter("maxPrice"));
+            int sort = validate.getInt(request.getParameter("sort"));
+
             List<Category> categories = categoryDao.getCategoryActive();
             List<Brand> brands = brandDao.getBrandActive();
-            List<Product> products = new ArrayList<Product>();
-            int allProduct = 0;
-            String urlPage = "product";
-            String key = "";
-            if (type != null && type.equals("category")) {
-                products = productDao.getProductsByPage(page, pageSize, "category", id);
-                allProduct = productDao.getAllProductActive("category", id).size();
-                key = "?type=category&id=" + id;
-                request.setAttribute("idCategory", id);
-            } else if (type != null && type.equals("brand")) {
-                products = productDao.getProductsByPage(page, pageSize, "brand", id);
-                allProduct = productDao.getAllProductActive("brand", id).size();
-                request.setAttribute("idBrand", id);
-                key = "?type=brand&id=" + id;
-            } else {
-                products = productDao.getProductsByPage(page, pageSize, "");
-                allProduct = productDao.getAllProductActive("").size();
-                type = "Shop";
+            
+            List<Product> products = productDao.searchAndFilterProducts(keyword, categoryIds, brandIds, minPrice, maxPrice, sort, page, pageSize);
+            int allProduct = productDao.countSearchAndFilterProducts(keyword, categoryIds, brandIds, minPrice, maxPrice);
+
+            StringBuilder keyBuilder = new StringBuilder("?");
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                keyBuilder.append("keyword=").append(keyword).append("&");
             }
+            if (categoryIds != null) {
+                for (String cat : categoryIds) {
+                    keyBuilder.append("category=").append(cat).append("&");
+                }
+            }
+            if (brandIds != null) {
+                for (String brand : brandIds) {
+                    keyBuilder.append("brand=").append(brand).append("&");
+                }
+            }
+            if (minPrice >= 0) keyBuilder.append("minPrice=").append(minPrice).append("&");
+            if (maxPrice > 0) keyBuilder.append("maxPrice=").append(maxPrice).append("&");
+            if (sort >= 0) keyBuilder.append("sort=").append(sort).append("&");
+            
+            String key = keyBuilder.toString();
+            if (key.endsWith("&")) key = key.substring(0, key.length() - 1);
+            if (key.equals("?")) key = "";
+
             if (products.size() == 0 && page != 1) {
                 ServletPaths.redirect404(request, response);
             } else {
@@ -122,9 +133,30 @@ public class ProductUserController extends HttpServlet {
                 request.setAttribute("page", page);
                 request.setAttribute("pageSize", pageSize);
                 request.setAttribute("sizeProduct", allProduct);
-                request.setAttribute("type", type);
-                request.setAttribute("urlPage", urlPage);
+                request.setAttribute("urlPage", "product");
                 request.setAttribute("key", key);
+                
+                List<Integer> selectedCats = new ArrayList<>();
+                if (categoryIds != null) {
+                    for (String s : categoryIds) {
+                        selectedCats.add(validate.getInt(s));
+                    }
+                }
+                
+                List<Integer> selectedBrnds = new ArrayList<>();
+                if (brandIds != null) {
+                    for (String s : brandIds) {
+                        selectedBrnds.add(validate.getInt(s));
+                    }
+                }
+                
+                request.setAttribute("keyword", keyword != null ? keyword : "");
+                request.setAttribute("selectedCategories", selectedCats);
+                request.setAttribute("selectedBrands", selectedBrnds);
+                request.setAttribute("minPrice", minPrice >= 0 ? minPrice : "");
+                request.setAttribute("maxPrice", maxPrice > 0 ? maxPrice : "");
+                request.setAttribute("sort", sort >= 0 ? sort : 0);
+                
                 request.getRequestDispatcher("/user/product.jsp").forward(request, response);
             }
         } catch (Exception e) {

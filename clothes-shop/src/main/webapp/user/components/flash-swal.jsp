@@ -1,4 +1,4 @@
-﻿<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <c:set var="swalIconVal" value="${swalIcon}" />
 <c:set var="swalTitleVal" value="${swalTitle}" />
 <c:set var="swalMessageVal" value="${swalMessage}" />

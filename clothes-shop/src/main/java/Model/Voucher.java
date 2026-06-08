@@ -7,7 +7,6 @@ public class Voucher {
     private int ID;
     private String name;
     private String code;
-    /** 0 = giảm cố định (VND), 1 = giảm % */
     private int discountType;
     private float value;
     private float minOrderAmount;
@@ -69,7 +68,6 @@ public class Voucher {
         this.discountType = discountType;
     }
 
-    /** Alias cho JSP admin cũ (${voucher.type}) */
     public int getType() {
         return discountType;
     }
@@ -94,7 +92,6 @@ public class Voucher {
         this.minOrderAmount = minOrderAmount;
     }
 
-    /** @deprecated dùng minOrderAmount */
     public float getLimit() {
         return minOrderAmount;
     }

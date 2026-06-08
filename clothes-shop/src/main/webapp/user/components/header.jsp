@@ -51,6 +51,11 @@
             <link type="text/css" rel="stylesheet" href="./user/css/mb-theme.css" />
             <link type="text/css" rel="stylesheet" href="./user/css/mb-header-nav.css" />
             <link type="text/css" rel="stylesheet" href="./user/css/product-card-v2.css" />
+            
+            <!-- Fancybox -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+            <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+
             <%@include file="../../components/image-fallback.jsp" %>
         </head>
         <body>
@@ -78,7 +83,7 @@
                             <div class="col-md-3 col-sm-4">
                                 <div class="header-logo">
                                     <a href="${ctx}/home" class="logo">
-                                        <img src="./user/img/logo_nen.png" alt="Mom &amp; Baby">
+                                        <img src="./user/img/logo_nen.png" alt="Clothing shop">
                                     </a>
                                 </div>
                             </div>
@@ -88,7 +93,7 @@
                                         <ul class="main-nav nav navbar-nav">
                                             <li class="${navHome ? 'active' : ''}"><a href="${ctx}/home">Trang chủ</a></li>
                                             <li class="${navShop ? 'active' : ''}"><a href="${ctx}/product">Cửa hàng</a></li>
-                                            <li class="${navBlog ? 'active' : ''}"><a href="${ctx}/blog">Blog</a></li>
+                                            <li class="${navBlog ? 'active' : ''}"><a href="${ctx}/blog">Bài viết</a></li>
                                             <li class="${navContact ? 'active' : ''}"><a href="${ctx}/contact">Liên hệ</a></li>
                                             <li class="${navAbout ? 'active' : ''}"><a href="${ctx}/about">Giới thiệu</a></li>
                                         </ul>
@@ -194,35 +199,50 @@
                                         <div class="account-dropdown">
                                             <div>
                                                 <a href="${pageContext.request.contextPath}/account">
-                                                    <i class="fa fa-user-o" style="margin-right: 15px"></i>
+                                                    <i class="fa fa-user-o"></i>
                                                     Tài khoản
                                                 </a>
                                             </div>
                                             <div>
-                                                <a href="${pageContext.request.contextPath}/orders"><i class="fa fa-shopping-cart" style="margin-right: 15px"></i>Đơn hàng</a>
+                                                <a href="${pageContext.request.contextPath}/voucher-hub">
+                                                    <i class="fa fa-ticket"></i>
+                                                    Kho Voucher
+                                                </a>
                                             </div>
                                             <div>
-                                                <a href="${pageContext.request.contextPath}/orders?tab=cancelled"><i class="fa fa-times-circle" style="margin-right: 15px"></i>Đơn đã hủy</a>
+                                                <a href="${pageContext.request.contextPath}/orders">
+                                                    <i class="fa fa-shopping-cart"></i>
+                                                    Đơn hàng
+                                                </a>
                                             </div>
                                             <div>
-                                                <a href="${pageContext.request.contextPath}/orders?tab=reviews"><i class="fa fa-star" style="margin-right: 15px"></i>Đánh giá</a>
+                                                <a href="${pageContext.request.contextPath}/orders?tab=cancelled">
+                                                    <i class="fa fa-times-circle"></i>
+                                                    Đơn đã hủy
+                                                </a>
                                             </div>
                                             <div>
-                                                <a href="${pageContext.request.contextPath}/logout"><i class="fa fa-sign-out" style="margin-right: 15px"></i>Đăng xuất</a>
+                                                <a href="${pageContext.request.contextPath}/orders?tab=reviews">
+                                                    <i class="fa fa-star"></i>
+                                                    Đánh giá
+                                                </a>
+                                            </div>
+                                            <div>
+                                                <a href="${pageContext.request.contextPath}/logout" class="mb-confirm" data-confirm-key="logout">
+                                                    <i class="fa fa-sign-out"></i>
+                                                    Đăng xuất
+                                                </a>
                                             </div>
                                         </div>
                                     </c:if>
                                 </div>
                                 <!-- /Account -->
-
-                                <!-- Menu Toogle -->
                                 <div class="menu-toggle">
                                     <a href="#">
                                         <i class="fa fa-bars"></i>
                                         <span>Danh mục</span>
                                     </a>
                                 </div>
-                                <!-- /Menu Toogle -->
                                 </div>
                             </div>
                         </div>

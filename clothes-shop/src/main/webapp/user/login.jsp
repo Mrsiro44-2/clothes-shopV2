@@ -5,7 +5,7 @@
     <div class="container">
         <div class="row" style="margin-bottom: 80px; margin-top: 30px">
             <div class="col-md-6">
-                <img src="./user/img/signUp.png" alt="Đăng nhập Mom &amp; Baby" style="width: 100%" />
+                <img src="./user/img/signUp.png" alt="Đăng nhập Clothing shop" style="width: 100%" />
             </div>
             <div class="col-md-6" style="padding: 100px; margin-top: 70px">
                 <h2>Đăng nhập</h2>
@@ -20,12 +20,17 @@
                             />
                     </div>
                     <div style="width: 400px">
-                        <input
-                            class="input"
-                            type="password"
-                            name="password"
-                            placeholder="Mật khẩu"
-                            />
+                        <div class="mb-password-toggle-wrapper">
+                            <input
+                                class="input"
+                                type="password"
+                                name="password"
+                                placeholder="Mật khẩu"
+                                />
+                            <button type="button" class="mb-password-toggle-btn" aria-label="Hiện mật khẩu">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <div
@@ -37,20 +42,28 @@
                             "
                             >
                             <button
-                                class="btn btn-default"
+                                class="primary-btn"
                                 name="submitLogin"
-                                style="
-                                padding: 10px;
-                                color: #fff;
-                                background-color: #db4444;
-                                margin-bottom: 20px;
-                                "
+                                style="margin-bottom: 20px;"
                                 >
                                 Đăng nhập
                             </button>
                             <a href="${ctx}/forgot-password">Quên mật khẩu?</a>
                         </div>
-                        <span style="display: block;color: red">${messageUserAuth}</span>
+                        <c:if test="${not empty messageUserAuth}">
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    if (typeof Swal !== 'undefined') {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Thông báo',
+                                            text: '${messageUserAuth}',
+                                            confirmButtonColor: '#DB4444'
+                                        });
+                                    }
+                                });
+                            </script>
+                        </c:if>
                         <div class="text-center">
                             <p>Chưa có tài khoản? <a href="${ctx}/register">Đăng ký ngay</a></p>
                         </div>

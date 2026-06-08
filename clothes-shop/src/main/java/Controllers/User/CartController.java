@@ -11,7 +11,10 @@ import DAO.ProductVariantDAO;
 import Model.Account;
 import Model.Cart;
 import Model.ProductVariant;
+import Model.Voucher;
+import DAO.VoucherDAO;
 import Utils.ServletPaths;
+import jakarta.servlet.http.HttpSession;
 import Utils.Validation;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -57,6 +60,7 @@ public class CartController extends HttpServlet {
                 CartDAO cartDao = new CartDAO();
                 int cartId = Integer.parseInt(request.getParameter("cartId"));
                 int result = cartDao.deleteCartItem(cartId);
+                recalculateVoucher(request);
                 ServletPaths.redirect(request, response, "/cart?act=remove-cart&status=" + result);
             } else {
                 ServletPaths.redirect(request, response, "/login");
@@ -161,9 +165,71 @@ public class CartController extends HttpServlet {
                     }
                 }
             }
+            recalculateVoucher(request);
             ServletPaths.redirect(request, response, "/cart?act=update-cart&status=" + result);
         } catch (Exception e) {
             System.out.println("updateCart: " + e);
+        }
+    }
+
+    private void recalculateVoucher(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        String voucherCode = (String) session.getAttribute("appliedVoucherCode");
+        if (voucherCode != null) {
+            AuthUser auth = new AuthUser();
+            String username = auth.isLoginUser(request, null);
+            if (username != null) {
+                AccountDAO accountDao = new AccountDAO();
+                Account account = accountDao.getAccountByUsername(username);
+                CartDAO cartDao = new CartDAO();
+                List<Cart> carts = cartDao.getAllCart(account.getID());
+                float subtotal = 0;
+                for (Cart c : carts) {
+                    subtotal += c.getDisplayUnitPrice() * c.getQuantity();
+                }
+                
+                VoucherDAO voucherDao = new VoucherDAO();
+                Voucher v = voucherDao.getVoucherByCode(voucherCode);
+                boolean valid = true;
+                if (v == null || v.getStatus() != 1) {
+                    valid = false;
+                } else {
+                    java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+                    if (today.before(v.getStart()) || today.after(v.getEnd())) {
+                        valid = false;
+                    }
+                    if (v.getUsageLimit() != null && v.getUsed() >= v.getUsageLimit()) {
+                        valid = false;
+                    }
+                    if (subtotal < v.getMinOrderAmount()) {
+                        valid = false;
+                    }
+                }
+
+                if (valid) {
+                    float discount = 0;
+                    if (v.getDiscountType() == 0) {
+                        discount = v.getValue();
+                    } else if (v.getDiscountType() == 1) {
+                        discount = subtotal * (v.getValue() / 100.0f);
+                        if (v.getMaxDiscount() != null && discount > v.getMaxDiscount()) {
+                            discount = v.getMaxDiscount();
+                        }
+                    }
+                    if (discount > subtotal) {
+                        discount = subtotal;
+                    }
+                    session.setAttribute("discount", discount);
+                    session.setAttribute("newTotal", subtotal - discount);
+                    session.setAttribute("couponStatus", "applied");
+                } else {
+                    session.removeAttribute("appliedVoucherId");
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("discount");
+                    session.removeAttribute("newTotal");
+                    session.setAttribute("couponStatus", "invalid");
+                }
+            }
         }
     }
 

@@ -44,7 +44,7 @@
         </div>
         <div class="add-to-cart mb-product-card__overlay">
             <a class="mb-product-card__choose" href="${cardCtx}/product/detail/${cardProduct.ID}">Chọn tùy chọn</a>
-            <a class="mb-product-card__quick" href="${cardCtx}/product/detail/${cardProduct.ID}" title="Xem nhanh">
+            <a class="mb-product-card__quick" data-fancybox data-type="iframe" data-src="${cardCtx}/product/detail/${cardProduct.ID}" title="Xem nhanh">
                 <i class="fa fa-eye"></i>
             </a>
             <c:choose>

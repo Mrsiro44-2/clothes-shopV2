@@ -153,4 +153,74 @@ public class ProducerDAO {
         }
         return result;
     }
+
+    public int count(String search, String statusFilter) {
+        String sql = "SELECT COUNT(*) FROM Producer WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND status = ?";
+        }
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            java.sql.ResultSet rs = st.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (java.sql.SQLException e) {
+            System.out.println("ProducerDAO count: " + e);
+        }
+        return 0;
+    }
+
+    public java.util.List<Model.Producer> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
+        java.util.List<Model.Producer> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM Producer WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND status = ?";
+        }
+        
+        if ("oldest".equals(sort)) {
+            sql += " ORDER BY id ASC";
+        } else {
+            sql += " ORDER BY id DESC";
+        }
+        
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            st.setInt(paramIndex++, (page - 1) * limit);
+            st.setInt(paramIndex++, limit);
+            java.sql.ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Model.Producer p = new Model.Producer();
+                p.setID(rs.getInt("ID"));
+                p.setName(rs.getString("name"));
+                p.setDatePost(rs.getTimestamp("datePost"));
+                p.setDateUpdate(rs.getTimestamp("dateUpdate"));
+                p.setStatus(rs.getInt("status"));
+                list.add(p);
+            }
+        } catch (java.sql.SQLException e) {
+            System.out.println("ProducerDAO getPaginated: " + e);
+        }
+        return list;
+    }
 }

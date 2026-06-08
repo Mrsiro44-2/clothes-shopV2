@@ -10,19 +10,20 @@
     <div class="section">
         <div class="container">
             <div class="row">
-                <div
-                    class="col-md-2"
-                    style="border-right: 1px solid black; border-top: 1px solid black; max-height: 290px;
-                    overflow-y: auto;
-                    "
-                    >
-                <c:forEach items="${categories}" var="cate" varStatus="i">
-                    <p style="${i.index == 0 ? "margin-top: 20px" : ""}">
-                        <a href="${ctx}/product/?type=category&id=${cate.ID}">${cate.name}</a>
-                    </p>
-                </c:forEach>
+            <!-- Sidebar Categories Column -->
+            <div class="col-md-2 home-category-sidebar-col">
+                <ul class="home-category-list">
+                    <c:forEach items="${categories}" var="cate">
+                        <li class="home-category-item">
+                            <a href="${ctx}/product/?type=category&id=${cate.ID}" class="home-category-link">
+                                ${cate.name}
+                            </a>
+                        </li>
+                    </c:forEach>
+                </ul>
             </div>
-            <div class="col-md-10" style="border-top: 1px solid black">
+            <!-- Carousel Banner Column -->
+            <div class="col-md-10 home-carousel-col">
                 <div
                     id="carousel-example-generic"
                     class="carousel slide"
@@ -132,19 +133,9 @@
             <!-- /Products tab & slick -->
 
             <!-- button -->
-            <div class="col-md-12 text-center" style="margin-top: 55px">
-                <a href="${ctx}/product">
-                    <button
-                        class="btn btn-default"
-                        style="
-                        padding: 10px;
-                        color: #fff;
-                        background-color: #db4444;
-                        margin-bottom: 20px;
-                        "
-                        >
-                        Xem tất cả sản phẩm
-                    </button>
+            <div class="col-md-12 text-center" style="margin-top: 40px; margin-bottom: 20px;">
+                <a href="${ctx}/product" class="home-btn-view-all">
+                    Xem tất cả sản phẩm
                 </a>
             </div>
             <!-- /button -->
@@ -182,20 +173,16 @@
             <!-- /section title -->
             <!-- category -->
             <div class="col-md-12">
-                <div class="row">
+                <div class="home-brand-grid">
                     <c:forEach items="${brands}" var="br">
-                        <div class="col-md-2">
-                            <div
-                                class="order-summary text-center"
-                                style="border: 1px solid black; padding: 15px; margin: 20px"
-                                >
-                                <a href="${ctx}/product?type=brand&id=${br.ID}">
-                                    <div class="product-btns" style="margin-bottom: 20px">
-                                        <img class="mb-img" src="${imgUrl.resolve(br.img, ctx)}" alt="${br.name}" height="56" width="93" style="object-fit:contain" onerror="mbImgOnError(this)"/>
-                                    </div>
-                                    <p>${br.name}</p>
-                                </a>
-                            </div>
+                        <div class="home-brand-col">
+                            <a href="${ctx}/product?type=brand&id=${br.ID}" class="home-brand-card">
+                                <div class="home-brand-logo-wrapper">
+                                    <c:set var="brandImgPath" value="${empty br.img ? '' : (fn:startsWith(br.img, 'http') ? br.img : '/uploads/brand/'.concat(br.img))}" />
+                                    <img class="mb-img" src="${imgUrl.resolve(brandImgPath, ctx)}" alt="${br.name}" onerror="mbImgOnError(this)"/>
+                                </div>
+                                <p class="home-brand-name">${br.name}</p>
+                            </a>
                         </div>
                     </c:forEach>
                 </div>
@@ -228,18 +215,8 @@
                 <div class="section-title">
                     <h3 class="title">Sản phẩm bán chạy</h3>
                     <div class="section-nav">
-                        <a href="${ctx}/product">
-                            <button
-                                class="btn btn-default"
-                                style="
-                                padding: 10px;
-                                color: #fff;
-                                background-color: #db4444;
-                                margin-bottom: 20px;
-                                "
-                                >
-                                Xem tất cả
-                            </button>
+                        <a href="${ctx}/product" class="home-btn-view-all-small">
+                            Xem tất cả
                         </a>
                     </div>
                 </div>
@@ -341,19 +318,9 @@
             <!-- /Products tab & slick -->
 
             <!-- button -->
-            <div class="col-md-12 text-center" style="margin-top: 55px">
-                <a href="${ctx}/product">
-                    <button
-                        class="btn btn-default"
-                        style="
-                        padding: 10px;
-                        color: #fff;
-                        background-color: #db4444;
-                        margin-bottom: 20px;
-                        "
-                        >
-                        Xem tất cả sản phẩm
-                    </button>
+            <div class="col-md-12 text-center" style="margin-top: 40px; margin-bottom: 20px;">
+                <a href="${ctx}/product" class="home-btn-view-all">
+                    Xem tất cả sản phẩm
                 </a>
             </div>
             <!-- /button -->
@@ -375,8 +342,8 @@
                         <i class="fa fa-truck fa-2x"></i>
                     </button>
                 </div>
-                <h4>FREE AND FAST DELIVERY</h4>
-                <p>Free delivery for all orders over $140</p>
+                <h4>GIAO HÀNG MIỄN PHÍ</h4>
+                <p>Miễn phí giao hàng cho đơn hàng trên 500.000đ</p>
             </div>
             <div class="col-md-4 text-center">
                 <div class="product-btns" style="margin-bottom: 20px">
@@ -384,8 +351,8 @@
                         <i class="fa fa-headphones fa-2x"></i>
                     </button>
                 </div>
-                <h4>24/7 CUSTOMER SERVICE</h4>
-                <p>Friendly 24/7 customer support</p>
+                <h4>HỖ TRỢ KHÁCH HÀNG 24/7</h4>
+                <p>Luôn sẵn sàng hỗ trợ tận tình, chu đáo</p>
             </div>
             <div class="col-md-4 text-center">
                 <div class="product-btns" style="margin-bottom: 20px">
@@ -393,8 +360,8 @@
                         <i class="fa fa-shield fa-2x"></i>
                     </button>
                 </div>
-                <h4>MONEY BACK GUARANTEE</h4>
-                <p>We reurn money within 30 days</p>
+                <h4>CAM KẾT HOÀN TIỀN</h4>
+                <p>Hoàn tiền 100% trong vòng 30 ngày</p>
             </div>
         </div>
     </div>

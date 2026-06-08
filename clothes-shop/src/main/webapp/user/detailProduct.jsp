@@ -37,11 +37,15 @@
                     </div>
                     <div id="product-main-img" class="mb-pd-main-slider">
                         <div class="product-preview">
-                            <img class="mb-img" src="${imgUrl.resolve(product.mainImg, ctx)}" alt="${product.name}" onerror="mbImgOnError(this)"/>
+                            <a data-fancybox="product-gallery" href="${imgUrl.resolve(product.mainImg, ctx)}">
+                                <img class="mb-img" src="${imgUrl.resolve(product.mainImg, ctx)}" alt="${product.name}" onerror="mbImgOnError(this)"/>
+                            </a>
                         </div>
                         <c:forEach items="${imgDesc}" var="img">
                             <div class="product-preview">
-                                <img class="mb-img" src="${imgUrl.resolve(img.imgUrl, ctx)}" alt="${product.name}" onerror="mbImgOnError(this)"/>
+                                <a data-fancybox="product-gallery" href="${imgUrl.resolve(img.imgUrl, ctx)}">
+                                    <img class="mb-img" src="${imgUrl.resolve(img.imgUrl, ctx)}" alt="${product.name}" onerror="mbImgOnError(this)"/>
+                                </a>
                             </div>
                         </c:forEach>
                     </div>
@@ -145,10 +149,9 @@
                                 ${empty variants ? 'disabled' : ''}>
                             <i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng
                         </button>
-                        <a href="${ctx}/checkout" class="mb-pd-btn-outline">Mua ngay</a>
                     </div>
                     <p class="mb-pd-delivery-note">
-                        <a href="${ctx}/contact">Chính sách giao hàng &amp; đổi trả</a>
+                        <a href="${ctx}/return-policy">Chính sách giao hàng &amp; đổi trả</a>
                     </p>
                 </form>
             </div>
@@ -169,26 +172,22 @@
                         </div>
                         <div class="feedback-star">
                             <ul class="list-star">
-                                <c:if test="${totalStar > 0}">
-                                    <c:forEach begin="0" end="${totalStar - 2}">
-                                        <li class="star-item active">
-                                            <i class="fa fa-star"></i>
-                                        </li>
-                                    </c:forEach>
-                                </c:if>
-                                <c:if test="${totalStar <= 5}">
-                                    <c:forEach begin="0" end="${4 - totalStar}">
-                                        <li class="star-item">
-                                            <i class="fa fa-star"></i>
-                                        </li>
-                                    </c:forEach>
-                                </c:if>
+                                <c:forEach begin="1" end="${totalStar}">
+                                    <li class="star-item active">
+                                        <i class="fa fa-star"></i>
+                                    </li>
+                                </c:forEach>
+                                <c:forEach begin="1" end="${5 - totalStar}">
+                                    <li class="star-item">
+                                        <i class="fa fa-star"></i>
+                                    </li>
+                                </c:forEach>
                             </ul>
                         </div>
                         <div class="number-feedback">
                             <c:choose>
                                 <c:when test="${feedbacks.size() > 0}">
-                                    Have <c:out value="${feedbacks.size()}" /> feedbacks
+                                    Có <c:out value="${feedbacks.size()}" /> đánh giá
                                 </c:when>
                                 <c:otherwise>
                                     Chưa có đánh giá cho sản phẩm này
@@ -210,22 +209,18 @@
                                         <div class="info-feedback">
                                             <h4>${user.fullname != null ? user.fullname : user.username}</h4>
                                             <div class="start-item-feedback">
-                                                <c:set var="userStar"  value="${user.star}" />
+                                                <c:set var="userStar" value="${feed.star}" />
                                                 <ul class="list-star">
-                                                    <c:if test="${userStar > 0}">
-                                                        <c:forEach begin="0" end="${userStar - 2}">
-                                                            <li class="star-item active">
-                                                                <i class="fa fa-star"></i>
-                                                            </li>
-                                                        </c:forEach>
-                                                    </c:if>
-                                                    <c:if test="${userStar <= 5}">
-                                                        <c:forEach begin="0" end="${4 - userStar}">
-                                                            <li class="star-item">
-                                                                <i class="fa fa-star"></i>
-                                                            </li>
-                                                        </c:forEach>
-                                                    </c:if>
+                                                    <c:forEach begin="1" end="${userStar}">
+                                                        <li class="star-item active">
+                                                            <i class="fa fa-star"></i>
+                                                        </li>
+                                                    </c:forEach>
+                                                    <c:forEach begin="1" end="${5 - userStar}">
+                                                        <li class="star-item">
+                                                            <i class="fa fa-star"></i>
+                                                        </li>
+                                                    </c:forEach>
                                                 </ul>
                                                 <span>
                                                     <c:choose>
@@ -252,7 +247,11 @@
             <!-- product -->
             <div class="col-md-12">
                 <h4>Mô tả sản phẩm</h4>
-                ${product.description}
+                <div class="mb-pd-bottom-desc">
+                    <div class="desc-content">
+                        ${product.description}
+                    </div>
+                </div>
             </div>
             <!-- /product -->
         </div>

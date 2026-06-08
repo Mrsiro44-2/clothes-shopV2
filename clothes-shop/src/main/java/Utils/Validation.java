@@ -11,6 +11,7 @@ package Utils;
 public class Validation {
 
     public int getInt(String input) {
+        if (input == null) return -1;
         int result = -1;
         try {
             result = Integer.parseInt(input);
@@ -21,6 +22,7 @@ public class Validation {
     }
 
     public double getDouble(String input) {
+        if (input == null) return -1;
         double result = -1;
         try {
             result = Double.parseDouble(input);
@@ -31,6 +33,7 @@ public class Validation {
     }
     
     public float getFloat(String input) {
+        if (input == null) return -1;
         float result = -1;
         try {
             result = Float.parseFloat(input);

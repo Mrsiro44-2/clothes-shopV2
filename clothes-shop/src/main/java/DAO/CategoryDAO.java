@@ -126,7 +126,7 @@ private Connection conn;
     }
 
     public Category getCategoryByID(int id) {
-        String sql = "select * from Category where id = ?";
+        String sql = "SELECT c.*, sg.name AS sizeGroupName FROM Category c LEFT JOIN SizeGroup sg ON c.sizeGroupID = sg.ID WHERE c.id = ?";
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             st.setInt(1, id);
@@ -147,11 +147,14 @@ private Connection conn;
             Timestamp dateUpdate = result.getTimestamp("dateUpdate");
             int status = result.getInt("status");
             int sizeGroupID = 0;
+            String sizeGroupName = null;
             try {
                 sizeGroupID = result.getInt("sizeGroupID");
+                try { sizeGroupName = result.getString("sizeGroupName"); } catch (SQLException ignore) {}
             } catch (SQLException ignored) {
             }
             Category c = new Category(ID, name, datePost, dateUpdate, status, sizeGroupID);
+            c.setSizeGroupName(sizeGroupName);
             return c;
         } catch (SQLException e) {
             System.out.println("Get category: " + e);
@@ -223,5 +226,71 @@ private Connection conn;
 
         }
         return result;
+    }
+
+    public int count(String search, String statusFilter) {
+        String sql = "SELECT COUNT(*) FROM Category WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND status = ?";
+        }
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            java.sql.ResultSet rs = st.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (java.sql.SQLException e) {
+            System.out.println("CategoryDAO count: " + e);
+        }
+        return 0;
+    }
+
+    public java.util.List<Model.Category> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
+        java.util.List<Model.Category> list = new java.util.ArrayList<>();
+        String sql = "SELECT c.*, sg.name AS sizeGroupName FROM Category c LEFT JOIN SizeGroup sg ON c.sizeGroupID = sg.ID WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND c.name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND c.status = ?";
+        }
+        
+        if ("oldest".equals(sort)) {
+            sql += " ORDER BY c.id ASC";
+        } else {
+            sql += " ORDER BY c.id DESC";
+        }
+        
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            
+            st.setInt(paramIndex++, (page - 1) * limit);
+            st.setInt(paramIndex++, limit);
+            
+            java.sql.ResultSet result = st.executeQuery();
+            while (result.next()) {
+                list.add(this.getCategory(result));
+            }
+        } catch (java.sql.SQLException e) {
+            System.out.println("CategoryDAO getPaginated: " + e);
+        }
+        return list;
     }
 }

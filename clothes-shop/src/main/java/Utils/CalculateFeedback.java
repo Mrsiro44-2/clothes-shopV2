@@ -22,7 +22,7 @@ public class CalculateFeedback {
                 sumStar += f.getStar();
             }
         }
-        int startTotal = Math.round((float)Math.ceil(sumStar / feedbacks.size()));
+        int startTotal = Math.round((float)Math.ceil((double) sumStar / feedbacks.size()));
        
         return startTotal > 5 ? 5 : startTotal;
     }

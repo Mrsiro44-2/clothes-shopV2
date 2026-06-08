@@ -51,19 +51,33 @@ public class ImgDescriptionDAO {
 
     public int insert(ImgDescription i) {
         int result = 0;
-        String sql = "insert into imgDescription (imgUrl, ProductID) values (?, ?)";
+        String sql = "insert into imgDescription (imgUrl, productID, sortOrder) values (?, ?, ?)";
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             st.setString(1, i.getImgUrl());
             st.setInt(2, i.getProductID());
+            st.setInt(3, i.getSortOrder());
             result = st.executeUpdate();
         } catch (SQLException e) {
-
+            System.out.println(e);
         }
         return result;
     }
 
-    public int delete(int idProduct) {
+    public int delete(int id) {
+        int result = 0;
+        String sql = "delete from imgDescription where ID=?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, id);
+            result = st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return result;
+    }
+    
+    public int deleteByProduct(int idProduct) {
         int result = 0;
         String sql = "delete from imgDescription where productID=?";
         try {
@@ -71,7 +85,7 @@ public class ImgDescriptionDAO {
             st.setInt(1, idProduct);
             result = st.executeUpdate();
         } catch (SQLException e) {
-
+            System.out.println(e);
         }
         return result;
     }

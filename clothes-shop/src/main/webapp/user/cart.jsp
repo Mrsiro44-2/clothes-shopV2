@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@include file="./components/header.jsp" %>
 <link type="text/css" rel="stylesheet" href="./user/css/cart-v2.css" />
@@ -108,10 +108,21 @@
                         <p style="color:#d10024;font-size:12px;margin-top:8px">Mã không hợp lệ.</p>
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'expired'}">
-                        <p style="color:#d10024;font-size:12px;margin-top:8px">Mã đã hết hạn.</p>
+                        <p style="color:#d10024;font-size:12px;margin-top:8px">Mã đã hết hạn hoặc hết số lượng.</p>
+                    </c:if>
+                    <c:if test="${sessionScope.couponStatus == 'min_order'}">
+                        <p style="color:#d10024;font-size:12px;margin-top:8px">Đơn hàng tối thiểu phải từ ${currency.currencyFormat(sessionScope.couponMinAmount)} để áp dụng.</p>
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'applied'}">
-                        <p style="color:#DB4444;font-size:12px;margin-top:8px">Đã áp dụng mã giảm giá.</p>
+                        <p style="color:#2e7d32;font-size:12px;margin-top:8px">Đã áp dụng mã giảm giá thành công.</p>
+                    </c:if>
+                    <c:if test="${not empty sessionScope.appliedVoucherCode}">
+                        <c:set var="displayCode" value="${fn:replace(fn:replace(sessionScope.appliedVoucherCode, 'PUB_', ''), 'PRI_', '')}" />
+                        <div class="mb-voucher-tag" style="display: inline-flex; align-items: center; background-color: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; padding: 6px 12px; border-radius: 4px; font-weight: 500; font-size: 13px; margin-top: 10px; gap: 8px;">
+                            <i class="fa fa-ticket"></i>
+                            <span>Mã: <strong>${displayCode}</strong></span>
+                            <a href="${ctx}/voucher" title="Bỏ mã giảm giá" style="color: #c62828; text-decoration: none; font-weight: bold; margin-left: 4px; font-size: 14px; cursor: pointer; line-height: 1;">&times;</a>
+                        </div>
                     </c:if>
                 </div>
                 <c:if test="${sessionScope.discount != null && sessionScope.discount > 0}">
@@ -207,4 +218,18 @@
         }
     })();
 </script>
+
+<c:if test="${not empty sessionScope.checkoutError}">
+    <script>
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Thanh toán không thành công',
+                text: '${sessionScope.checkoutError}',
+                confirmButtonColor: '#D10024'
+            });
+        }
+    </script>
+    <c:remove var="checkoutError" scope="session"/>
+</c:if>
 <%@include file="./components/footer.jsp" %>

@@ -12,14 +12,20 @@ public class ImgDescription {
     private int ID;
     private String imgUrl;
     private int productID;
+    private int sortOrder;
 
     public ImgDescription() {
     }
 
     public ImgDescription(int ID, String imgUrl, int productID) {
+        this(ID, imgUrl, productID, 0);
+    }
+    
+    public ImgDescription(int ID, String imgUrl, int productID, int sortOrder) {
         this.ID = ID;
         this.imgUrl = imgUrl;
         this.productID = productID;
+        this.sortOrder = sortOrder;
     }
 
     public int getID() {
@@ -46,5 +52,11 @@ public class ImgDescription {
         this.productID = productID;
     }
 
-    
+    public int getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

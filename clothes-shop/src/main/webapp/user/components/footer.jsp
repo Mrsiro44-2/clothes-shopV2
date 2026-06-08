@@ -24,7 +24,7 @@
 
                     <div class="footer">
 
-                        <h3 class="footer-title">Clothes shop</h3>
+                        <h3 class="footer-title">Clothing shop</h3>
 
                         <h4 style="color: #fff">Đăng ký nhận tin</h4>
 
@@ -78,7 +78,7 @@
 
                             <li>
 
-                                <a href="mailto:hotro@momandbaby.vn"
+                                <a href="mailto:hotro@clothesshop.vn"
 
                                    ><i class="fa fa-envelope-o"></i> hotro@clothesshop.vn</a
 
@@ -152,7 +152,7 @@
 
                         <h3 class="footer-title">Kết nối</h3>
 
-                        <p>Theo dõi Clothes shop; Baby trên mạng xã hội</p>
+                        <p>Theo dõi Clothing shop trên mạng xã hội</p>
 
                         <ul class="footer-links" style="margin-top: 15px">
 
