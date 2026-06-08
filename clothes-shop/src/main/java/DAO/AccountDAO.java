@@ -200,7 +200,7 @@ public class AccountDAO {
         return result;
     }
 
-    /** Email đã dùng bởi tài khoản khác (không tính excludeId). */
+    /** Email Ä‘Ã£ dÃ¹ng bá»Ÿi tÃ i khoáº£n khÃ¡c (khÃ´ng tÃ­nh excludeId). */
     public boolean isEmailTakenByOther(int excludeId, String email) {
         if (email == null || email.trim().isEmpty()) {
             return false;
@@ -263,6 +263,20 @@ public class AccountDAO {
         return result;
     }
 
+    public int updateStatus(int id, int status) {
+        int result = 0;
+        String sql = "UPDATE Account SET status=? WHERE ID=?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, status);
+            st.setInt(2, id);
+            result = st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Update account status: " + e);
+        }
+        return result;
+    }
+
     public int delete(int id) {
         int result = 0;
         String sql = "delete from Account where id=?";
@@ -298,4 +312,98 @@ public class AccountDAO {
         return null;
     }
 
+
+    public int count(String search, String statusFilter) {
+        String sql = "SELECT COUNT(*) FROM Account WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND (A.username LIKE ? OR A.fullName LIKE ? OR A.email LIKE ? OR A.phone LIKE ?)";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND A.status = ?";
+        }
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String likeSearch = "%" + search.trim() + "%";
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            java.sql.ResultSet rs = st.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (java.sql.SQLException e) {
+            System.out.println("AccountDAO count: " + e);
+        }
+        return 0;
+    }
+
+    public java.util.List<Model.Account> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
+        java.util.List<Model.Account> list = new java.util.ArrayList<>();
+        String sql = "SELECT A.*, R.name as roleName FROM [Account] A LEFT JOIN [Role] R ON A.role = R.ID WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND (A.username LIKE ? OR A.fullName LIKE ? OR A.email LIKE ? OR A.phone LIKE ?)";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND A.status = ?";
+        }
+        
+        if ("oldest".equals(sort)) {
+            sql += " ORDER BY A.ID ASC";
+        } else {
+            sql += " ORDER BY A.ID DESC";
+        }
+        
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                String likeSearch = "%" + search.trim() + "%";
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+                st.setString(paramIndex++, likeSearch);
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            
+            st.setInt(paramIndex++, (page - 1) * limit);
+            st.setInt(paramIndex++, limit);
+            
+            java.sql.ResultSet result = st.executeQuery();
+            while (result.next()) {
+                list.add(this.getAccount(result));
+            }
+        } catch (java.sql.SQLException e) {
+            System.out.println("AccountDAO getPaginated: " + e);
+        }
+        return list;
+    }
+
+    public java.util.Map<String, String> getEmailNameMapOfNonBuyers() {
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        String sql = "SELECT DISTINCT A.email, A.fullname FROM [Account] A " +
+                     "LEFT JOIN Bill B ON A.ID = B.customerID " +
+                     "WHERE B.ID IS NULL AND A.email IS NOT NULL AND A.email <> '' AND A.role = 2";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                String e = rs.getString("email").trim();
+                String n = rs.getString("fullname");
+                if (n == null || n.trim().isEmpty()) n = "Quý khách";
+                map.put(e, n);
+            }
+        } catch (SQLException e) {
+            System.out.println("AccountDAO getEmailNameMapOfNonBuyers: " + e);
+        }
+        return map;
+    }
 }

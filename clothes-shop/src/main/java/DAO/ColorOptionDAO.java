@@ -43,6 +43,63 @@ public class ColorOptionDAO {
         }
         return null;
     }
+    
+    public ColorOption getById(int id) {
+        return findById(id);
+    }
+    
+    public List<ColorOption> getAll() {
+        List<ColorOption> list = new ArrayList<>();
+        String sql = "SELECT ID, name, hexCode, sortOrder, status FROM ColorOption ORDER BY sortOrder, ID DESC";
+        try ( PreparedStatement st = conn.prepareStatement(sql); ResultSet rs = st.executeQuery()) {
+            while (rs.next()) {
+                list.add(map(rs));
+            }
+        } catch (SQLException e) {
+            System.out.println("ColorOptionDAO.getAll: " + e);
+        }
+        return list;
+    }
+
+    public int insert(ColorOption c) {
+        String sql = "INSERT INTO ColorOption (name, hexCode, sortOrder, status) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, c.getName());
+            st.setString(2, c.getHexCode());
+            st.setInt(3, c.getSortOrder());
+            st.setInt(4, c.getStatus());
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("ColorOptionDAO.insert: " + e);
+        }
+        return 0;
+    }
+
+    public int update(ColorOption c) {
+        String sql = "UPDATE ColorOption SET name=?, hexCode=?, sortOrder=?, status=? WHERE ID=?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setString(1, c.getName());
+            st.setString(2, c.getHexCode());
+            st.setInt(3, c.getSortOrder());
+            st.setInt(4, c.getStatus());
+            st.setInt(5, c.getID());
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("ColorOptionDAO.update: " + e);
+        }
+        return 0;
+    }
+
+    public int delete(int id) {
+        String sql = "DELETE FROM ColorOption WHERE ID=?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, id);
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("ColorOptionDAO.delete: " + e);
+        }
+        return 0;
+    }
 
     private ColorOption map(ResultSet rs) throws SQLException {
         return new ColorOption(
@@ -52,5 +109,71 @@ public class ColorOptionDAO {
                 rs.getInt("sortOrder"),
                 rs.getInt("status")
         );
+    }
+
+    public int count(String search, String statusFilter) {
+        String sql = "SELECT COUNT(*) FROM ColorOption WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND status = ?";
+        }
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            java.sql.ResultSet rs = st.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (java.sql.SQLException e) {
+            System.out.println("ColorOptionDAO count: " + e);
+        }
+        return 0;
+    }
+
+    public java.util.List<Model.ColorOption> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
+        java.util.List<Model.ColorOption> list = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM ColorOption WHERE 1=1";
+        if (search != null && !search.trim().isEmpty()) {
+            sql += " AND name LIKE ?";
+        }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND status = ?";
+        }
+        
+        if ("oldest".equals(sort)) {
+            sql += " ORDER BY id ASC";
+        } else {
+            sql += " ORDER BY id DESC";
+        }
+        
+        sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try {
+            java.sql.PreparedStatement st = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (search != null && !search.trim().isEmpty()) {
+                st.setString(paramIndex++, "%" + search.trim() + "%");
+            }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            
+            st.setInt(paramIndex++, (page - 1) * limit);
+            st.setInt(paramIndex++, limit);
+            
+            java.sql.ResultSet result = st.executeQuery();
+            while (result.next()) {
+                list.add(this.map(result));
+            }
+        } catch (java.sql.SQLException e) {
+            System.out.println("ColorOptionDAO getPaginated: " + e);
+        }
+        return list;
     }
 }

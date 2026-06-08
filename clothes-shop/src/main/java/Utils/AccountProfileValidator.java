@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public final class AccountProfileValidator {
 
     private static final Pattern EMAIL = Pattern.compile(
-            "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+            "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.(com|vn|net|org|edu|gov|info)$", Pattern.CASE_INSENSITIVE);
     private static final Pattern PHONE_VN = Pattern.compile(
             "^(?:\\+?84|0)(3|5|7|8|9)[0-9]{8}$");
 

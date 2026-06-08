@@ -28,6 +28,7 @@ public class Feedback {
 
     private Timestamp dateUpdate;
     private String productName;
+    private String productImg;
 
     public Feedback() {
     }
@@ -113,5 +114,13 @@ public class Feedback {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getProductImg() {
+        return productImg;
+    }
+
+    public void setProductImg(String productImg) {
+        this.productImg = productImg;
     }
 }

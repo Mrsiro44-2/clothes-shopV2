@@ -5,10 +5,6 @@ package Utils;
  */
 public class ImageUrl {
 
-    /**
-     * @param storedPath giá trị trong DB (http..., ./uploads/..., uploads/...)
-     * @param contextPath ví dụ /MomAndBaby
-     */
     public String resolve(String storedPath, String contextPath) {
         if (storedPath == null) {
             return "";
@@ -23,17 +19,26 @@ public class ImageUrl {
         if (path.startsWith("//")) {
             return "https:" + path;
         }
+        String ctx = contextPath == null ? "" : contextPath.trim();
+        if (ctx.endsWith("/")) {
+            ctx = ctx.substring(0, ctx.length() - 1);
+        }
+
         String rel = path;
+        
+        if (!ctx.isEmpty()) {
+            while (rel.startsWith(ctx + "/")) {
+                rel = rel.substring(ctx.length());
+            }
+        }
+        
         if (rel.startsWith("./")) {
             rel = rel.substring(2);
         }
         while (rel.startsWith("/")) {
             rel = rel.substring(1);
         }
-        String ctx = contextPath == null ? "" : contextPath.trim();
-        if (ctx.endsWith("/")) {
-            ctx = ctx.substring(0, ctx.length() - 1);
-        }
+        
         if (ctx.isEmpty()) {
             return "/" + rel;
         }

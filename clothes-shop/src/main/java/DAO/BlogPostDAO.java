@@ -23,18 +23,18 @@ public class BlogPostDAO {
             + "JOIN [Account] a ON a.ID = p.authorAccountID AND a.status = 1 ";
 
     private static final String PUBLISHED_WHERE = "WHERE p.status = 1 AND p.publishedAt IS NOT NULL "
-            + "AND p.publishedAt <= SYSUTCDATETIME() ";
+            + "AND p.publishedAt <= GETDATE() ";
 
     public List<BlogPost> listPublished(int offset, int limit) {
-        return searchPublished(null, null, offset, limit);
+        return searchPublished(null, null, null, offset, limit);
     }
 
-    public List<BlogPost> searchPublished(String keyword, Integer categoryId, int offset, int limit) {
+    public List<BlogPost> searchPublished(String keyword, Integer categoryId, List<String> tagSlugs, int offset, int limit) {
         List<BlogPost> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(PUBLISHED_SELECT);
         sql.append(PUBLISHED_WHERE);
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, keyword, categoryId);
+        appendFilters(sql, params, keyword, categoryId, tagSlugs);
         sql.append("ORDER BY p.isFeatured DESC, p.publishedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
             int idx = bindFilters(st, params);
@@ -51,12 +51,12 @@ public class BlogPostDAO {
         return list;
     }
 
-    public int countPublished(String keyword, Integer categoryId) {
+    public int countPublished(String keyword, Integer categoryId, List<String> tagSlugs) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM BlogPost p "
                 + "LEFT JOIN BlogCategory c ON c.ID = p.blogCategoryID AND c.status = 1 JOIN [Account] a ON a.ID = p.authorAccountID AND a.status = 1 ");
         sql.append(PUBLISHED_WHERE);
         List<Object> params = new ArrayList<>();
-        appendFilters(sql, params, keyword, categoryId);
+        appendFilters(sql, params, keyword, categoryId, tagSlugs);
         try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
             bindFilters(st, params);
             try ( ResultSet rs = st.executeQuery()) {
@@ -70,7 +70,7 @@ public class BlogPostDAO {
         return 0;
     }
 
-    private void appendFilters(StringBuilder sql, List<Object> params, String keyword, Integer categoryId) {
+    private void appendFilters(StringBuilder sql, List<Object> params, String keyword, Integer categoryId, List<String> tagSlugs) {
         if (categoryId != null && categoryId > 0) {
             sql.append("AND p.blogCategoryID = ? ");
             params.add(categoryId);
@@ -81,6 +81,15 @@ public class BlogPostDAO {
             params.add(q);
             params.add(q);
             params.add(q);
+        }
+        if (tagSlugs != null && !tagSlugs.isEmpty()) {
+            sql.append("AND p.ID IN (SELECT pt.blogPostID FROM BlogPostTag pt JOIN BlogTag t ON pt.blogTagID = t.ID WHERE t.slug IN (");
+            for (int i = 0; i < tagSlugs.size(); i++) {
+                sql.append("?");
+                if (i < tagSlugs.size() - 1) sql.append(",");
+                params.add(tagSlugs.get(i));
+            }
+            sql.append(")) ");
         }
     }
 
@@ -97,7 +106,7 @@ public class BlogPostDAO {
                 + "FROM BlogPost p "
                 + "LEFT JOIN BlogCategory c ON c.ID = p.blogCategoryID AND c.status = 1 "
                 + "JOIN [Account] a ON a.ID = p.authorAccountID AND a.status = 1 "
-                + "WHERE p.slug = ? AND p.status = 1 AND p.publishedAt IS NOT NULL AND p.publishedAt <= SYSUTCDATETIME()";
+                + "WHERE p.slug = ? AND p.status = 1 AND p.publishedAt IS NOT NULL AND p.publishedAt <= GETDATE()";
         try ( PreparedStatement st = conn.prepareStatement(sql)) {
             st.setString(1, slug);
             try ( ResultSet rs = st.executeQuery()) {
@@ -119,6 +128,53 @@ public class BlogPostDAO {
         } catch (SQLException e) {
             System.out.println("BlogPostDAO.incrementView: " + e);
         }
+    }
+
+    public List<BlogPost> getRelatedPosts(int currentPostID, Integer categoryId, int limit) {
+        List<BlogPost> list = new ArrayList<>();
+        String sql = PUBLISHED_SELECT + PUBLISHED_WHERE 
+                   + "AND p.ID != ? "
+                   + (categoryId != null ? "AND p.blogCategoryID = ? " : "")
+                   + "ORDER BY p.publishedAt DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            int i = 1;
+            st.setInt(i++, currentPostID);
+            if (categoryId != null) {
+                st.setInt(i++, categoryId);
+            }
+            st.setInt(i++, limit);
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.getRelatedPosts: " + e);
+        }
+        
+        // If list is smaller than limit, fill it up with other published posts
+        if (list.size() < limit) {
+            String fillSql = PUBLISHED_SELECT + PUBLISHED_WHERE
+                           + "AND p.ID != ? "
+                           + (categoryId != null ? "AND p.blogCategoryID != ? " : "")
+                           + "ORDER BY p.publishedAt DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+            try (PreparedStatement st = conn.prepareStatement(fillSql)) {
+                int i = 1;
+                st.setInt(i++, currentPostID);
+                if (categoryId != null) {
+                    st.setInt(i++, categoryId);
+                }
+                st.setInt(i++, limit - list.size());
+                try (ResultSet rs = st.executeQuery()) {
+                    while (rs.next()) {
+                        list.add(map(rs));
+                    }
+                }
+            } catch (SQLException e) {
+                System.out.println("BlogPostDAO.getRelatedPosts fallback: " + e);
+            }
+        }
+        return list;
     }
 
     /** Admin: toàn bộ bài (nháp + đã đăng). */
@@ -175,6 +231,61 @@ public class BlogPostDAO {
             }
         } catch (SQLException e) {
             System.out.println("BlogPostDAO.insert: " + e);
+        }
+        return 0;
+    }
+
+    public BlogPost findById(int id) {
+        String sql = "SELECT p.*, c.name AS categoryName, a.fullname AS authorName "
+                + "FROM BlogPost p "
+                + "LEFT JOIN BlogCategory c ON c.ID = p.blogCategoryID "
+                + "JOIN [Account] a ON a.ID = p.authorAccountID "
+                + "WHERE p.ID = ?";
+        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, id);
+            try ( ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.findById: " + e);
+        }
+        return null;
+    }
+
+    public int update(BlogPost p) {
+        String sql = "UPDATE BlogPost SET blogCategoryID = ?, title = ?, slug = ?, excerpt = ?, contentHtml = ?, coverImg = ?, status = ?, isFeatured = ?, publishedAt = ?, dateUpdated = SYSUTCDATETIME() WHERE ID = ?";
+        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+            int i = 1;
+            if (p.getBlogCategoryID() != null) {
+                st.setInt(i++, p.getBlogCategoryID());
+            } else {
+                st.setNull(i++, java.sql.Types.INTEGER);
+            }
+            st.setString(i++, p.getTitle());
+            st.setString(i++, p.getSlug());
+            st.setString(i++, p.getExcerpt());
+            st.setString(i++, p.getContentHtml());
+            st.setString(i++, p.getCoverImg());
+            st.setInt(i++, p.getStatus());
+            st.setBoolean(i++, p.isFeatured());
+            st.setTimestamp(i++, p.getPublishedAt());
+            st.setInt(i++, p.getID());
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.update: " + e);
+        }
+        return 0;
+    }
+
+    public int delete(int id) {
+        String sql = "DELETE FROM BlogPost WHERE ID = ?";
+        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, id);
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.delete: " + e);
         }
         return 0;
     }

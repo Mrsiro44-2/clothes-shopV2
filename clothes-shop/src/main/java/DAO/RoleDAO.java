@@ -35,7 +35,7 @@ public class RoleDAO {
             while(rs.next()) {
                 int id = rs.getInt("ID");
                 String name = rs.getString("name");
-                int type = rs.getInt("type");
+                int type = 0;
                 int status = rs.getInt("status");
                 Role r = new Role(id, name, type, status);
                 roles.add(r);
@@ -70,7 +70,7 @@ public class RoleDAO {
             ResultSet rs = st.executeQuery();
             if(rs.next()) {
                 String name = rs.getString("name");
-                int type = rs.getInt("type");
+                int type = 0;
                 int status = rs.getInt("status");
                 Role r = new Role(id, name, type, status);
                 return r;

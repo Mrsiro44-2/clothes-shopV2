@@ -50,30 +50,27 @@ public class RegisterController extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        if (v.isBlank(username) || v.isBlank(email) || v.isBlank(fullname)
-                || v.isBlank(phone) || v.isBlank(password) || v.isBlank(confirmPassword)) {
-            SwalFlash.error(request, "Đăng ký thất bại", "Vui lòng điền đầy đủ thông tin.");
+        String err = Utils.AccountProfileValidator.validate(fullname, email, phone, password, confirmPassword);
+        if (v.isBlank(username)) {
+            err = "Tên đăng nhập không được để trống.";
+        } else if (username.length() < 3) {
+            err = "Tên đăng nhập tối thiểu 3 ký tự.";
+        }
+
+        if (err != null) {
+            SwalFlash.error(request, "Đăng ký thất bại", err);
             forwardRegister(request, response, username, email, fullname, phone);
             return;
         }
 
-        if (!password.equals(confirmPassword)) {
-            SwalFlash.error(request, "Đăng ký thất bại", "Mật khẩu xác nhận không khớp.");
-            forwardRegister(request, response, username, email, fullname, phone);
-            return;
-        }
-
-        if (password.length() < 6) {
-            SwalFlash.error(request, "Đăng ký thất bại", "Mật khẩu tối thiểu 6 ký tự.");
-            forwardRegister(request, response, username, email, fullname, phone);
-            return;
-        }
+        String emailNorm = Utils.AccountProfileValidator.normalizeEmail(email);
+        String phoneNorm = Utils.AccountProfileValidator.normalizePhone(phone);
 
         AccountDAO adao = new AccountDAO();
-        Account accountCheck = adao.isExistAccount(username, email);
+        Account accountCheck = adao.isExistAccount(username, emailNorm);
         if (accountCheck != null) {
             SwalFlash.error(request, "Đăng ký thất bại", "Tên đăng nhập hoặc email đã tồn tại.");
-            forwardRegister(request, response, username, email, fullname, phone);
+            forwardRegister(request, response, username, emailNorm, fullname, phoneNorm);
             return;
         }
 
@@ -84,7 +81,7 @@ public class RegisterController extends HttpServlet {
         }
 
         Timestamp dateCreate = Timestamp.valueOf(LocalDateTime.now());
-        Account account = new Account(0, username, password, email, phone, 1, fullname, dateCreate, roleUser, null);
+        Account account = new Account(0, username, password, emailNorm, phoneNorm, 1, fullname, dateCreate, roleUser, null);
         int result = adao.insert(account);
         HttpSession session = request.getSession();
         if (result > 0) {

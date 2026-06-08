@@ -870,7 +870,7 @@ textarea.input {
     padding: 90px 0px;
     margin: 30px 0px;
     background-color: #e4e7ed;
-    background-image: url("https://static.vecteezy.com/system/resources/previews/004/299/835/large_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-free-vector.jpg");
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://static.vecteezy.com/system/resources/previews/004/299/835/large_2x/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-free-vector.jpg");
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -2223,9 +2223,14 @@ textarea.input {
 }
 
 .footer-payments li a {
-    color: #15161d;
+    color: #b9babc;
     font-size: 36px;
     display: block;
+    transition: 0.3s all;
+}
+
+.footer-payments li a:hover {
+    color: #DB4444;
 }
 
 /*=========================================================
@@ -2417,7 +2422,12 @@ textarea.input {
 }
 
 .feedback-container {
-    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #f0f2f5;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    padding: 24px;
+    margin-bottom: 25px;
 }
 .statatis-feedback {
     padding: 20px 0px;
@@ -2425,12 +2435,13 @@ textarea.input {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    background-color: #FFFAF4;
-    border-radius: 20px;
+    background-color: #f9fafb;
+    border: 1px solid #f0f2f5;
+    border-radius: 12px;
 }
 .feadback-total h4{
     font-size: 40px;
-    color: #ff379b;
+    color: #f5a623;
     margin: 0;
 }
 

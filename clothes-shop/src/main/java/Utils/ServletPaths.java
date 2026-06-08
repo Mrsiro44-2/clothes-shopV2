@@ -41,6 +41,19 @@ public final class ServletPaths {
         return ctx(request) + path;
     }
 
+    public static int getIdFromPath(String pathInfo) {
+        if (pathInfo == null) return -1;
+        String[] parts = pathInfo.split("/");
+        if (parts.length > 0) {
+            try {
+                return Integer.parseInt(parts[parts.length - 1]);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+        return -1;
+    }
+
     public static void redirect(HttpServletRequest request, HttpServletResponse response, String path)
             throws IOException {
         response.sendRedirect(url(request, path));

@@ -111,6 +111,10 @@
     visibility: visible;
 }
 
+.mb-product-card__wish-slot .mb-product-card__wish--saved i {
+    color: var(--mb-primary, #DB4444);
+}
+
 .mb-product-card__wish {
     width: 36px;
     height: 36px;

@@ -120,7 +120,7 @@
         },
 
         validateAccountProfile: function (fullname, email, phone, password, confirmPassword) {
-            var regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            var regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|net|org|edu|gov|info)$/;
             var regexPhone = /^(?:\+?84|0)(3|5|7|8|9)[0-9]{8}$/;
             if (!fullname || !fullname.trim()) {
                 return L.errNameEmpty;
@@ -207,13 +207,75 @@
                 var fullname = (form.querySelector('[name="fullname"]') || {}).value || '';
                 var email = (form.querySelector('[name="email"]') || {}).value || '';
                 var phone = (form.querySelector('[name="phone"]') || {}).value || '';
-                var pwd = (form.querySelector('[name="password"]') || {}).value || '';
-                var confirmPwd = (form.querySelector('[name="confirmPassword"]') || {}).value || '';
-                var err = MbSwal.validateAccountProfile(fullname, email, phone, pwd, confirmPwd);
+                var err = MbSwal.validateAccountProfile(fullname, email, phone, '', '');
                 if (err) {
                     MbSwal.error(title || L.account, err);
                     return;
                 }
+                form.submit();
+            });
+        },
+
+        initPasswordChangeForm: function (formId, title) {
+            var form = document.getElementById(formId);
+            if (!form) {
+                return;
+            }
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var pwd = (form.querySelector('[name="password"]') || {}).value || '';
+                var confirmPwd = (form.querySelector('[name="confirmPassword"]') || {}).value || '';
+                
+                if (!pwd || pwd.length < 6) {
+                    MbSwal.error(title || 'Đổi mật khẩu', L.errPwdMin);
+                    return;
+                }
+                if (pwd !== confirmPwd) {
+                    MbSwal.error(title || 'Đổi mật khẩu', L.errPwdMatch);
+                    return;
+                }
+                form.submit();
+            });
+        },
+
+        initRegisterForm: function (formId) {
+            var form = document.getElementById(formId);
+            if (!form) {
+                return;
+            }
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var username = (form.querySelector('[name="username"]') || {}).value || '';
+                var fullname = (form.querySelector('[name="fullname"]') || {}).value || '';
+                var email = (form.querySelector('[name="email"]') || {}).value || '';
+                var phone = (form.querySelector('[name="phone"]') || {}).value || '';
+                var pwd = (form.querySelector('[name="password"]') || {}).value || '';
+                var confirmPwd = (form.querySelector('[name="confirmPassword"]') || {}).value || '';
+                
+                if (!username.trim()) {
+                    MbSwal.error('Đăng ký', 'Tên đăng nhập không được để trống.');
+                    return;
+                }
+                if (username.trim().length < 3) {
+                    MbSwal.error('Đăng ký', 'Tên đăng nhập tối thiểu 3 ký tự.');
+                    return;
+                }
+                
+                var err = MbSwal.validateAccountProfile(fullname, email, phone, pwd, confirmPwd);
+                if (err) {
+                    if (err === L.errPwdMin) {
+                        err = 'Mật khẩu tối thiểu 6 ký tự.';
+                    }
+                    MbSwal.error('Đăng ký', err);
+                    return;
+                }
+                
+                var h = document.createElement('input');
+                h.type = 'hidden';
+                h.name = 'register';
+                h.value = 'on';
+                form.appendChild(h);
+                
                 form.submit();
             });
         }
@@ -223,5 +285,28 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         MbSwal.initConfirmHandlers();
+        
+        // Initialize registration form if present
+        MbSwal.initRegisterForm('registerForm');
+        
+        // Global Password eye toggle logic
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.mb-password-toggle-btn');
+            if (!btn) return;
+            var wrapper = btn.closest('.mb-password-toggle-wrapper');
+            if (!wrapper) return;
+            var input = wrapper.querySelector('input');
+            if (!input) return;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fa fa-eye-slash"></i>';
+                btn.setAttribute('aria-label', 'Ẩn mật khẩu');
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fa fa-eye"></i>';
+                btn.setAttribute('aria-label', 'Hiện mật khẩu');
+            }
+        });
     });
 })(typeof window !== 'undefined' ? window : this);

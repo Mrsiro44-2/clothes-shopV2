@@ -24,6 +24,7 @@ public class BlogPost {
 
     private String categoryName;
     private String authorName;
+    private java.util.List<BlogTag> tags;
 
     public BlogPost() {
     }
@@ -178,5 +179,13 @@ public class BlogPost {
 
     public void setAuthorName(String authorName) {
         this.authorName = authorName;
+    }
+
+    public java.util.List<BlogTag> getTags() {
+        return tags;
+    }
+
+    public void setTags(java.util.List<BlogTag> tags) {
+        this.tags = tags;
     }
 }

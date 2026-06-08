@@ -23,6 +23,8 @@ public class Category {
     private int status;
 
     private int sizeGroupID;
+    
+    private String sizeGroupName;
 
     // Constructors
     public Category() {
@@ -88,5 +90,13 @@ public class Category {
 
     public void setSizeGroupID(int sizeGroupID) {
         this.sizeGroupID = sizeGroupID;
+    }
+
+    public String getSizeGroupName() {
+        return sizeGroupName;
+    }
+
+    public void setSizeGroupName(String sizeGroupName) {
+        this.sizeGroupName = sizeGroupName;
     }
 }
