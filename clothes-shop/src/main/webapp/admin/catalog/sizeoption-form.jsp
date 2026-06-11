@@ -29,14 +29,35 @@
             <div class="card-body">
                 <form action="${ctx}/admin/sizeoptions/${isEdit ? 'edit/'.concat(sizeOption.ID) : 'add'}" method="post">
                     <div class="mb-3">
+                        <label class="form-label required" for="code">Mã Kích cỡ</label>
+                        <input type="text" class="form-control" id="code" name="code"
+                               value="${isEdit ? sizeOption.code : (not empty inputCode ? inputCode : '')}"
+                               placeholder="Nhập mã Kích cỡ" required maxlength="100"/>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label required" for="label">Tên Kích cỡ</label>
-                        <input type="text" class="form-control" id="label" label="label"
+                        <input type="text" class="form-control" id="label" name="label"
                                value="${isEdit ? sizeOption.label : (not empty inputlabel ? inputlabel : '')}"
                                placeholder="Nhập tên Kích cỡ" required maxlength="200"/>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label required">Nhóm kích cỡ</label>
+                        <select name="sizeGroupID" class="form-select" required>
+                            <option value="">-- Chọn nhóm kích cỡ --</option>
+                            <c:forEach items="${sizeGroups}" var="sg">
+                                <option value="${sg.ID}" ${isEdit && sizeOption.sizeGroupID == sg.ID ? 'selected' : ''}>${sg.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="sortOrder">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="sortOrder" name="sortOrder"
+                               value="${isEdit ? sizeOption.sortOrder : (not empty inputSortOrder ? inputSortOrder : 0)}"
+                               placeholder="Nhập thứ tự" />
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label required">Trạng thái</label>
-                        <select label="status" class="form-select" required>
+                        <select name="status" class="form-select" required>
                             <c:set var="currentStatus" value="${isEdit ? sizeOption.status : (not empty inputStatus ? inputStatus : 1)}"/>
                             <option value="1" ${currentStatus == 1 ? 'selected' : ''}>Hoạt động</option>
                             <option value="0" ${currentStatus == 0 ? 'selected' : ''}>Ẩn</option>

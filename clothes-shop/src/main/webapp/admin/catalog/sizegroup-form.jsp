@@ -29,10 +29,22 @@
             <div class="card-body">
                 <form action="${ctx}/admin/sizegroups/${isEdit ? 'edit/'.concat(sizeGroup.ID) : 'add'}" method="post">
                     <div class="mb-3">
+                        <label class="form-label required" for="code">Mã Nhóm</label>
+                        <input type="text" class="form-control" id="code" name="code"
+                               value="${isEdit ? sizeGroup.code : (not empty inputCode ? inputCode : '')}"
+                               placeholder="Nhập mã Nhóm" required maxlength="100"/>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label required" for="name">Tên Nhóm kích cỡ</label>
                         <input type="text" class="form-control" id="name" name="name"
                                value="${isEdit ? sizeGroup.name : (not empty inputName ? inputName : '')}"
                                placeholder="Nhập tên Nhóm kích cỡ" required maxlength="200"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="sortOrder">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="sortOrder" name="sortOrder"
+                               value="${isEdit ? sizeGroup.sortOrder : (not empty inputSortOrder ? inputSortOrder : 0)}"
+                               placeholder="Nhập thứ tự" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label required">Trạng thái</label>

@@ -90,7 +90,7 @@ public class AdminOrderController extends HttpServlet {
             int id = ServletPaths.idAfter(request, "/admin/orders/update-status");
             int status = validate.getInt(request.getParameter("status"));
 
-            if (id > 0 && status >= 0 && status <= 3) {
+            if (id > 0 && status >= 0 && status <= 5) {
                 boolean success = billDao.updateStatus(id, status);
                 if (success) {
                     request.getSession().setAttribute("adminFlash", "Đã cập nhật trạng thái đơn hàng #" + id + " thành công.");
