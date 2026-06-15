@@ -129,7 +129,16 @@
 <script>
     // Initialize Tagify
     var tagsInput = document.querySelector('input[name=tags]');
+    var whitelist = ${not empty availableTags ? availableTags : '[]'};
     new Tagify(tagsInput, {
+        whitelist: whitelist,
+        enforceWhitelist: false,
+        dropdown: {
+            maxItems: 20,
+            classname: "tags-look",
+            enabled: 0,
+            closeOnSelect: false
+        },
         originalInputValueFormat: valuesArr => valuesArr.map(item => item.value).join(','),
         transformTag: tagData => {
             if (typeof tagData.value === 'string' && !tagData.value.startsWith('#')) {

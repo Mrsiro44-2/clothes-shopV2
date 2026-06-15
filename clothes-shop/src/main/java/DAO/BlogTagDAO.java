@@ -116,6 +116,52 @@ public class BlogTagDAO {
         return list;
     }
 
+    public int countAllTags(String keyword) {
+        String sql = "SELECT COUNT(*) FROM BlogTag WHERE 1=1 ";
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += "AND name LIKE ? ";
+        }
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(1, "%" + keyword.trim() + "%");
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "countAllTags", ex);
+        }
+        return 0;
+    }
+
+    public List<BlogTag> getAllTagsPaginated(int limit, int offset, String keyword) {
+        List<BlogTag> list = new ArrayList<>();
+        String sql = "SELECT * FROM BlogTag WHERE 1=1 ";
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += "AND name LIKE ? ";
+        }
+        sql += "ORDER BY name ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int pIndex = 1;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(pIndex++, "%" + keyword.trim() + "%");
+            }
+            ps.setInt(pIndex++, offset);
+            ps.setInt(pIndex++, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new BlogTag(rs.getInt("ID"), rs.getString("name"), rs.getString("slug")));
+                }
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "getAllTagsPaginated", ex);
+        }
+        return list;
+    }
+
     public boolean updateTag(BlogTag tag) {
         String sql = "UPDATE BlogTag SET name = ?, slug = ? WHERE ID = ?";
         try (Connection conn = DBConnection.connect();

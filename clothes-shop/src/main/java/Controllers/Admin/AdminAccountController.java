@@ -2,7 +2,9 @@ package Controllers.Admin;
 
 import DAO.AccountDAO;
 import DAO.RoleDAO;
+import DAO.ShippingAddressDAO;
 import Model.Account;
+import Model.ShippingAddress;
 import Utils.MD5Hashing;
 import Utils.ServletPaths;
 import Utils.Validation;
@@ -108,6 +110,23 @@ public class AdminAccountController extends HttpServlet {
                 }
             }
             response.sendRedirect(request.getContextPath() + "/admin/accounts");
+        } else if (relative.startsWith("/admin/accounts/addresses/")) {
+            int id = ServletPaths.idAfter(request, "/admin/accounts/addresses");
+            if (id <= 0) {
+                response.sendRedirect(request.getContextPath() + "/admin/accounts");
+                return;
+            }
+            Account acc = accountDao.getAccountById(id);
+            if (acc == null) {
+                response.sendRedirect(request.getContextPath() + "/admin/accounts");
+                return;
+            }
+            ShippingAddressDAO addressDao = new ShippingAddressDAO();
+            List<ShippingAddress> addresses = addressDao.getAddressesByAccountId(id);
+            request.setAttribute("account", acc);
+            request.setAttribute("addresses", addresses);
+            request.setAttribute("pageTitle", "Địa chỉ của " + acc.getFullname());
+            request.getRequestDispatcher("/admin/user/addresses.jsp").forward(request, response);
         }
     }
 

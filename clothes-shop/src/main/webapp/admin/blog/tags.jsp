@@ -37,6 +37,25 @@
         </c:if>
 
         <div class="card">
+            <div class="card-body border-bottom py-3">
+                <form method="GET" action="${ctx}/admin/blog-tags">
+                    <div class="row gx-2">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm tên thẻ..." value="${keyword}">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <select name="limit" class="form-select" onchange="this.form.submit()">
+                                <option value="15" ${limit == 15 ? 'selected' : ''}>15 dòng</option>
+                                <option value="20" ${limit == 20 ? 'selected' : ''}>20 dòng</option>
+                                <option value="50" ${limit == 50 ? 'selected' : ''}>50 dòng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
             <div class="table-responsive">
                 <table class="table card-table table-vcenter text-nowrap datatable">
                     <thead>
@@ -114,6 +133,23 @@
                     </tbody>
                 </table>
             </div>
+            <c:if test="${totalPages > 1}">
+                <div class="card-footer d-flex align-items-center">
+                    <ul class="pagination m-0 ms-auto">
+                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="?page=${currentPage - 1}&keyword=${keyword}&limit=${limit}" tabindex="-1">Trước</a>
+                        </li>
+                        <c:forEach begin="1" end="${totalPages}" var="i">
+                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                <a class="page-link" href="?page=${i}&keyword=${keyword}&limit=${limit}">${i}</a>
+                            </li>
+                        </c:forEach>
+                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="?page=${currentPage + 1}&keyword=${keyword}&limit=${limit}">Sau</a>
+                        </li>
+                    </ul>
+                </div>
+            </c:if>
         </div>
     </div>
 </div>

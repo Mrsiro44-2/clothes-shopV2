@@ -11,7 +11,7 @@ import java.util.List;
 
 public class BlogCommentDAO {
 
-    public List<BlogComment> getAll(int limit, int offset, Integer blogPostId, String keyword) {
+    public List<BlogComment> getAll(int limit, int offset, Integer blogPostId, String keyword, Integer accountId, Integer status) {
         List<BlogComment> list = new ArrayList<>();
         String sql = "SELECT * FROM BlogComment WHERE 1=1 ";
         if (blogPostId != null && blogPostId > 0) {
@@ -19,6 +19,12 @@ public class BlogCommentDAO {
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql += "AND body LIKE ? ";
+        }
+        if (accountId != null && accountId > 0) {
+            sql += "AND accountID = ? ";
+        }
+        if (status != null && status != -1) {
+            sql += "AND status = ? ";
         }
         sql += "ORDER BY datePost DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         
@@ -30,6 +36,12 @@ public class BlogCommentDAO {
             }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(pIndex++, "%" + keyword.trim() + "%");
+            }
+            if (accountId != null && accountId > 0) {
+                st.setInt(pIndex++, accountId);
+            }
+            if (status != null && status != -1) {
+                st.setInt(pIndex++, status);
             }
             st.setInt(pIndex++, offset);
             st.setInt(pIndex++, limit);
@@ -79,13 +91,19 @@ public class BlogCommentDAO {
         return list;
     }
 
-    public int countAll(Integer blogPostId, String keyword) {
+    public int countAll(Integer blogPostId, String keyword, Integer accountId, Integer status) {
         String sql = "SELECT COUNT(*) FROM BlogComment WHERE 1=1 ";
         if (blogPostId != null && blogPostId > 0) {
             sql += " AND blogPostID = ?";
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql += " AND body LIKE ?";
+        }
+        if (accountId != null && accountId > 0) {
+            sql += " AND accountID = ?";
+        }
+        if (status != null && status != -1) {
+            sql += " AND status = ?";
         }
         try (Connection conn = DBConnection.connect();
              PreparedStatement st = conn.prepareStatement(sql)) {
@@ -95,6 +113,12 @@ public class BlogCommentDAO {
             }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(pIndex++, "%" + keyword.trim() + "%");
+            }
+            if (accountId != null && accountId > 0) {
+                st.setInt(pIndex++, accountId);
+            }
+            if (status != null && status != -1) {
+                st.setInt(pIndex++, status);
             }
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) return rs.getInt(1);

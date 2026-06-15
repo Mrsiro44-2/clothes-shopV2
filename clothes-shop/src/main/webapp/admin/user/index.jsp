@@ -87,6 +87,15 @@
                                 </td>
                                 <td>
                                     <a href="${ctx}/admin/accounts/edit/${acc.ID}" class="btn btn-sm btn-outline-primary me-1">Sửa</a>
+                                    <c:if test="${acc.roleName == 'user'}">
+                                        <a href="${ctx}/admin/accounts/addresses/${acc.ID}" class="btn btn-sm btn-outline-info me-1" title="Sổ địa chỉ">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-map-pin" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin: 0; width: 16px; height: 16px;">
+                                              <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                              <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"></path>
+                                              <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"></path>
+                                            </svg>
+                                        </a>
+                                    </c:if>
                                     <c:if test="${acc.ID != sessionScope.adminAccountId}">
                                         <a href="${ctx}/admin/accounts/toggle-lock/${acc.ID}" class="btn btn-sm ${acc.status == 1 ? 'btn-outline-warning' : 'btn-outline-success'} me-1"
                                            onclick="return confirm('Bạn chắc chắn muốn ${acc.status == 1 ? 'khoá' : 'mở khoá'} tài khoản này?')">
