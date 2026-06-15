@@ -49,57 +49,95 @@
                         <c:remove var="checkoutError" scope="session"/>
                     </c:if>
 
-                    <div class="mb-field">
+                    <input type="hidden" name="email" value="${account.email}" />
 
-                        <label>Họ tên người nhận</label>
-
-                        <input class="input" name="customerName" required value="${account.fullname}"/>
-
-                    </div>
-
-                    <div class="mb-field">
-
-                        <label>Số điện thoại</label>
-
-                        <input class="input" name="phone" required value="${account.phone != null ? account.phone : ''}"/>
-
-                    </div>
-
-                    <div class="mb-field">
-
-                        <label>Email</label>
-
-                        <input class="input" name="email" type="email" required value="${account.email}"/>
-
-                    </div>
-
-                    <div class="mb-field mb-address-selects">
-                        <div class="address-select-row">
-                            <div class="select-col">
-                                <label>Tỉnh / Thành phố</label>
-                                <select id="mb-province" class="input" required>
-                                    <option value="">Chọn Tỉnh/Thành phố</option>
-                                </select>
+                    <c:choose>
+                        <c:when test="${not empty addresses}">
+                            <!-- Đã có sổ địa chỉ -->
+                            <c:set var="selectedAddr" value="${addresses[0]}"/>
+                            <c:forEach items="${addresses}" var="a">
+                                <c:if test="${a.isDefault}"><c:set var="selectedAddr" value="${a}"/></c:if>
+                            </c:forEach>
+                            
+                            <div class="mb-checkout-address-box" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                                    <h3 style="font-size: 16px; margin: 0;"><i class="fa fa-map-marker" style="color:#DB4444; margin-right: 8px;"></i>Địa chỉ nhận hàng</h3>
+                                    <button type="button" onclick="openCheckoutAddressModal()" style="background:none; border:none; color:#0056b3; font-weight:600; cursor:pointer;">Thay đổi</button>
+                                </div>
+                                <div id="selected-address-display">
+                                    <div style="font-weight:700; font-size:15px; margin-bottom:6px;">
+                                        <span id="disp-name">${selectedAddr.fullName}</span> | <span id="disp-phone">${selectedAddr.phone}</span>
+                                    </div>
+                                    <div style="color:#555; font-size:14px;">
+                                        <span id="disp-detail">${selectedAddr.detailAddress}</span><br>
+                                        <span id="disp-address">${selectedAddr.address}</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="shippingAddressID" id="input-shippingAddressID" value="${selectedAddr.id}" />
                             </div>
-                            <div class="select-col">
-                                <label>Phường / Xã</label>
-                                <select id="mb-ward" class="input" required disabled>
-                                    <option value="">Chọn Phường/Xã</option>
-                                </select>
+
+                            <!-- Modal chọn địa chỉ (giấu đi mặc định) -->
+                            <div id="checkoutAddressModal" class="mb-modal">
+                                <div class="mb-modal-content" style="max-width: 600px;">
+                                    <div class="mb-modal-header">
+                                        <h3 class="mb-modal-title">Địa chỉ của tôi</h3>
+                                        <button type="button" class="mb-modal-close" onclick="closeCheckoutAddressModal()">&times;</button>
+                                    </div>
+                                    <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                                        <c:forEach items="${addresses}" var="a">
+                                            <div class="address-card" style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; display: flex; gap: 15px;" onclick="selectCheckoutAddress(${a.id}, '${a.fullName}', '${a.phone}', '${a.detailAddress}', '${a.address}')">
+                                                <input type="radio" name="addr_sel" value="${a.id}" ${a.id == selectedAddr.id ? 'checked' : ''} style="margin-top: 4px;" />
+                                                <div>
+                                                    <div style="font-weight:bold;">${a.fullName} | ${a.phone} <c:if test="${a.isDefault}"><span class="badge-default" style="margin-left:8px;">Mặc định</span></c:if></div>
+                                                    <div style="color:#555; font-size:13px; margin-top:4px;">${a.detailAddress}<br>${a.address}</div>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+                                    </div>
+                                    <div style="margin-top: 20px; text-align: center;">
+                                        <a href="${ctx}/user/addresses?redirect=${ctx}/checkout" style="color: var(--mb-primary, #DB4444); font-weight: 600; text-decoration: none;">+ Thêm địa chỉ mới</a>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-field">
-                        <label>Địa chỉ chi tiết (Số nhà, tên đường...)</label>
-                        <input type="text" id="mb-street" class="input" placeholder="Ví dụ: 123 Đường Nguyễn Trãi..." required />
-                        <input type="hidden" name="address" id="mb-full-address" required />
-                    </div>
-
-                    <div class="mb-field">
-                        <label>Ghi chú (tùy chọn)</label>
-                        <input class="input" name="detailAddress" placeholder="Giao giờ hành chính, gọi trước khi giao..."/>
-                    </div>
+                            
+                            <style>
+                                .mb-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+                                .mb-modal.active { display: flex; }
+                                .mb-modal-content { background: #fff; width: 100%; border-radius: 12px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+                                .mb-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+                                .mb-modal-title { font-size: 18px; font-weight: 700; margin: 0; }
+                                .mb-modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+                                .badge-default { background: var(--mb-primary, #DB4444); color: white; font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+                            </style>
+                            <script>
+                                function openCheckoutAddressModal() { document.getElementById('checkoutAddressModal').classList.add('active'); }
+                                function closeCheckoutAddressModal() { document.getElementById('checkoutAddressModal').classList.remove('active'); }
+                                function selectCheckoutAddress(id, name, phone, detail, address) {
+                                    document.getElementById('input-shippingAddressID').value = id;
+                                    document.getElementById('disp-name').innerText = name;
+                                    document.getElementById('disp-phone').innerText = phone;
+                                    document.getElementById('disp-detail').innerText = detail;
+                                    document.getElementById('disp-address').innerText = address;
+                                    closeCheckoutAddressModal();
+                                    
+                                    // Also update the radio buttons UI manually if they clicked the div
+                                    var radios = document.getElementsByName('addr_sel');
+                                    for(var i=0; i<radios.length; i++){
+                                        if(radios[i].value == id) radios[i].checked = true;
+                                    }
+                                }
+                            </script>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- Chưa có sổ địa chỉ -->
+                            <div class="mb-checkout-address-box" style="border: 1px dashed #cbd5e1; border-radius: 8px; padding: 40px 20px; margin-bottom: 25px; text-align: center; background: #f8fafc;">
+                                <i class="fa fa-map-marker" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px; display: block;"></i>
+                                <h3 style="font-size: 16px; margin-bottom: 8px; color: #334155;">Bạn chưa có địa chỉ giao hàng</h3>
+                                <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">Vui lòng thiết lập địa chỉ để tiếp tục đặt hàng</p>
+                                <a href="${ctx}/user/addresses?redirect=${ctx}/checkout" class="btn-add" style="text-decoration: none; display: inline-flex; background: var(--mb-primary, #DB4444); color: white; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px;"><i class="fa fa-plus" style="margin-right: 6px;"></i> Thêm địa chỉ mới</a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
 
                     <div class="mb-checkout-payment">
                         <label style="display:block;margin-bottom:12px;font-weight:700;font-size:14px;color:#111">
@@ -138,7 +176,14 @@
                     </div>
 
                     <div class="mb-checkout-actions">
-                        <button type="submit" class="mb-checkout-submit">Đặt hàng</button>
+                        <c:choose>
+                            <c:when test="${not empty addresses}">
+                                <button type="submit" class="mb-checkout-submit">Đặt hàng</button>
+                            </c:when>
+                            <c:otherwise>
+                                <button type="button" class="mb-checkout-submit" style="background:#cbd5e1; cursor:not-allowed;" onclick="alert('Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.')">Đặt hàng</button>
+                            </c:otherwise>
+                        </c:choose>
                         <a href="${ctx}/cart" class="mb-checkout-back">← Quay lại giỏ hàng</a>
                     </div>
 
@@ -150,59 +195,13 @@
                             var streetInput = document.getElementById("mb-street");
                             var fullAddressInput = document.getElementById("mb-full-address");
 
-                            // 1. Load tỉnh/thành phố
-                            fetch(API + "/p/")
-                                .then(function(res) { return res.json(); })
-                                .then(function(list) {
-                                    list.forEach(function(p) {
-                                        var opt = document.createElement("option");
-                                        opt.value = p.code;
-                                        opt.textContent = p.name;
-                                        provinceSelect.appendChild(opt);
-                                    });
-                                })
-                                .catch(function(err) { console.error("Lỗi tải tỉnh:", err); });
-
-                            // 2. Chọn tỉnh → load phường/xã (API v2: wards nằm trực tiếp dưới province)
-                            provinceSelect.addEventListener("change", function () {
-                                wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-                                wardSelect.disabled = true;
-
-                                var pCode = this.value;
-                                if (!pCode) { buildAddress(); return; }
-
-                                fetch(API + "/p/" + pCode + "?depth=2")
-                                    .then(function(res) { return res.json(); })
-                                    .then(function(data) {
-                                        var wards = data.wards || [];
-                                        if (wards.length > 0) {
-                                            wards.forEach(function(w) {
-                                                var opt = document.createElement("option");
-                                                opt.value = w.code;
-                                                opt.textContent = w.name;
-                                                wardSelect.appendChild(opt);
-                                            });
-                                            wardSelect.disabled = false;
-                                        }
-                                        buildAddress();
-                                    })
-                                    .catch(function(err) { console.error("Lỗi tải phường/xã:", err); });
+                            <c:if test="${empty addresses}">
+                            // Vô hiệu hóa submit form nếu chưa có địa chỉ
+                            document.querySelector('.mb-checkout-form').addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                alert('Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.');
                             });
-
-                            wardSelect.addEventListener("change", buildAddress);
-                            streetInput.addEventListener("input", buildAddress);
-
-                            // Ghép địa chỉ: Số nhà, Phường/Xã, Tỉnh/Thành phố
-                            function buildAddress() {
-                                var pText = provinceSelect.selectedIndex > 0 ? provinceSelect.options[provinceSelect.selectedIndex].text : "";
-                                var wText = wardSelect.selectedIndex > 0 ? wardSelect.options[wardSelect.selectedIndex].text : "";
-                                var street = streetInput.value.trim();
-                                var parts = [];
-                                if (street) parts.push(street);
-                                if (wText) parts.push(wText);
-                                if (pText) parts.push(pText);
-                                fullAddressInput.value = parts.join(", ");
-                            }
+                            </c:if>
 
                             // Payment toggle
                             document.querySelectorAll('.payment-method-card').forEach(function(card) {

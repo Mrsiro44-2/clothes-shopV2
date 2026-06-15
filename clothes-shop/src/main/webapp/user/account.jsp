@@ -299,6 +299,12 @@
                             </a>
                         </li>
                         <li class="profile-nav-item">
+                            <a href="${pageContext.request.contextPath}/user/addresses" class="profile-nav-link">
+                                <i class="fa fa-map-marker"></i>
+                                <span>Sổ địa chỉ</span>
+                            </a>
+                        </li>
+                        <li class="profile-nav-item">
                             <a href="${pageContext.request.contextPath}/change-password" class="profile-nav-link">
                                 <i class="fa fa-key"></i>
                                 <span>Đổi mật khẩu</span>

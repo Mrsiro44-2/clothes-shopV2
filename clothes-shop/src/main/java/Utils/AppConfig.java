@@ -8,7 +8,7 @@ public class AppConfig {
     // Đổi thông số cho khớp SQL Server của bạn (ví dụ: ClothesShop theo script v2).
     public static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=ClothesShop;user=sa;password=sa;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;";
 
-    // ==========================================
+     // ==========================================
     // 2. CẤU HÌNH EMAIL (GỬI THÔNG BÁO, QUÊN MẬT KHẨU)
     // ==========================================
     public static final String EMAIL_USERNAME = "Clothing Shop";

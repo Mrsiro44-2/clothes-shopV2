@@ -113,7 +113,7 @@ public class OrdersController extends HttpServlet {
                 Bill order = billDao.getBillById(orderId);
                 if (order != null && order.getCustomerID() == account.getID() && order.getStatus() == 0) {
                     // Update status to 2 = Cancelled
-                    boolean updated = billDao.updateStatus(orderId, 2);
+                    boolean updated = billDao.updateStatus(orderId, Utils.OrderStatus.CANCELLED);
                     if (updated) {
                         // Restore variant stock
                         ProductVariantDAO variantDao = new ProductVariantDAO();
@@ -148,7 +148,7 @@ public class OrdersController extends HttpServlet {
             // Get all reviewable products (bought in completed orders, and not reviewed yet)
             List<ReviewableProduct> reviewableProducts = new ArrayList<>();
             // Retrieve status 3 = Completed orders
-            List<Bill> completedBills = billDao.getPaginated(null, "3", String.valueOf(account.getID()), "newest", 1, 100);
+            List<Bill> completedBills = billDao.getPaginated(null, Utils.OrderStatus.COMPLETED + "", String.valueOf(account.getID()), "newest", 1, 100);
             for (Bill b : completedBills) {
                 List<BillDetail> details = billDao.getBillDetails(b.getID());
                 for (BillDetail d : details) {
@@ -176,10 +176,9 @@ public class OrdersController extends HttpServlet {
             request.setAttribute("myReviews", myReviews);
             request.setAttribute("reviewableProducts", reviewableProducts);
         } else {
-            // Default "all" or "cancelled" tab
             String statusFilter = null;
             if ("cancelled".equals(tab)) {
-                statusFilter = "2"; // 2 = Cancelled
+                statusFilter = Utils.OrderStatus.CANCELLED + ""; 
             }
             List<Bill> orders = billDao.getPaginated(null, statusFilter, String.valueOf(account.getID()), "newest", 1, 100);
             request.setAttribute("orders", orders);

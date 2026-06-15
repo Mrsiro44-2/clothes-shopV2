@@ -68,25 +68,31 @@ public class LoginUserController extends HttpServlet {
         if (request.getParameter("submitLogin") != null) {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
-            Account a = adao.login(username);
+            Account a = adao.isExistAccount(username, username);
             boolean isError = false;
             String title = "Đăng nhập thất bại";
-            if (a == null && !isError) {
+            
+            if (a == null) {
                 SwalFlash.error(request, title, "Tài khoản không tồn tại.");
                 isError = true;
-            }
-            if (!isError && !a.getRoleName().equals("user")) {
+            } else if (!a.getRoleName().equals("user")) {
                 SwalFlash.error(request, title, "Tài khoản không được phép đăng nhập tại đây.");
                 isError = true;
-            }
-            if (!isError && a.getStatus() == 0) {
-                SwalFlash.error(request, title, "Tài khoản đã bị khóa.");
-                isError = true;
-            }
-            if (!isError && !MD5Hashing.matches(password, a.getPassword())) {
+            } else if (!MD5Hashing.matches(password, a.getPassword())) {
                 SwalFlash.error(request, title, "Mật khẩu không đúng.");
                 isError = true;
+            } else if (a.getStatus() == Utils.UserStatus.LOCKED) {
+                SwalFlash.error(request, title, "Tài khoản đã bị khóa.");
+                isError = true;
+            } else if (a.getStatus() == Utils.UserStatus.PENDING) {
+                // If credentials are correct but account is pending
+                session.setAttribute("register_email", a.getEmail());
+                session.setAttribute("register_accountId", a.getID());
+                SwalFlash.warningSession(session, "Tài khoản chưa kích hoạt", "Vui lòng nhập mã OTP đã gửi qua email để kích hoạt tài khoản.");
+                response.sendRedirect(request.getContextPath() + "/verify-register-otp");
+                return;
             }
+
             if (isError) {
                 request.getRequestDispatcher("/user/login.jsp").forward(request, response);
                 return;

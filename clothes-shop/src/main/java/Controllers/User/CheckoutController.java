@@ -77,6 +77,10 @@ public class CheckoutController extends HttpServlet {
             return;
         }
 
+        DAO.ShippingAddressDAO addressDao = new DAO.ShippingAddressDAO();
+        List<Model.ShippingAddress> addresses = addressDao.getAddressesByAccountId(account.getID());
+        request.setAttribute("addresses", addresses);
+
         float subtotal = 0;
         for (Cart c : carts) {
             subtotal += c.getDisplayUnitPrice() * c.getQuantity();
@@ -168,6 +172,25 @@ public class CheckoutController extends HttpServlet {
         String address = request.getParameter("address");
         String detailAddress = request.getParameter("detailAddress");
         String paymentMethod = request.getParameter("paymentMethod");
+        String addressIdStr = request.getParameter("shippingAddressID");
+        Integer shippingAddressID = null;
+
+        if (addressIdStr != null && !addressIdStr.isEmpty()) {
+            try { shippingAddressID = Integer.parseInt(addressIdStr); } catch (Exception e) {}
+        }
+        
+        if (shippingAddressID != null && shippingAddressID > 0) {
+             DAO.ShippingAddressDAO addrDao = new DAO.ShippingAddressDAO();
+             Model.ShippingAddress addr = addrDao.getAddressById(shippingAddressID);
+             if (addr != null && addr.getAccountID() == account.getID()) {
+                 customerName = addr.getFullName();
+                 phone = addr.getPhone();
+                 address = addr.getAddress();
+                 detailAddress = addr.getDetailAddress();
+             } else {
+                 shippingAddressID = null;
+             }
+        }
 
         if (customerName == null || customerName.trim().isEmpty() ||
             phone == null || phone.trim().isEmpty() ||
@@ -235,6 +258,7 @@ public class CheckoutController extends HttpServlet {
         bill.setTotal(total);
         bill.setStatus(0); // 0 = Chờ xử lý (Pending)
         bill.setPayment("payos".equals(paymentMethod) ? 1 : 0);
+        bill.setShippingAddressID(shippingAddressID);
         bill.setDateOrder(new Timestamp(System.currentTimeMillis()));
         bill.setDateUpdate(new Timestamp(System.currentTimeMillis()));
         bill.setTransactionCode("payos".equals(paymentMethod) ? "PAYOS" + System.currentTimeMillis() : null);
