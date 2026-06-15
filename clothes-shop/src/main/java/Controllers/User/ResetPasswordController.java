@@ -58,7 +58,7 @@ public class ResetPasswordController extends HttpServlet {
         if (r > 0) {
             // Mark token as used
             PasswordResetTokenDAO tokenDao = new PasswordResetTokenDAO();
-            tokenDao.markTokenAsUsed(tokenId);
+            tokenDao.deleteToken(tokenId);
             
             // Clear session
             session.removeAttribute("reset_email");

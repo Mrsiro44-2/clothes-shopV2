@@ -36,7 +36,7 @@ public class AccountDAO {
         }
         String sql = "SELECT A.*, R.name AS roleName FROM [Account] AS A "
                 + "JOIN [Role] AS R ON A.role = R.ID "
-                + "WHERE LOWER(A.email) = LOWER(?) AND A.status = 1 AND R.name = 'user'";
+                + "WHERE LOWER(A.email) = LOWER(?) AND A.status = " + Utils.UserStatus.ACTIVE + " AND R.name = 'user'";
         try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setString(1, email.trim());
             try (ResultSet rs = st.executeQuery()) {
@@ -52,7 +52,7 @@ public class AccountDAO {
 
     public Account getAccountByUsername(String username) {
         String sql = "select A.*, R.name as roleName from [Account] as A join [Role] as R on A.role = R.Id "
-                + "where username=? and A.status = 1 and R.status=1";
+                + "where username=? and A.status = " + Utils.UserStatus.ACTIVE + " and R.status=1";
         try {
             PreparedStatement st = conn.prepareCall(sql);
             st.setString(1, username);
@@ -68,7 +68,7 @@ public class AccountDAO {
 
     public Account login(String username) {
         String sql = "select A.*, R.name as roleName from [Account] as A join [Role] as R on A.role = R.Id "
-                + "where username=? and A.status = 1 and R.status=1";
+                + "where username=? and A.status = " + Utils.UserStatus.ACTIVE + " and R.status=1";
         try {
             PreparedStatement st = conn.prepareCall(sql);
             st.setString(1, username);

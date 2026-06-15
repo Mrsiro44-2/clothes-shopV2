@@ -40,6 +40,7 @@ public class BillDAO {
                 b.setDiscountAmount(rs.getFloat("discountAmount"));
                 b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
                 b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
+                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
                 b.setTotal(rs.getFloat("total"));
                 b.setStatus(rs.getInt("status"));
                 b.setPayment(rs.getInt("payment"));
@@ -73,6 +74,7 @@ public class BillDAO {
                 b.setDiscountAmount(rs.getFloat("discountAmount"));
                 b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
                 b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
+                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
                 b.setTotal(rs.getFloat("total"));
                 b.setStatus(rs.getInt("status"));
                 b.setPayment(rs.getInt("payment"));
@@ -171,6 +173,7 @@ public class BillDAO {
                 b.setDiscountAmount(rs.getFloat("discountAmount"));
                 b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
                 b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
+                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
                 b.setTotal(rs.getFloat("total"));
                 b.setStatus(rs.getInt("status"));
                 b.setPayment(rs.getInt("payment"));
@@ -275,6 +278,7 @@ public class BillDAO {
                 b.setDiscountAmount(rs.getFloat("discountAmount"));
                 b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
                 b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
+                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
                 b.setTotal(rs.getFloat("total"));
                 b.setStatus(rs.getInt("status"));
                 b.setPayment(rs.getInt("payment"));
@@ -296,8 +300,8 @@ public class BillDAO {
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
-            String sqlBill = "INSERT INTO Bill (customerID, email, customerName, phone, address, detailAddress, subtotal, discountAmount, voucherID, voucherCodeSnapshot, total, status, payment, dateOrder, dateUpdate, transactionCode) "
-                           + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlBill = "INSERT INTO Bill (customerID, email, customerName, phone, address, detailAddress, subtotal, discountAmount, voucherID, voucherCodeSnapshot, total, status, payment, dateOrder, dateUpdate, transactionCode, shippingAddressID) "
+                           + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement psBill = conn.prepareStatement(sqlBill, PreparedStatement.RETURN_GENERATED_KEYS);
             psBill.setInt(1, bill.getCustomerID());
             psBill.setString(2, bill.getEmail());
@@ -315,6 +319,7 @@ public class BillDAO {
             psBill.setTimestamp(14, bill.getDateOrder());
             if (bill.getDateUpdate() != null) psBill.setTimestamp(15, bill.getDateUpdate()); else psBill.setNull(15, java.sql.Types.TIMESTAMP);
             if (bill.getTransactionCode() != null) psBill.setString(16, bill.getTransactionCode()); else psBill.setNull(16, java.sql.Types.VARCHAR);
+            if (bill.getShippingAddressID() != null) psBill.setInt(17, bill.getShippingAddressID()); else psBill.setNull(17, java.sql.Types.INTEGER);
 
             int affectedRows = psBill.executeUpdate();
             if (affectedRows > 0) {

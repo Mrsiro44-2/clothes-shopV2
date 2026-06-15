@@ -113,4 +113,15 @@ public class EmailTemplates {
         sb.append(getEmailFooter());
         return sb.toString();
     }
+    public static String getRegisterOtpEmailTemplate(String otpCode) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getEmailHeader("Xác Nhận Đăng Ký Tài Khoản"));
+        sb.append("<div style='text-align: center;'>");
+        sb.append("<p style='color: #4a5568; font-size: 15px; line-height: 1.6; margin-bottom: 25px;'>Cảm ơn bạn đã đăng ký tài khoản. Vui lòng sử dụng mã xác nhận (OTP) dưới đây để kích hoạt tài khoản của bạn. Mã này có hiệu lực trong vòng <strong>10 phút</strong>.</p>");
+        sb.append("<div class='otp-box'><p class='otp-code'>").append(otpCode).append("</p></div>");
+        sb.append("<p class='warning'>Nếu bạn không yêu cầu đăng ký tài khoản, vui lòng bỏ qua email này.</p>");
+        sb.append("</div>");
+        sb.append(getEmailFooter());
+        return sb.toString();
+    }
 }

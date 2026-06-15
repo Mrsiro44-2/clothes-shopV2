@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(name = "AdminLoginController", urlPatterns = {"/admin/login", "/admin/logout"})
+@WebServlet(name = "AdminLoginController", urlPatterns = { "/admin/login", "/admin/logout" })
 public class AdminLoginController extends HttpServlet {
 
     private AccountDAO accountDao;
@@ -84,7 +84,6 @@ public class AdminLoginController extends HttpServlet {
             return;
         }
 
-        // Kiểm tra role - chỉ admin hoặc staff mới được vào
         String roleName = account.getRoleName();
         if (!"admin".equalsIgnoreCase(roleName) && !"staff".equalsIgnoreCase(roleName)) {
             request.setAttribute("error", "Tài khoản của bạn không có quyền truy cập trang quản trị.");
@@ -93,7 +92,6 @@ public class AdminLoginController extends HttpServlet {
             return;
         }
 
-        // Đăng nhập thành công → lưu session
         HttpSession session = request.getSession(true);
         session.setAttribute("adminUser", account.getUsername());
         session.setAttribute("adminRole", roleName.toLowerCase());

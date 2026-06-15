@@ -70,4 +70,18 @@ public class PasswordResetTokenDAO {
         }
         return false;
     }
+
+    public boolean deleteToken(int tokenId) {
+        String sql = "DELETE FROM PasswordResetToken WHERE ID = ?";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, tokenId);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Lỗi deleteToken", ex);
+        }
+        return false;
+    }
 }

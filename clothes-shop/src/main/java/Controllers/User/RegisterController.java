@@ -81,12 +81,40 @@ public class RegisterController extends HttpServlet {
         }
 
         Timestamp dateCreate = Timestamp.valueOf(LocalDateTime.now());
-        Account account = new Account(0, username, password, emailNorm, phoneNorm, 1, fullname, dateCreate, roleUser, null);
+        // Trạng thái tài khoản ban đầu là PENDING
+        Account account = new Account(0, username, password, emailNorm, phoneNorm, Utils.UserStatus.PENDING, fullname, dateCreate, roleUser, null);
         int result = adao.insert(account);
         HttpSession session = request.getSession();
         if (result > 0) {
-            session.setAttribute("messageSuccessRegister", "Bạn có thể đăng nhập ngay bây giờ.");
-            ServletPaths.redirect(request, response, "/login");
+            // Lấy lại ID của tài khoản vừa tạo
+            Account createdAccount = adao.isExistAccount(username, emailNorm);
+            if (createdAccount != null) {
+                // Generate 6-digit OTP
+                String otpCode = String.format("%06d", new java.util.Random().nextInt(999999));
+                // Expiry time (10 minutes)
+                Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 10 * 60 * 1000);
+
+                DAO.PasswordResetTokenDAO tokenDao = new DAO.PasswordResetTokenDAO();
+                boolean inserted = tokenDao.insertToken(createdAccount.getID(), otpCode, expiresAt);
+
+                if (inserted) {
+                    // Send email async
+                    new Thread(() -> {
+                        Utils.Email emailSender = new Utils.Email();
+                        String htmlContent = Utils.EmailTemplates.getRegisterOtpEmailTemplate(otpCode);
+                        emailSender.sendEmail(emailNorm, "Xác Nhận Đăng Ký Tài Khoản - Clothing Shop", htmlContent, null);
+                    }).start();
+
+                    session.setAttribute("register_email", emailNorm);
+                    session.setAttribute("register_accountId", createdAccount.getID());
+                    
+                    ServletPaths.redirect(request, response, "/verify-register-otp");
+                    return;
+                }
+            }
+            // Fallback in case of unexpected error with OTP generation
+            SwalFlash.error(request, "Đăng ký thất bại", "Lỗi tạo mã xác thực. Vui lòng thử lại.");
+            forwardRegister(request, response, username, email, fullname, phone);
         } else {
             SwalFlash.error(request, "Đăng ký thất bại", "Không thể tạo tài khoản. Vui lòng thử lại.");
             forwardRegister(request, response, username, email, fullname, phone);

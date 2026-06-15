@@ -100,9 +100,9 @@ public class AdminAccountController extends HttpServlet {
                 } else {
                     Account acc = accountDao.getAccountById(id);
                     if (acc != null) {
-                        int newStatus = acc.getStatus() == 1 ? 0 : 1;
+                        int newStatus = acc.getStatus() == Utils.UserStatus.ACTIVE ? Utils.UserStatus.LOCKED : Utils.UserStatus.ACTIVE;
                         accountDao.updateStatus(id, newStatus);
-                        request.getSession().setAttribute("adminFlash", "Đã " + (newStatus == 1 ? "mở khoá" : "khoá") + " tài khoản thành công.");
+                        request.getSession().setAttribute("adminFlash", "Đã " + (newStatus == Utils.UserStatus.ACTIVE ? "mở khoá" : "khoá") + " tài khoản thành công.");
                         request.getSession().setAttribute("adminFlashType", "success");
                     }
                 }
@@ -132,7 +132,7 @@ public class AdminAccountController extends HttpServlet {
         else if (!email.trim().matches("^[\\w.+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) errors.append("Email không hợp lệ. ");
         if (username == null || username.trim().isEmpty()) errors.append("Tên đăng nhập không được để trống. ");
         if (role <= 0) errors.append("Vai trò không hợp lệ. ");
-        if (status != 0 && status != 1) errors.append("Trạng thái không hợp lệ. ");
+        if (status != Utils.UserStatus.PENDING && status != Utils.UserStatus.ACTIVE && status != Utils.UserStatus.LOCKED) errors.append("Trạng thái không hợp lệ. ");
 
         boolean isAdd = relative.equals("/admin/accounts/add");
         if (isAdd && (password == null || password.trim().isEmpty())) {
