@@ -90,8 +90,8 @@
         content: "";
         position: absolute;
         top: 24px;
-        left: 16.67%;
-        right: 16.67%;
+        left: 12.5%;
+        right: 12.5%;
         height: 3px;
         background-color: #f1f5f9;
         z-index: 1;
@@ -99,7 +99,7 @@
     .mb-order-stepper-line {
         position: absolute;
         top: 24px;
-        left: 16.67%;
+        left: 12.5%;
         height: 3px;
         background-color: #2b2b2b;
         z-index: 2;
@@ -417,7 +417,7 @@
                     </c:when>
                     <c:otherwise>
                         <!-- Normal Stepper -->
-                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 5 ? '33.33%' : (order.status == 1 ? '66.67%' : '100%'))};"></div>
+                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 5 ? '25%' : (order.status == 1 ? '50%' : '75%'))};"></div>
                         <div class="mb-stepper-step ${(order.status >= 0 && order.status != 2) ? 'completed' : ''} ${order.status == 0 || order.status == 4 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-shopping-bag"></i></div>
                             <div class="mb-step-label">${order.status == 4 ? 'Đã thanh toán' : 'Đã đặt hàng'}</div>

@@ -28,6 +28,7 @@ public class Bill {
     private Timestamp dateOrder;
     private Timestamp dateUpdate;
     private String transactionCode;
+    private Integer shippingAddressID;
 
     public Bill() {
     }
@@ -183,7 +184,12 @@ public class Bill {
     public void setTransactionCode(String transactionCode) {
         this.transactionCode = transactionCode;
     }
-    
-    
-    
+
+    public Integer getShippingAddressID() {
+        return shippingAddressID;
+    }
+
+    public void setShippingAddressID(Integer shippingAddressID) {
+        this.shippingAddressID = shippingAddressID;
+    }
 }
