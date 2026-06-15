@@ -71,6 +71,8 @@ public class AdminBlogCommentController extends HttpServlet {
         int page = 1;
         int limit = 15;
         Integer blogPostId = null;
+        Integer accountId = null;
+        Integer status = -1; // -1 for all
         String keyword = request.getParameter("keyword");
         
         try {
@@ -83,23 +85,33 @@ public class AdminBlogCommentController extends HttpServlet {
             if (request.getParameter("blogPostId") != null && !request.getParameter("blogPostId").isEmpty()) {
                 blogPostId = Integer.parseInt(request.getParameter("blogPostId"));
             }
+            if (request.getParameter("accountId") != null && !request.getParameter("accountId").isEmpty()) {
+                accountId = Integer.parseInt(request.getParameter("accountId"));
+            }
+            if (request.getParameter("status") != null && !request.getParameter("status").isEmpty()) {
+                status = Integer.parseInt(request.getParameter("status"));
+            }
         } catch (NumberFormatException e) {}
 
         int offset = (page - 1) * limit;
-        int total = commentDao.countAll(blogPostId, keyword);
+        int total = commentDao.countAll(blogPostId, keyword, accountId, status);
         int totalPages = (int) Math.ceil((double) total / limit);
 
-        List<BlogComment> comments = commentDao.getAll(limit, offset, blogPostId, keyword);
+        List<BlogComment> comments = commentDao.getAll(limit, offset, blogPostId, keyword, accountId, status);
 
         request.setAttribute("comments", comments);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("limit", limit);
         request.setAttribute("currentBlogPostId", blogPostId);
+        request.setAttribute("currentAccountId", accountId);
+        request.setAttribute("currentStatus", status);
         request.setAttribute("keyword", keyword);
         
         DAO.BlogPostDAO bpDao = new DAO.BlogPostDAO();
         request.setAttribute("blogPosts", bpDao.listAllForAdmin());
+        
+        request.setAttribute("accounts", accDao.allAccountByStaff());
 
         request.getRequestDispatcher("/admin/blog/comments.jsp").forward(request, response);
     }

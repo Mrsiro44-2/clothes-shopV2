@@ -50,6 +50,17 @@ public class AdminBlogController extends HttpServlet {
         } else if (relative.equals("/admin/blogs/add")) {
             List<BlogCategory> categories = blogCategoryDAO.listActive();
             request.setAttribute("categories", categories);
+            
+            // Fetch all tags for autocomplete
+            List<Model.BlogTag> allTags = new DAO.BlogTagDAO().getAllTags();
+            StringBuilder tagsJson = new StringBuilder("[");
+            for (int i = 0; i < allTags.size(); i++) {
+                tagsJson.append("\"#").append(allTags.get(i).getName().replace("\"", "\\\"")).append("\"");
+                if (i < allTags.size() - 1) tagsJson.append(",");
+            }
+            tagsJson.append("]");
+            request.setAttribute("availableTags", tagsJson.toString());
+            
             request.setAttribute("pageTitle", "Thêm bài viết mới");
             request.getRequestDispatcher("/admin/blog/form.jsp").forward(request, response);
 
@@ -68,6 +79,17 @@ public class AdminBlogController extends HttpServlet {
             List<BlogCategory> categories = blogCategoryDAO.listActive();
             request.setAttribute("categories", categories);
             request.setAttribute("post", post);
+            
+            // Fetch all tags for autocomplete
+            List<Model.BlogTag> allTags = new DAO.BlogTagDAO().getAllTags();
+            StringBuilder tagsJson = new StringBuilder("[");
+            for (int i = 0; i < allTags.size(); i++) {
+                tagsJson.append("\"#").append(allTags.get(i).getName().replace("\"", "\\\"")).append("\"");
+                if (i < allTags.size() - 1) tagsJson.append(",");
+            }
+            tagsJson.append("]");
+            request.setAttribute("availableTags", tagsJson.toString());
+            
             request.setAttribute("pageTitle", "Chỉnh sửa bài viết");
             request.getRequestDispatcher("/admin/blog/form.jsp").forward(request, response);
 
@@ -147,6 +169,16 @@ public class AdminBlogController extends HttpServlet {
             request.setAttribute("inputBlogCategoryID", blogCategoryID);
             request.setAttribute("inputStatus", status);
             request.setAttribute("inputIsFeatured", isFeatured);
+
+            // Fetch all tags for autocomplete
+            List<Model.BlogTag> allTags = new DAO.BlogTagDAO().getAllTags();
+            StringBuilder tagsJson = new StringBuilder("[");
+            for (int i = 0; i < allTags.size(); i++) {
+                tagsJson.append("\"#").append(allTags.get(i).getName().replace("\"", "\\\"")).append("\"");
+                if (i < allTags.size() - 1) tagsJson.append(",");
+            }
+            tagsJson.append("]");
+            request.setAttribute("availableTags", tagsJson.toString());
 
             if (relative.contains("/edit/")) {
                 int id = ServletPaths.idAfter(request, "/admin/blogs/edit");

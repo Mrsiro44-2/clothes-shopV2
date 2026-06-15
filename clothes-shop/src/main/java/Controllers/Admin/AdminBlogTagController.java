@@ -22,8 +22,30 @@ public class AdminBlogTagController extends HttpServlet {
         BlogTagDAO dao = new BlogTagDAO();
 
         if (relative.equals("/admin/blog-tags")) {
-            List<BlogTag> tags = dao.getAllTags();
+            int page = 1;
+            int limit = 15;
+            String keyword = request.getParameter("keyword");
+            
+            try {
+                if (request.getParameter("page") != null) {
+                    page = Integer.parseInt(request.getParameter("page"));
+                }
+                if (request.getParameter("limit") != null) {
+                    limit = Integer.parseInt(request.getParameter("limit"));
+                }
+            } catch (NumberFormatException e) {}
+
+            int offset = (page - 1) * limit;
+            int total = dao.countAllTags(keyword);
+            int totalPages = (int) Math.ceil((double) total / limit);
+
+            List<BlogTag> tags = dao.getAllTagsPaginated(limit, offset, keyword);
+            
             request.setAttribute("tags", tags);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("limit", limit);
+            request.setAttribute("keyword", keyword);
             request.setAttribute("pageTitle", "Quản lý Thẻ (Tags)");
             request.getRequestDispatcher("/admin/blog/tags.jsp").forward(request, response);
 
