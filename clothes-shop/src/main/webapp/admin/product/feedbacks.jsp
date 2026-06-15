@@ -12,10 +12,22 @@
                     <h2 class="page-title">Quản lý Đánh giá Sản phẩm</h2>
                 </div>
             </div>
-            
             <form method="GET" action="${ctx}/admin/feedbacks" class="mt-3">
+                <c:if test="${not empty currentStatus}">
+                    <input type="hidden" name="status" value="${currentStatus}">
+                </c:if>
                 <div class="row gx-2">
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
+                        <select name="customerId" class="form-select select2-search" onchange="this.form.submit()">
+                            <option value="">-- Tất cả Khách hàng --</option>
+                            <c:forEach items="${customers}" var="c">
+                                <option value="${c.ID}" ${currentCustomerId == c.ID ? 'selected' : ''}>
+                                    ${c.fullname} (${c.email})
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
                         <select name="productId" class="form-select select2-search" onchange="this.form.submit()">
                             <option value="">-- Tất cả Sản phẩm --</option>
                             <c:forEach items="${products}" var="p">
@@ -25,7 +37,7 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm nội dung..." value="${keyword}">
                     </div>
                     <div class="col-md-2 mb-2">
@@ -35,7 +47,7 @@
                             <option value="50" ${limit == 50 ? 'selected' : ''}>50 dòng</option>
                         </select>
                     </div>
-                    <div class="col-md-2 mb-2">
+                    <div class="col-md-1 mb-2">
                         <button type="submit" class="btn btn-primary w-100">Lọc</button>
                     </div>
                 </div>
@@ -43,6 +55,18 @@
         </div>
 
         <jsp:include page="../components/flash.jsp"/>
+
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link ${empty currentStatus ? 'active' : ''}" href="?productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}">Tất cả</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link ${currentStatus == 1 ? 'active' : ''}" href="?status=1&productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}">Đã duyệt</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link ${currentStatus == 0 ? 'active' : ''}" href="?status=0&productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}">Chưa duyệt</a>
+            </li>
+        </ul>
 
         <div class="card">
             <div class="table-responsive">
@@ -119,15 +143,15 @@
                 <div class="card-footer d-flex align-items-center">
                     <ul class="pagination m-0 ms-auto">
                         <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a class="page-link" href="?page=${currentPage - 1}&productId=${currentProductId}&keyword=${keyword}&limit=${limit}" tabindex="-1">Trước</a>
+                            <a class="page-link" href="?page=${currentPage - 1}&status=${currentStatus}&productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}" tabindex="-1">Trước</a>
                         </li>
                         <c:forEach begin="1" end="${totalPages}" var="i">
                             <li class="page-item ${currentPage == i ? 'active' : ''}">
-                                <a class="page-link" href="?page=${i}&productId=${currentProductId}&keyword=${keyword}&limit=${limit}">${i}</a>
+                                <a class="page-link" href="?page=${i}&status=${currentStatus}&productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}">${i}</a>
                             </li>
                         </c:forEach>
                         <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                            <a class="page-link" href="?page=${currentPage + 1}&productId=${currentProductId}&keyword=${keyword}&limit=${limit}">Sau</a>
+                            <a class="page-link" href="?page=${currentPage + 1}&status=${currentStatus}&productId=${currentProductId}&customerId=${currentCustomerId}&keyword=${keyword}&limit=${limit}">Sau</a>
                         </li>
                     </ul>
                 </div>

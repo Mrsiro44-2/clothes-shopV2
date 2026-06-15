@@ -98,15 +98,50 @@
                             <div class="mb-3">
                                 <label class="form-label">Trạng thái đơn hàng</label>
                                 <select name="status" class="form-select" ${order.status == 2 || order.status == 3 ? 'disabled' : ''}>
-                                    <option value="0" ${order.status == 0 ? 'selected' : ''}>Chờ xử lý</option>
-                                    <option value="4" ${order.status == 4 ? 'selected' : ''}>Đã thanh toán</option>
-                                    <option value="5" ${order.status == 5 ? 'selected' : ''}>Đã chuẩn bị hàng</option>
-                                    <option value="1" ${order.status == 1 ? 'selected' : ''}>Đang giao</option>
-                                    <option value="3" ${order.status == 3 ? 'selected' : ''}>Hoàn thành</option>
-                                    <option value="2" ${order.status == 2 ? 'selected' : ''}>Đã huỷ</option>
+                                    <c:choose>
+                                        <c:when test="${order.status == 0}">
+                                            <option value="0" selected>Chờ xử lý</option>
+                                            <c:if test="${order.payment == 1}">
+                                                <option value="4">Đã thanh toán</option>
+                                            </c:if>
+                                            <c:if test="${order.payment != 1}">
+                                                <option value="5">Đã chuẩn bị hàng</option>
+                                            </c:if>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 4}">
+                                            <option value="4" selected>Đã thanh toán</option>
+                                            <option value="5">Đã chuẩn bị hàng</option>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 5}">
+                                            <option value="5" selected>Đã chuẩn bị hàng</option>
+                                            <option value="1">Đang giao</option>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 1}">
+                                            <option value="1" selected>Đang giao</option>
+                                            <option value="3">Hoàn thành</option>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 3}">
+                                            <option value="3" selected>Hoàn thành</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 2}">
+                                            <option value="2" selected>Đã huỷ</option>
+                                        </c:when>
+                                    </c:choose>
                                 </select>
                             </div>
                             <c:if test="${order.status != 2 && order.status != 3}">
+                                <div class="mb-3 mt-3">
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="checkbox" required name="confirmChange" id="confirmChange">
+                                        <span class="form-check-label text-danger" style="font-size: 0.85rem; font-weight: 500;">
+                                            Tôi xác nhận thay đổi (Bạn không thể quay lại trạng thái trước đó sau khi xác nhận)
+                                        </span>
+                                    </label>
+                                </div>
                                 <button type="submit" class="btn btn-primary w-100">Cập nhật</button>
                             </c:if>
                             <c:if test="${order.status == 2 || order.status == 3}">

@@ -131,12 +131,18 @@ public class FeedbackDAO {
         return list;
     }
 
-    public List<Feedback> getAll(int limit, int offset, Integer productId, String keyword) {
+    public List<Feedback> getAll(int limit, int offset, Integer productId, String keyword, Integer customerId, Integer status) {
         List<Feedback> list = new ArrayList<>();
         String sql = "SELECT f.*, p.name AS productName FROM feedback f "
                    + "JOIN Product p ON p.ID = f.productId WHERE 1=1 ";
         if (productId != null && productId > 0) {
             sql += "AND f.productId = ? ";
+        }
+        if (customerId != null && customerId > 0) {
+            sql += "AND f.userId = ? ";
+        }
+        if (status != null) {
+            sql += "AND f.status = ? ";
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql += "AND f.comment LIKE ? ";
@@ -148,6 +154,12 @@ public class FeedbackDAO {
             int pIndex = 1;
             if (productId != null && productId > 0) {
                 st.setInt(pIndex++, productId);
+            }
+            if (customerId != null && customerId > 0) {
+                st.setInt(pIndex++, customerId);
+            }
+            if (status != null) {
+                st.setInt(pIndex++, status);
             }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(pIndex++, "%" + keyword.trim() + "%");
@@ -169,10 +181,16 @@ public class FeedbackDAO {
         return list;
     }
 
-    public int countAll(Integer productId, String keyword) {
+    public int countAll(Integer productId, String keyword, Integer customerId, Integer status) {
         String sql = "SELECT COUNT(*) FROM feedback WHERE 1=1 ";
         if (productId != null && productId > 0) {
             sql += " AND productId = ?";
+        }
+        if (customerId != null && customerId > 0) {
+            sql += " AND userId = ?";
+        }
+        if (status != null) {
+            sql += " AND status = ?";
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql += " AND comment LIKE ?";
@@ -182,6 +200,12 @@ public class FeedbackDAO {
             int pIndex = 1;
             if (productId != null && productId > 0) {
                 st.setInt(pIndex++, productId);
+            }
+            if (customerId != null && customerId > 0) {
+                st.setInt(pIndex++, customerId);
+            }
+            if (status != null) {
+                st.setInt(pIndex++, status);
             }
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(pIndex++, "%" + keyword.trim() + "%");

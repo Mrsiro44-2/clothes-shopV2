@@ -91,12 +91,40 @@ public class AdminOrderController extends HttpServlet {
             int status = validate.getInt(request.getParameter("status"));
 
             if (id > 0 && status >= 0 && status <= 5) {
-                boolean success = billDao.updateStatus(id, status);
-                if (success) {
-                    request.getSession().setAttribute("adminFlash", "Đã cập nhật trạng thái đơn hàng #" + id + " thành công.");
-                    request.getSession().setAttribute("adminFlashType", "success");
+                Bill order = billDao.getBillById(id);
+                if (order != null) {
+                    int currentStatus = order.getStatus();
+                    boolean validTransition = false;
+                    
+                    if (currentStatus == 0) {
+                        validTransition = (status == 4 && order.getPayment() == 1) || (status == 5 && order.getPayment() != 1) || status == 2 || status == 0;
+                    } else if (currentStatus == 4) {
+                        validTransition = (status == 5 || status == 2 || status == 4);
+                    } else if (currentStatus == 5) {
+                        validTransition = (status == 1 || status == 2 || status == 5);
+                    } else if (currentStatus == 1) {
+                        validTransition = (status == 3 || status == 2 || status == 1);
+                    } else if (currentStatus == 3) {
+                        validTransition = (status == 3);
+                    } else if (currentStatus == 2) {
+                        validTransition = (status == 2);
+                    }
+                    
+                    if (validTransition) {
+                        boolean success = billDao.updateStatus(id, status);
+                        if (success) {
+                            request.getSession().setAttribute("adminFlash", "Đã cập nhật trạng thái đơn hàng #" + id + " thành công.");
+                            request.getSession().setAttribute("adminFlashType", "success");
+                        } else {
+                            request.getSession().setAttribute("adminFlash", "Cập nhật trạng thái thất bại.");
+                            request.getSession().setAttribute("adminFlashType", "danger");
+                        }
+                    } else {
+                        request.getSession().setAttribute("adminFlash", "Trạng thái chuyển đổi không hợp lệ. Vui lòng cập nhật tuần tự không nhảy cóc.");
+                        request.getSession().setAttribute("adminFlashType", "danger");
+                    }
                 } else {
-                    request.getSession().setAttribute("adminFlash", "Cập nhật trạng thái thất bại.");
+                    request.getSession().setAttribute("adminFlash", "Không tìm thấy đơn hàng.");
                     request.getSession().setAttribute("adminFlashType", "danger");
                 }
             } else {

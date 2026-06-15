@@ -69,6 +69,8 @@ public class AdminFeedbackController extends HttpServlet {
         int page = 1;
         int limit = 15;
         Integer productId = null;
+        Integer customerId = null;
+        Integer status = null;
         String keyword = request.getParameter("keyword");
         
         try {
@@ -81,21 +83,30 @@ public class AdminFeedbackController extends HttpServlet {
             if (request.getParameter("productId") != null && !request.getParameter("productId").isEmpty()) {
                 productId = Integer.parseInt(request.getParameter("productId"));
             }
+            if (request.getParameter("customerId") != null && !request.getParameter("customerId").isEmpty()) {
+                customerId = Integer.parseInt(request.getParameter("customerId"));
+            }
+            if (request.getParameter("status") != null && !request.getParameter("status").isEmpty()) {
+                status = Integer.parseInt(request.getParameter("status"));
+            }
         } catch (NumberFormatException e) {}
 
         int offset = (page - 1) * limit;
-        int total = feedbackDao.countAll(productId, keyword);
+        int total = feedbackDao.countAll(productId, keyword, customerId, status);
         int totalPages = (int) Math.ceil((double) total / limit);
 
-        List<Feedback> feedbacks = feedbackDao.getAll(limit, offset, productId, keyword);
+        List<Feedback> feedbacks = feedbackDao.getAll(limit, offset, productId, keyword, customerId, status);
 
         request.setAttribute("feedbacks", feedbacks);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("limit", limit);
         request.setAttribute("currentProductId", productId);
+        request.setAttribute("currentCustomerId", customerId);
+        request.setAttribute("currentStatus", status);
         request.setAttribute("keyword", keyword);
         request.setAttribute("products", productDao.getAll());
+        request.setAttribute("customers", accDao.allAccountByStaff());
 
         request.getRequestDispatcher("/admin/product/feedbacks.jsp").forward(request, response);
     }
