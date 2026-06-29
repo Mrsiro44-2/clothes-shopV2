@@ -18,9 +18,9 @@ public class AppConfig {
     // 3. CẤU HÌNH PAYOS (THANH TOÁN ONLINE)
     // ==========================================
     // THAY THẾ CÁC GIÁ TRỊ NÀY BẰNG THÔNG TIN TỪ DASHBOARD PAYOS CỦA BẠN
-    public static final String PAYOS_CLIENT_ID = "57dd536b-8764-4438-9a62-1a082e5d0e69";
-    public static final String PAYOS_API_KEY = "fa1b1b12-02fe-4040-af30-27fd46c6cb96";
-    public static final String PAYOS_CHECKSUM_KEY = "76d014bbabdc699d519148e8405aaaa4b2047b445ff3d537907eec47386b498a";
+    public static final String PAYOS_CLIENT_ID = "2f038996-996a-4516-a95c-19d0d09794f4";
+    public static final String PAYOS_API_KEY = "e23cd862-6a8b-43b9-87fe-91beacb2f04b";
+    public static final String PAYOS_CHECKSUM_KEY = "5b8c2bcaab2e6d0dc238b3799e5f5851d35265a33df0bc4453b09f9037589ae0";
 
     // Môi trường API
     public static final String PAYOS_API_URL = "https://api-merchant.payos.vn/v2/payment-requests";
