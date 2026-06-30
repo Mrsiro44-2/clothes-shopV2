@@ -133,9 +133,23 @@ public class AdminVoucherController extends HttpServlet {
         if (code == null || code.trim().isEmpty()) errors.append("Mã voucher không được để trống. ");
         if (value <= 0) errors.append("Giá trị giảm phải lớn hơn 0. ");
         if (discountType == 1 && value > 100) errors.append("Giảm theo % không được vượt quá 100%. ");
-        if (start == null || end == null) errors.append("Vui lòng chọn ngày bắt đầu và kết thúc. ");
-        else if (end.before(start)) errors.append("Ngày kết thúc phải sau ngày bắt đầu. ");
-
+        java.time.LocalDate todayDate = java.time.LocalDate.now();
+        if (start == null || end == null) {
+            errors.append("Vui lòng chọn ngày bắt đầu và kết thúc. ");
+        } else {
+            java.time.LocalDate startDate = start.toLocalDate();
+            java.time.LocalDate endDate = end.toLocalDate();
+            
+            if (endDate.isBefore(startDate)) {
+                errors.append("Ngày kết thúc phải sau ngày bắt đầu. ");
+            }
+            if (relative.equals("/admin/vouchers/add") && startDate.isBefore(todayDate)) {
+                errors.append("Ngày bắt đầu không được chọn trong quá khứ. ");
+            }
+            if (endDate.isBefore(todayDate)) {
+                errors.append("Ngày kết thúc không được chọn trong quá khứ. ");
+            }
+        }
         if (errors.length() > 0) {
             request.setAttribute("error", errors.toString().trim());
             if (relative.contains("/edit/")) {

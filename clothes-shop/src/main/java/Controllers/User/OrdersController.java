@@ -103,35 +103,8 @@ public class OrdersController extends HttpServlet {
             return;
 
         } else if (path.contains("/orders/cancel")) {
-            String idStr = request.getParameter("id");
-            int orderId = 0;
-            try {
-                orderId = Integer.parseInt(idStr);
-            } catch (Exception e) {}
-
-            if (orderId > 0) {
-                Bill order = billDao.getBillById(orderId);
-                if (order != null && order.getCustomerID() == account.getID() && order.getStatus() == 0) {
-                    // Update status to 2 = Cancelled
-                    boolean updated = billDao.updateStatus(orderId, Utils.OrderStatus.CANCELLED);
-                    if (updated) {
-                        // Restore variant stock
-                        ProductVariantDAO variantDao = new ProductVariantDAO();
-                        List<BillDetail> details = billDao.getBillDetails(orderId);
-                        for (BillDetail d : details) {
-                            if (d.getProductVariantID() != null) {
-                                variantDao.incrementStock(d.getProductVariantID(), d.getNumberOfProduct());
-                            }
-                        }
-                        request.getSession().setAttribute("orderFlash", "Đã hủy đơn hàng #" + orderId + " thành công.");
-                        request.getSession().setAttribute("orderFlashType", "success");
-                    } else {
-                        request.getSession().setAttribute("orderFlash", "Hủy đơn hàng thất bại.");
-                        request.getSession().setAttribute("orderFlashType", "danger");
-                    }
-                }
-            }
-            ServletPaths.redirect(request, response, "/orders?tab=cancelled");
+            // Cancel moved to POST
+            ServletPaths.redirect(request, response, "/orders");
             return;
         }
 
@@ -178,7 +151,7 @@ public class OrdersController extends HttpServlet {
         } else {
             String statusFilter = null;
             if ("cancelled".equals(tab)) {
-                statusFilter = Utils.OrderStatus.CANCELLED + ""; 
+                statusFilter = "2,7"; 
             }
             List<Bill> orders = billDao.getPaginated(null, statusFilter, String.valueOf(account.getID()), "newest", 1, 100);
             request.setAttribute("orders", orders);
@@ -256,6 +229,47 @@ public class OrdersController extends HttpServlet {
                 }
             }
             ServletPaths.redirect(request, response, "/orders?tab=reviews");
+        } else if (path.contains("/orders/cancel")) {
+            String idStr = request.getParameter("id");
+            String cancelReason = request.getParameter("cancelReason");
+            if ("Lý do khác".equals(cancelReason)) {
+                String otherReason = request.getParameter("cancelReasonOther");
+                if (otherReason != null && !otherReason.trim().isEmpty()) {
+                    cancelReason = "Lý do khác: " + otherReason.trim();
+                }
+            }
+            if (cancelReason == null || cancelReason.trim().isEmpty()) {
+                cancelReason = "Lý do khác";
+            }
+            int orderId = 0;
+            try {
+                orderId = Integer.parseInt(idStr);
+            } catch (Exception e) {}
+
+            if (orderId > 0) {
+                BillDAO billDao = new BillDAO();
+                Bill order = billDao.getBillById(orderId);
+                if (order != null && order.getCustomerID() == account.getID() && order.getStatus() == 0) {
+                    // Update status to 2 = Cancelled with reason
+                    boolean updated = billDao.updateStatusWithReason(orderId, Utils.OrderStatus.CANCELLED, cancelReason.trim());
+                    if (updated) {
+                        // Restore variant stock
+                        ProductVariantDAO variantDao = new ProductVariantDAO();
+                        List<BillDetail> details = billDao.getBillDetails(orderId);
+                        for (BillDetail d : details) {
+                            if (d.getProductVariantID() != null) {
+                                variantDao.incrementStock(d.getProductVariantID(), d.getNumberOfProduct());
+                            }
+                        }
+                        request.getSession().setAttribute("orderFlash", "Đã hủy đơn hàng #" + orderId + " thành công.");
+                        request.getSession().setAttribute("orderFlashType", "success");
+                    } else {
+                        request.getSession().setAttribute("orderFlash", "Hủy đơn hàng thất bại.");
+                        request.getSession().setAttribute("orderFlashType", "danger");
+                    }
+                }
+            }
+            ServletPaths.redirect(request, response, "/orders?tab=cancelled");
         }
     }
 }

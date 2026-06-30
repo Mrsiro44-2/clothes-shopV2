@@ -347,6 +347,7 @@
                             <label for="accPhone">Số điện thoại <span style="color:red">*</span></label>
                             <input id="accPhone" class="form-control input" name="phone" required
                                    value="${account.phone != null ? account.phone : ''}"
+                                   pattern="(0|84)[3|5|7|8|9][0-9]{8}" title="Vui lòng nhập số điện thoại hợp lệ (VD: 0912345678)" maxlength="11"
                                    placeholder="VD: 0912345678"/>
                         </div>
                         

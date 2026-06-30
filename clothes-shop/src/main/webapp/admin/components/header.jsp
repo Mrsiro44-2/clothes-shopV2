@@ -67,8 +67,7 @@
                                 <span class="nav-link-title">Thuộc tính</span>
                             </a>
                             <div class="dropdown-menu ${isAttrActive ? 'show' : ''}">
-                                <a class="dropdown-item ${fn:contains(navUri, '/admin/sizegroups') ? 'active' : ''}" href="${ctx}/admin/sizegroups">Nhóm kích cỡ</a>
-                                <a class="dropdown-item ${fn:contains(navUri, '/admin/sizeoptions') ? 'active' : ''}" href="${ctx}/admin/sizeoptions">Kích cỡ</a>
+                                <a class="dropdown-item ${fn:contains(navUri, '/admin/sizegroups') || fn:contains(navUri, '/admin/sizeoptions') ? 'active' : ''}" href="${ctx}/admin/sizegroups">Nhóm kích cỡ</a>
                                 <a class="dropdown-item ${fn:contains(navUri, '/admin/colors') ? 'active' : ''}" href="${ctx}/admin/colors">Màu sắc</a>
                             </div>
                         </li>

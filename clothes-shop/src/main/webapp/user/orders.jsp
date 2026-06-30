@@ -57,8 +57,10 @@
     .status-pending { background-color: #fef3c7; color: #b45309; }
     .status-paid { background-color: #ccfbf1; color: #0f766e; }
     .status-prepared { background-color: #f3e8ff; color: #6b21a8; }
+    .status-delivered-courier { background-color: #e0e7ff; color: #4338ca; }
     .status-shipping { background-color: #dbeafe; color: #1d4ed8; }
     .status-cancelled { background-color: #fee2e2; color: #b91c1c; }
+    .status-refunded { background-color: #fce7f3; color: #be185d; }
     .status-completed { background-color: #d1fae5; color: #047857; }
     
     .payment-tag {
@@ -103,6 +105,18 @@
         color: #991b1b;
         border-color: #f87171;
     }
+    /* Modal Styles */
+    .mb-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .mb-modal.active { display: flex; }
+    .mb-modal-content { background: #fff; width: 100%; max-width: 450px; border-radius: 12px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .mb-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+    .mb-modal-title { font-size: 18px; font-weight: 700; margin: 0; }
+    .mb-modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+    .mb-field { margin-bottom: 15px; }
+    .mb-field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #444; }
+    .mb-field select { width: 100%; height: 42px; border: 1px solid #ddd; border-radius: 6px; padding: 0 12px; }
+    .btn-submit { background-color: var(--mb-primary, #DB4444); color: #fff; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; }
+    .btn-submit:hover { background-color: #c41e3a; }
 </style>
 
 <div class="section">
@@ -162,11 +176,23 @@
                                                 <c:when test="${o.status == 5}">
                                                     <span class="status-tag status-prepared">Đã chuẩn bị hàng</span>
                                                 </c:when>
+                                                <c:when test="${o.status == 6}">
+                                                    <span class="status-tag status-delivered-courier">Đã giao ĐVVC</span>
+                                                </c:when>
                                                 <c:when test="${o.status == 1}">
                                                     <span class="status-tag status-shipping">Đang giao</span>
                                                 </c:when>
                                                 <c:when test="${o.status == 2}">
                                                     <span class="status-tag status-cancelled">Đã hủy</span>
+                                                    <c:if test="${not empty o.cancelReason}">
+                                                        <div style="font-size: 12px; color: #991b1b; margin-top: 5px;">Lý do: ${o.cancelReason}</div>
+                                                    </c:if>
+                                                </c:when>
+                                                <c:when test="${o.status == 7}">
+                                                    <span class="status-tag status-refunded">Đã hoàn tiền</span>
+                                                    <c:if test="${not empty o.cancelReason}">
+                                                        <div style="font-size: 12px; color: #991b1b; margin-top: 5px;">Lý do: ${o.cancelReason}</div>
+                                                    </c:if>
                                                 </c:when>
                                                 <c:when test="${o.status == 3}">
                                                     <span class="status-tag status-completed">Hoàn thành</span>
@@ -179,7 +205,7 @@
                                         <td style="padding: 15px 12px; text-align: center; white-space: nowrap; border: none;">
                                             <a href="${ctx}/orders/detail?id=${o.ID}" class="btn-order-action">Chi tiết</a>
                                             <c:if test="${o.status == 0}">
-                                                <a href="javascript:void(0)" onclick="confirmCancel('${o.ID}')" class="btn-order-action cancel">Hủy</a>
+                                                <a href="javascript:void(0)" onclick="openCancelModal('${o.ID}')" class="btn-order-action cancel">Hủy</a>
                                             </c:if>
                                         </td>
                                     </tr>
@@ -430,6 +456,34 @@
     </div>
 </div>
 
+<!-- Modal Hủy Đơn -->
+<div id="cancelModal" class="mb-modal">
+    <div class="mb-modal-content">
+        <div class="mb-modal-header">
+            <h3 class="mb-modal-title">Lý do hủy đơn hàng</h3>
+            <button class="mb-modal-close" onclick="closeCancelModal()">&times;</button>
+        </div>
+        <form id="cancelForm" action="${pageContext.request.contextPath}/orders/cancel" method="post">
+            <input type="hidden" name="id" id="cancel_order_id" value=""/>
+            <div class="mb-field">
+                <label>Vui lòng chọn lý do hủy:</label>
+                <select name="cancelReason" required onchange="toggleCancelReasonOther(this)">
+                    <option value="">-- Chọn lý do --</option>
+                    <option value="Tôi muốn cập nhật địa chỉ/sđt nhận hàng">Tôi muốn cập nhật địa chỉ/sđt nhận hàng</option>
+                    <option value="Tôi muốn thêm/thay đổi mã giảm giá">Tôi muốn thêm/thay đổi mã giảm giá</option>
+                    <option value="Tôi muốn thay đổi sản phẩm (Kích thước, màu sắc, số lượng,...)">Tôi muốn thay đổi sản phẩm (Kích thước, màu sắc, số lượng,...)</option>
+                    <option value="Thủ tục thanh toán rắc rối">Thủ tục thanh toán rắc rối</option>
+                    <option value="Tôi tìm thấy chỗ khác rẻ hơn">Tôi tìm thấy chỗ khác rẻ hơn</option>
+                    <option value="Tôi không có nhu cầu mua nữa">Tôi không có nhu cầu mua nữa</option>
+                    <option value="Lý do khác">Lý do khác</option>
+                </select>
+                <textarea name="cancelReasonOther" id="cancelReasonOther" class="input" placeholder="Nhập lý do khác..." style="display:none; margin-top: 10px; width: 100%; padding: 10px; resize: vertical;" rows="3" maxlength="200"></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Xác nhận hủy</button>
+        </form>
+    </div>
+</div>
+
 <script>
     function toggleEditForm(id) {
         var form = document.getElementById('edit-form-' + id);
@@ -485,21 +539,26 @@
         }
     });
 
-    function confirmCancel(orderId) {
-        Swal.fire({
-            title: 'Hủy đơn hàng?',
-            text: 'Bạn có chắc chắn muốn hủy đơn hàng #' + orderId + '?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#D10024',
-            cancelButtonColor: '#8d99ae',
-            confirmButtonText: 'Đồng ý',
-            cancelButtonText: 'Hủy'
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                window.location.href = '${ctx}/orders/cancel?id=' + orderId;
-            }
-        });
+    function openCancelModal(id) {
+        document.getElementById('cancel_order_id').value = id;
+        document.getElementById('cancelModal').classList.add('active');
+        document.getElementById('cancelForm').reset();
+        document.getElementById('cancelReasonOther').style.display = 'none';
+        document.getElementById('cancelReasonOther').required = false;
+    }
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('active');
+    }
+    function toggleCancelReasonOther(selectElem) {
+        var otherInput = document.getElementById('cancelReasonOther');
+        if (selectElem.value === 'Lý do khác') {
+            otherInput.style.display = 'block';
+            otherInput.required = true;
+        } else {
+            otherInput.style.display = 'none';
+            otherInput.required = false;
+            otherInput.value = '';
+        }
     }
 </script>
 

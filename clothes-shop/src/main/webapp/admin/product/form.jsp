@@ -24,6 +24,7 @@
                 <div>${error}</div>
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
             </div>
+            <c:remove var="error" scope="session"/>
         </c:if>
 
         <div class="card">
@@ -65,11 +66,11 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label required">Danh mục</label>
-                            <select name="categoryID" class="form-select select2-search" required>
+                            <select name="categoryID" id="categoryID" class="form-select select2-search" required>
                                 <option value="">-- Chọn danh mục --</option>
                                 <c:set var="cCat" value="${isEdit ? product.categoryID : (not empty param.categoryID ? param.categoryID : '')}"/>
                                 <c:forEach items="${categories}" var="c">
-                                    <option value="${c.ID}" ${cCat == c.ID ? 'selected' : ''}>${c.name}</option>
+                                    <option value="${c.ID}" data-group-id="${c.sizeGroupID}" ${cCat == c.ID ? 'selected' : ''}>${c.name}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -189,9 +190,9 @@
                             </div>
                             <div class="col-md-3 mb-2">
                                 <label class="form-label">Kích cỡ</label>
-                                <select name="sizeOptionID" class="form-select">
+                                <select name="sizeOptionID" class="form-select size-select">
                                     <c:forEach var="s" items="${sizes}">
-                                        <option value="${s.ID}">${s.label}</option>
+                                        <option value="${s.ID}" data-group-id="${s.sizeGroupID}">${s.label}</option>
                                     </c:forEach>
                                 </select>
                             </div>
@@ -317,9 +318,9 @@
                                 </div>
                                 <div class="col-md-3 mb-2">
                                     <label class="form-label">Kích cỡ</label>
-                                    <select name="sizeOptionID" id="evSize" class="form-select">
+                                    <select name="sizeOptionID" id="evSize" class="form-select size-select">
                                         <c:forEach var="s" items="${sizes}">
-                                            <option value="${s.ID}">${s.label}</option>
+                                            <option value="${s.ID}" data-group-id="${s.sizeGroupID}">${s.label}</option>
                                         </c:forEach>
                                     </select>
                                 </div>
@@ -408,6 +409,50 @@
             'alignright alignjustify | bullist numlist outdent indent | ' +
             'removeformat | help',
         content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }'
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var categorySelect = document.getElementById('categoryID');
+        var sizeSelects = document.querySelectorAll('.size-select');
+
+        function filterSizes() {
+            var selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            var sizeGroupId = selectedOption ? selectedOption.getAttribute('data-group-id') : '';
+
+            sizeSelects.forEach(function(select) {
+                // Save current value to restore if possible
+                var currentValue = select.value;
+                var hasValidOption = false;
+
+                Array.from(select.options).forEach(function(option) {
+                    var optionGroupId = option.getAttribute('data-group-id');
+                    if (!sizeGroupId || optionGroupId === sizeGroupId) {
+                        option.style.display = '';
+                        if (option.value === currentValue) hasValidOption = true;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                // If current selected option is hidden, reset to first visible option
+                if (!hasValidOption && select.options.length > 0) {
+                    for (var i = 0; i < select.options.length; i++) {
+                        if (select.options[i].style.display !== 'none') {
+                            select.value = select.options[i].value;
+                            break;
+                        }
+                    }
+                }
+            });
+        }
+
+        if (categorySelect) {
+            // Listen for changes
+            categorySelect.addEventListener('change', filterSizes);
+            
+            // Initial filter on page load (important for edit mode)
+            filterSizes();
+        }
     });
 </script>
 

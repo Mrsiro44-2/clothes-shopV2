@@ -11,6 +11,8 @@ public class ShippingAddress {
     private String detailAddress;
     private boolean isDefault;
     private Timestamp createdAt;
+    private String wardCode;
+    private Integer districtId;
 
     public ShippingAddress() {
     }
@@ -77,5 +79,21 @@ public class ShippingAddress {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getWardCode() {
+        return wardCode;
+    }
+
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
+    }
+
+    public Integer getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(Integer districtId) {
+        this.districtId = districtId;
     }
 }

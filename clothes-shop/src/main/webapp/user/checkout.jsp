@@ -189,11 +189,6 @@
 
                     <script>
                         document.addEventListener("DOMContentLoaded", function () {
-                            var API = "https://provinces.open-api.vn/api/v2";
-                            var provinceSelect = document.getElementById("mb-province");
-                            var wardSelect = document.getElementById("mb-ward");
-                            var streetInput = document.getElementById("mb-street");
-                            var fullAddressInput = document.getElementById("mb-full-address");
 
                             <c:if test="${empty addresses}">
                             // Vô hiệu hóa submit form nếu chưa có địa chỉ
@@ -267,13 +262,24 @@
 
                     </div>
 
+                    <div class="row-line">
+
+                        <span>Phí giao hàng</span>
+
+                        <strong>Miễn phí</strong>
+
+                    </div>
+
                     <!-- Voucher input on checkout page -->
                     <c:set var="displayVoucherCode" value="${fn:replace(fn:replace(voucherCode, 'PUB_', ''), 'PRI_', '')}" />
                     <div class="mb-cart-promo" style="margin: 12px 0; padding: 12px 0; border-top: 1px dashed #e5e7eb; border-bottom: 1px dashed #e5e7eb;">
-                        <label style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;margin-bottom:8px;display:block;">Mã giảm giá</label>
-                        <form action="${ctx}/voucher?from=checkout" method="post" class="mb-cart-promo-row" style="display:flex;gap:8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label style="font-size:12px;font-weight:600;color:#555;text-transform:uppercase;margin:0;">Mã giảm giá</label>
+                            <button type="button" onclick="openVoucherModal()" style="background:none; border:none; color:#DB4444; cursor:pointer; font-size:12px; font-weight:bold; padding:0;">Gợi ý mã giảm giá</button>
+                        </div>
+                        <form action="${ctx}/voucher?from=checkout" method="post" class="mb-cart-promo-row" style="display:flex;gap:8px;" id="checkoutVoucherForm">
                             <input type="hidden" name="from" value="checkout"/>
-                            <input type="text" name="couponCode" placeholder="Nhập mã voucher" value="${not empty displayVoucherCode ? displayVoucherCode : ''}"
+                            <input type="text" name="couponCode" id="checkoutVoucherInput" placeholder="Nhập mã voucher" value="${not empty displayVoucherCode ? displayVoucherCode : ''}"
                                    style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none;"/>
                             <button type="submit" style="padding:8px 16px;background:var(--mb-primary, #DB4444);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">ÁP DỤNG</button>
                         </form>
@@ -328,6 +334,50 @@
     </div>
 
 </div>
+
+<!-- Modal Voucher -->
+<div id="voucherModal" class="mb-modal">
+    <div class="mb-modal-content" style="max-width: 450px;">
+        <div class="mb-modal-header">
+            <h3 class="mb-modal-title">Chọn mã giảm giá</h3>
+            <button type="button" class="mb-modal-close" onclick="closeVoucherModal()">&times;</button>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto; padding: 10px 0;">
+            <c:if test="${empty publicVouchers}">
+                <p style="text-align:center; color:#666; font-size:14px;">Hiện chưa có mã giảm giá nào.</p>
+            </c:if>
+            <c:forEach items="${publicVouchers}" var="v">
+                <c:set var="displayVoucher" value="${fn:replace(fn:replace(v.code, 'PUB_', ''), 'PRI_', '')}" />
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#DB4444'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="applyVoucher('${displayVoucher}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color:#DB4444; font-size:16px;">${displayVoucher}</strong>
+                        <span style="font-size:12px; color:#555;">HSD: <strong>${v.end}</strong></span>
+                    </div>
+                    <div style="font-size:13px; color:#333; margin-top:6px;">
+                        Giảm ${v.discountType == 0 ? currency.currencyFormat(v.value) : v.value.toString().concat('%')} 
+                        đơn tối thiểu ${currency.currencyFormat(v.minOrderAmount)}
+                        <c:if test="${v.discountType == 1 && v.maxDiscount != null && v.maxDiscount > 0}">
+                            (Tối đa ${currency.currencyFormat(v.maxDiscount)})
+                        </c:if>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openVoucherModal() {
+        document.getElementById('voucherModal').classList.add('active');
+    }
+    function closeVoucherModal() {
+        document.getElementById('voucherModal').classList.remove('active');
+    }
+    function applyVoucher(code) {
+        document.getElementById('checkoutVoucherInput').value = code;
+        document.getElementById('checkoutVoucherForm').submit();
+    }
+</script>
 
 <%@include file="./components/footer.jsp" %>
 

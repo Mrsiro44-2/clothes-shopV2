@@ -31,6 +31,7 @@
                 <h4 class="alert-title">Lỗi</h4>
                 <div class="text-secondary">${error}</div>
             </div>
+            <c:remove var="error" scope="session"/>
         </c:if>
 
         <form action="${formAction}" method="POST" enctype="multipart/form-data">

@@ -16,10 +16,12 @@ import java.util.List;
 public class AdminSizeGroupController extends HttpServlet {
 
     private SizeGroupDAO sizeGroupDao;
+    private DAO.SizeOptionDAO sizeOptionDao;
 
     @Override
     public void init() throws ServletException {
         sizeGroupDao = new SizeGroupDAO();
+        sizeOptionDao = new DAO.SizeOptionDAO();
     }
 
     @Override
@@ -75,6 +77,14 @@ public class AdminSizeGroupController extends HttpServlet {
             request.setAttribute("status", status);
             request.setAttribute("sort", sort);
         request.setAttribute("sizeGroups", sizeGroups);
+        
+        // Fetch sizes for each group
+        java.util.Map<Integer, java.util.List<Model.SizeOption>> sizeOptionsMap = new java.util.HashMap<>();
+        for (Model.SizeGroup sg : sizeGroups) {
+            sizeOptionsMap.put(sg.getID(), sizeOptionDao.getByGroupId(sg.getID()));
+        }
+        request.setAttribute("sizeOptionsMap", sizeOptionsMap);
+        
         request.setAttribute("pageTitle", "Quản lý Nhóm Kích Cỡ");
         request.getRequestDispatcher("/admin/catalog/sizegroups.jsp").forward(request, response);
     }
@@ -89,8 +99,10 @@ public class AdminSizeGroupController extends HttpServlet {
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = ServletPaths.getIdFromPath(request.getPathInfo());
-        SizeGroup sizeGroup = sizeGroupDao.getSizeGroupById(id);
+        Model.SizeGroup sizeGroup = sizeGroupDao.getSizeGroupById(id);
         if (sizeGroup != null) {
+            java.util.List<Model.SizeOption> sizeOptions = sizeOptionDao.getByGroupId(id);
+            request.setAttribute("sizeOptions", sizeOptions);
             request.setAttribute("sizeGroup", sizeGroup);
             request.setAttribute("isEdit", true);
             request.setAttribute("pageTitle", "Sửa Nhóm Kích Cỡ");

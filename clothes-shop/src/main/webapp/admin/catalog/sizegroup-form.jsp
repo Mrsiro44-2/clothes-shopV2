@@ -23,6 +23,7 @@
                 <div>${error}</div>
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
             </div>
+            <c:remove var="error" scope="session"/>
         </c:if>
 
         <div class="card">
@@ -65,6 +66,74 @@
         </div>
 
     </div>
+    
+    <c:if test="${isEdit}">
+    <div class="container-xl mt-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title">Các kích cỡ thuộc nhóm này</h3>
+            </div>
+            <div class="card-body">
+                <!-- Add new size option form -->
+                <form action="${ctx}/admin/sizeoptions/add" method="post" class="row gx-3 gy-2 align-items-center mb-4">
+                    <input type="hidden" name="sizeGroupID" value="${sizeGroup.ID}"/>
+                    <input type="hidden" name="status" value="1"/>
+                    <input type="hidden" name="sortOrder" value="0"/>
+                    <input type="hidden" name="redirectUrl" value="${ctx}/admin/sizegroups/edit/${sizeGroup.ID}"/>
+                    
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" name="code" placeholder="Mã kích cỡ (VD: S)" required maxlength="50"/>
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control" name="label" placeholder="Tên kích cỡ (VD: Size S)" required maxlength="100"/>
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-success w-100">Thêm kích cỡ mới</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Mã</th>
+                                <th>Tên hiển thị</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${sizeOptions}" var="sz">
+                                <tr>
+                                    <td>
+                                        <form action="${ctx}/admin/sizeoptions/edit/${sz.ID}" method="post" class="d-flex gap-2">
+                                            <input type="hidden" name="sizeGroupID" value="${sizeGroup.ID}"/>
+                                            <input type="hidden" name="status" value="${sz.status}"/>
+                                            <input type="hidden" name="sortOrder" value="${sz.sortOrder}"/>
+                                            <input type="hidden" name="redirectUrl" value="${ctx}/admin/sizegroups/edit/${sizeGroup.ID}"/>
+                                            <input type="text" class="form-control form-control-sm" name="code" value="${sz.code}" required style="max-width: 100px;"/>
+                                            <input type="text" class="form-control form-control-sm" name="label" value="${sz.label}" required/>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Lưu</button>
+                                        </form>
+                                    </td>
+                                    <td></td> <!-- merged above -->
+                                    <td>
+                                        <form action="${ctx}/admin/sizeoptions/delete/${sz.ID}" method="get" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xoá kích cỡ này?');">
+                                            <input type="hidden" name="redirectUrl" value="${ctx}/admin/sizegroups/edit/${sizeGroup.ID}"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Xoá</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                            <c:if test="${empty sizeOptions}">
+                                <tr><td colspan="3" class="text-center text-muted py-3">Chưa có kích cỡ nào.</td></tr>
+                            </c:if>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </c:if>
 </div>
 
 <%@include file="../components/footer.jsp"%>

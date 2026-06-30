@@ -117,19 +117,32 @@ public class AdminSizeOptionController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
         int sizeGroupID = validate.getInt(request.getParameter("sizeGroupID"));
 
-        if (validate.isBlank(label)) {
-            request.getSession().setAttribute("error", "Vui lòng nhập tên (label)");
-            response.sendRedirect(request.getContextPath() + "/admin/sizeoptions/add");
+        String redirectUrl = request.getParameter("redirectUrl");
+        if (redirectUrl == null) redirectUrl = request.getContextPath() + "/admin/sizeoptions";
+
+        if (validate.isBlank(label) || validate.isBlank(code)) {
+            request.getSession().setAttribute("error", "Vui lòng nhập mã và tên kích cỡ");
+            response.sendRedirect(redirectUrl);
             return;
+        }
+
+        // Check for duplicates in the same size group
+        java.util.List<SizeOption> existings = sizeOptionDao.getByGroupId(sizeGroupID);
+        for (SizeOption existing : existings) {
+            if (existing.getCode().trim().equalsIgnoreCase(code.trim()) || existing.getLabel().trim().equalsIgnoreCase(label.trim())) {
+                request.getSession().setAttribute("error", "Mã hoặc tên kích cỡ đã tồn tại trong nhóm này!");
+                response.sendRedirect(redirectUrl);
+                return;
+            }
         }
 
         SizeOption s = new SizeOption(0, code, label, sortOrder, status, sizeGroupID);
         if (sizeOptionDao.insert(s) > 0) {
             request.getSession().setAttribute("success", "Thêm thành công");
-            response.sendRedirect(request.getContextPath() + "/admin/sizeoptions");
+            response.sendRedirect(redirectUrl);
         } else {
             request.getSession().setAttribute("error", "Có lỗi xảy ra");
-            response.sendRedirect(request.getContextPath() + "/admin/sizeoptions/add");
+            response.sendRedirect(redirectUrl);
         }
     }
 
@@ -145,9 +158,12 @@ public class AdminSizeOptionController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
         int sizeGroupID = validate.getInt(request.getParameter("sizeGroupID"));
 
+        String redirectUrl = request.getParameter("redirectUrl");
+        if (redirectUrl == null) redirectUrl = request.getContextPath() + "/admin/sizeoptions";
+
         if (validate.isBlank(label)) {
             request.getSession().setAttribute("error", "Vui lòng nhập tên (label)");
-            response.sendRedirect(request.getContextPath() + "/admin/sizeoptions/edit/" + id);
+            response.sendRedirect(redirectUrl);
             return;
         }
 
@@ -157,17 +173,19 @@ public class AdminSizeOptionController extends HttpServlet {
         } else {
             request.getSession().setAttribute("error", "Cập nhật thất bại");
         }
-        response.sendRedirect(request.getContextPath() + "/admin/sizeoptions");
+        response.sendRedirect(redirectUrl);
     }
 
     private void deleteSizeOption(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = ServletPaths.getIdFromPath(request.getPathInfo());
+        String redirectUrl = request.getParameter("redirectUrl");
+        if (redirectUrl == null) redirectUrl = request.getContextPath() + "/admin/sizeoptions";
         if (sizeOptionDao.delete(id) > 0) {
             request.getSession().setAttribute("success", "Xoá thành công");
         } else {
             request.getSession().setAttribute("error", "Xoá thất bại");
         }
-        response.sendRedirect(request.getContextPath() + "/admin/sizeoptions");
+        response.sendRedirect(redirectUrl);
     }
 }

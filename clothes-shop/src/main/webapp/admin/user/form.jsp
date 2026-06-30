@@ -23,6 +23,7 @@
                 <div>${error}</div>
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
             </div>
+            <c:remove var="error" scope="session"/>
         </c:if>
 
         <div class="card">
@@ -68,9 +69,18 @@
                             <label class="form-label required">Vai trò</label>
                             <select name="role" class="form-select" required>
                                 <c:set var="currentRole" value="${isEdit ? account.role : (not empty inputRole ? inputRole : 3)}"/>
-                                <c:forEach items="${roles}" var="r">
-                                    <option value="${r.ID}" ${currentRole == r.ID ? 'selected' : ''}>${r.name}</option>
-                                </c:forEach>
+                              <c:forEach items="${roles}" var="r">
+    <option value="${r.ID}" ${currentRole == r.ID ? 'selected' : ''}>
+        <c:choose>
+            <c:when test="${r.name == 'user'}">
+                Customer
+            </c:when>
+            <c:otherwise>
+                ${r.name}
+            </c:otherwise>
+        </c:choose>
+    </option>
+</c:forEach>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">

@@ -27,6 +27,10 @@ public class ShippingAddressDAO {
                     a.setDetailAddress(rs.getString("detailAddress"));
                     a.setIsDefault(rs.getBoolean("isDefault"));
                     a.setCreatedAt(rs.getTimestamp("createdAt"));
+                    a.setWardCode(rs.getString("wardCode"));
+                    if (rs.getObject("districtId") != null) {
+                        a.setDistrictId(rs.getInt("districtId"));
+                    }
                     list.add(a);
                 }
             }
@@ -51,6 +55,10 @@ public class ShippingAddressDAO {
                     a.setDetailAddress(rs.getString("detailAddress"));
                     a.setIsDefault(rs.getBoolean("isDefault"));
                     a.setCreatedAt(rs.getTimestamp("createdAt"));
+                    a.setWardCode(rs.getString("wardCode"));
+                    if (rs.getObject("districtId") != null) {
+                        a.setDistrictId(rs.getInt("districtId"));
+                    }
                     return a;
                 }
             }
@@ -64,7 +72,7 @@ public class ShippingAddressDAO {
         if (address.isIsDefault()) {
             clearDefault(address.getAccountID());
         }
-        String sql = "INSERT INTO ShippingAddress (accountID, fullName, phone, address, detailAddress, isDefault) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ShippingAddress (accountID, fullName, phone, address, detailAddress, isDefault, wardCode, districtId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.connect(); PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, address.getAccountID());
             st.setString(2, address.getFullName());
@@ -72,6 +80,12 @@ public class ShippingAddressDAO {
             st.setString(4, address.getAddress());
             st.setString(5, address.getDetailAddress());
             st.setBoolean(6, address.isIsDefault());
+            st.setString(7, address.getWardCode());
+            if (address.getDistrictId() != null) {
+                st.setInt(8, address.getDistrictId());
+            } else {
+                st.setNull(8, java.sql.Types.INTEGER);
+            }
             int affected = st.executeUpdate();
             return affected > 0;
         } catch (Exception e) {
@@ -84,15 +98,21 @@ public class ShippingAddressDAO {
         if (address.isIsDefault()) {
             clearDefault(address.getAccountID());
         }
-        String sql = "UPDATE ShippingAddress SET fullName = ?, phone = ?, address = ?, detailAddress = ?, isDefault = ? WHERE id = ? AND accountID = ?";
+        String sql = "UPDATE ShippingAddress SET fullName = ?, phone = ?, address = ?, detailAddress = ?, isDefault = ?, wardCode = ?, districtId = ? WHERE id = ? AND accountID = ?";
         try (Connection conn = DBConnection.connect(); PreparedStatement st = conn.prepareStatement(sql)) {
             st.setString(1, address.getFullName());
             st.setString(2, address.getPhone());
             st.setString(3, address.getAddress());
             st.setString(4, address.getDetailAddress());
             st.setBoolean(5, address.isIsDefault());
-            st.setInt(6, address.getId());
-            st.setInt(7, address.getAccountID()); // Ensures they only update their own
+            st.setString(6, address.getWardCode());
+            if (address.getDistrictId() != null) {
+                st.setInt(7, address.getDistrictId());
+            } else {
+                st.setNull(7, java.sql.Types.INTEGER);
+            }
+            st.setInt(8, address.getId());
+            st.setInt(9, address.getAccountID()); // Ensures they only update their own
             int affected = st.executeUpdate();
             return affected > 0;
         } catch (Exception e) {

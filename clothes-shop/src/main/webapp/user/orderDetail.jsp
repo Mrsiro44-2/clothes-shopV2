@@ -90,8 +90,8 @@
         content: "";
         position: absolute;
         top: 24px;
-        left: 12.5%;
-        right: 12.5%;
+        left: 10%;
+        right: 10%;
         height: 3px;
         background-color: #f1f5f9;
         z-index: 1;
@@ -99,18 +99,25 @@
     .mb-order-stepper-line {
         position: absolute;
         top: 24px;
-        left: 12.5%;
+        left: 10%;
         height: 3px;
         background-color: #2b2b2b;
         z-index: 2;
         transition: width 0.4s ease;
     }
-    .mb-order-stepper.cancelled-state::before {
+    .mb-order-stepper.cancelled-state-2::before {
         left: 25%;
         right: 25%;
     }
-    .mb-order-stepper.cancelled-state .mb-order-stepper-line {
+    .mb-order-stepper.cancelled-state-2 .mb-order-stepper-line {
         left: 25%;
+    }
+    .mb-order-stepper.cancelled-state-3::before {
+        left: 16.666%;
+        right: 16.666%;
+    }
+    .mb-order-stepper.cancelled-state-3 .mb-order-stepper-line {
+        left: 16.666%;
     }
     .mb-stepper-step {
         display: flex;
@@ -368,6 +375,19 @@
         background-color: #fef2f2;
         color: #b91c1c;
     }
+    
+    /* Modal Styles */
+    .mb-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+    .mb-modal.active { display: flex; }
+    .mb-modal-content { background: #fff; width: 100%; max-width: 450px; border-radius: 12px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+    .mb-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+    .mb-modal-title { font-size: 18px; font-weight: 700; margin: 0; }
+    .mb-modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+    .mb-field { margin-bottom: 15px; }
+    .mb-field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #444; }
+    .mb-field select { width: 100%; height: 42px; border: 1px solid #ddd; border-radius: 6px; padding: 0 12px; }
+    .btn-submit { background-color: var(--mb-primary, #DB4444); color: #fff; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: 600; cursor: pointer; }
+    .btn-submit:hover { background-color: #c41e3a; }
 </style>
 
 <div id="breadcrumb" class="section">
@@ -401,30 +421,40 @@
 
         <!-- Progress Stepper -->
         <div class="mb-order-stepper-card">
-            <div class="mb-order-stepper ${order.status == 2 ? 'cancelled-state' : ''}">
+            <div class="mb-order-stepper ${(order.status == 2 || order.status == 7) ? (order.payment == 1 ? 'cancelled-state-3' : 'cancelled-state-2') : ''}">
                 <c:choose>
-                    <c:when test="${order.status == 2}">
-                        <!-- Cancelled Stepper -->
-                        <div class="mb-order-stepper-line" style="width: 50%; background-color: #ef4444;"></div>
+                    <c:when test="${order.status == 2 || order.status == 7}">
+                        <!-- Cancelled/Refunded Stepper -->
+                        <div class="mb-order-stepper-line" style="width: ${order.payment == 1 ? (order.status == 7 ? '66.666%' : '33.333%') : '50%'}; background-color: #ef4444;"></div>
                         <div class="mb-stepper-step completed">
                             <div class="mb-step-icon"><i class="fa fa-shopping-bag"></i></div>
                             <div class="mb-step-label">Đã đặt hàng</div>
                         </div>
-                        <div class="mb-stepper-step cancelled">
+                        <div class="mb-stepper-step ${order.status == 7 ? 'completed' : 'cancelled'}">
                             <div class="mb-step-icon"><i class="fa fa-times"></i></div>
                             <div class="mb-step-label">Đã hủy</div>
                         </div>
+                        <c:if test="${order.payment == 1}">
+                            <div class="mb-stepper-step ${order.status == 7 ? 'completed active' : ''}" style="${order.status != 7 ? 'opacity: 0.5;' : ''}">
+                                <div class="mb-step-icon"><i class="fa fa-undo"></i></div>
+                                <div class="mb-step-label">Đã hoàn tiền</div>
+                            </div>
+                        </c:if>
                     </c:when>
                     <c:otherwise>
                         <!-- Normal Stepper -->
-                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 5 ? '25%' : (order.status == 1 ? '50%' : '75%'))};"></div>
-                        <div class="mb-stepper-step ${(order.status >= 0 && order.status != 2) ? 'completed' : ''} ${order.status == 0 || order.status == 4 ? 'active' : ''}">
+                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 5 ? '20%' : (order.status == 6 ? '40%' : (order.status == 1 ? '60%' : '80%')))};"></div>
+                        <div class="mb-stepper-step ${(order.status >= 0 && order.status != 2 && order.status != 7) ? 'completed' : ''} ${order.status == 0 || order.status == 4 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-shopping-bag"></i></div>
                             <div class="mb-step-label">${order.status == 4 ? 'Đã thanh toán' : 'Đã đặt hàng'}</div>
                         </div>
-                        <div class="mb-stepper-step ${order.status == 5 || order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 5 ? 'active' : ''}">
+                        <div class="mb-stepper-step ${order.status == 5 || order.status == 6 || order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 5 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-archive"></i></div>
                             <div class="mb-step-label">Chuẩn bị hàng</div>
+                        </div>
+                        <div class="mb-stepper-step ${order.status == 6 || order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 6 ? 'active' : ''}">
+                            <div class="mb-step-icon"><i class="fa fa-motorcycle"></i></div>
+                            <div class="mb-step-label">Đã giao ĐVVC</div>
                         </div>
                         <div class="mb-stepper-step ${order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 1 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-truck"></i></div>
@@ -517,11 +547,27 @@
                                 <c:when test="${order.status == 5}">
                                     <span class="mb-badge mb-badge-prepared"><i class="fa fa-archive"></i> Đã chuẩn bị hàng</span>
                                 </c:when>
+                                <c:when test="${order.status == 6}">
+                                    <span class="mb-badge" style="background-color: #e0e7ff; color: #4338ca;"><i class="fa fa-motorcycle"></i> Đã giao ĐVVC</span>
+                                </c:when>
                                 <c:when test="${order.status == 1}">
                                     <span class="mb-badge mb-badge-delivering"><i class="fa fa-truck"></i> Đang giao</span>
                                 </c:when>
                                 <c:when test="${order.status == 2}">
-                                    <span class="mb-badge mb-badge-cancelled"><i class="fa fa-times"></i> Đã hủy</span>
+                                    <span class="mb-badge mb-badge-cancelled" style="margin-bottom: 10px; display: inline-flex;"><i class="fa fa-times"></i> Đã hủy</span>
+                                    <c:if test="${not empty order.cancelReason}">
+                                        <div style="background-color: #fef2f2; padding: 10px; border-radius: 6px; font-size: 13px; color: #991b1b;">
+                                            <strong>Lý do:</strong> ${order.cancelReason}
+                                        </div>
+                                    </c:if>
+                                </c:when>
+                                <c:when test="${order.status == 7}">
+                                    <span class="mb-badge" style="background-color: #fce7f3; color: #be185d; margin-bottom: 10px; display: inline-flex;"><i class="fa fa-undo"></i> Đã hoàn tiền</span>
+                                    <c:if test="${not empty order.cancelReason}">
+                                        <div style="background-color: #fef2f2; padding: 10px; border-radius: 6px; font-size: 13px; color: #991b1b;">
+                                            <strong>Lý do:</strong> ${order.cancelReason}
+                                        </div>
+                                    </c:if>
                                 </c:when>
                                 <c:when test="${order.status == 3}">
                                     <span class="mb-badge mb-badge-completed"><i class="fa fa-check"></i> Hoàn thành</span>
@@ -530,6 +576,16 @@
                                     <span class="mb-badge mb-badge-pending"><i class="fa fa-question-circle"></i> Khác</span>
                                 </c:otherwise>
                             </c:choose>
+
+                            <c:if test="${not empty order.ghnOrderCode}">
+                                <div class="mt-3 pt-3 border-top" style="margin-top: 10px">
+                                    <span class="mb-info-label d-block mb-1">Mã vận đơn GHN</span>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                                        <strong style="color: #ea580c; font-size: 1.1rem; letter-spacing: 0.5px;">${order.ghnOrderCode}</strong>
+                                        <a class="btn btn-sm" style="background-color: #f97316; color: #fff; text-decoration: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600;" href="https://tracking.ghn.dev/?order_code=${order.ghnOrderCode}" target="_blank"><i class="fa fa-search me-1"></i> Theo dõi</a>
+                                    </div>
+                                </div>
+                            </c:if>
                         </div>
                         
                         <div class="mb-info-group">
@@ -554,7 +610,7 @@
 
                         <c:if test="${order.status == 0}">
                             <hr style="margin: 20px 0; border-color: #f1f5f9;">
-                            <a href="${ctx}/orders/cancel?id=${order.ID}" class="btn btn-danger w-100" style="background-color: #DB4444; border-color: #DB4444; padding: 10px; font-weight: 600;" onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">Hủy đơn hàng</a>
+                            <a href="javascript:void(0)" onclick="openCancelModal('${order.ID}')" class="btn btn-danger w-100" style="background-color: #DB4444; border-color: #DB4444; padding: 10px; font-weight: 600;">Hủy đơn hàng</a>
                         </c:if>
                     </div>
                 </div>
@@ -617,5 +673,57 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Hủy Đơn -->
+<div id="cancelModal" class="mb-modal">
+    <div class="mb-modal-content">
+        <div class="mb-modal-header">
+            <h3 class="mb-modal-title">Lý do hủy đơn hàng</h3>
+            <button class="mb-modal-close" onclick="closeCancelModal()">&times;</button>
+        </div>
+        <form id="cancelForm" action="${ctx}/orders/cancel" method="post">
+            <input type="hidden" name="id" id="cancel_order_id" value=""/>
+            <div class="mb-field">
+                <label>Vui lòng chọn lý do hủy:</label>
+                <select name="cancelReason" required onchange="toggleCancelReasonOther(this)">
+                    <option value="">-- Chọn lý do --</option>
+                    <option value="Tôi muốn cập nhật địa chỉ/sđt nhận hàng">Tôi muốn cập nhật địa chỉ/sđt nhận hàng</option>
+                    <option value="Tôi muốn thêm/thay đổi mã giảm giá">Tôi muốn thêm/thay đổi mã giảm giá</option>
+                    <option value="Tôi muốn thay đổi sản phẩm (Kích thước, màu sắc, số lượng,...)">Tôi muốn thay đổi sản phẩm (Kích thước, màu sắc, số lượng,...)</option>
+                    <option value="Thủ tục thanh toán rắc rối">Thủ tục thanh toán rắc rối</option>
+                    <option value="Tôi tìm thấy chỗ khác rẻ hơn">Tôi tìm thấy chỗ khác rẻ hơn</option>
+                    <option value="Tôi không có nhu cầu mua nữa">Tôi không có nhu cầu mua nữa</option>
+                    <option value="Lý do khác">Lý do khác</option>
+                </select>
+                <textarea name="cancelReasonOther" id="cancelReasonOther" class="input" placeholder="Nhập lý do khác..." style="display:none; margin-top: 10px; width: 100%; padding: 10px; resize: vertical;" rows="3" maxlength="200"></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Xác nhận hủy</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCancelModal(id) {
+        document.getElementById('cancel_order_id').value = id;
+        document.getElementById('cancelModal').classList.add('active');
+        document.getElementById('cancelForm').reset();
+        document.getElementById('cancelReasonOther').style.display = 'none';
+        document.getElementById('cancelReasonOther').required = false;
+    }
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('active');
+    }
+    function toggleCancelReasonOther(selectElem) {
+        var otherInput = document.getElementById('cancelReasonOther');
+        if (selectElem.value === 'Lý do khác') {
+            otherInput.style.display = 'block';
+            otherInput.required = true;
+        } else {
+            otherInput.style.display = 'none';
+            otherInput.required = false;
+            otherInput.value = '';
+        }
+    }
+</script>
 
 <%@include file="./components/footer.jsp" %>

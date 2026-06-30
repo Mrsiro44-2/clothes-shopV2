@@ -95,8 +95,10 @@
                                         <c:set var="displayCode" value="${(rawCode.startsWith('PUB_') || rawCode.startsWith('PRI_')) ? rawCode.substring(4) : rawCode}" />
                                         <option value="${v.id}">
                                             ${displayCode} - 
-                                            <c:if test="${v.discountType == 1}">Giảm ${v.value}%</c:if>
-                                            <c:if test="${v.discountType == 2}">Giảm <fmt:formatNumber value="${v.value}" pattern="#,###"/>đ</c:if>
+                                            <c:choose>
+                                                <c:when test="${v.discountType == 1}">Giảm ${v.value}%</c:when>
+                                                <c:otherwise>Giảm <fmt:formatNumber value="${v.value}" pattern="#,###"/>đ</c:otherwise>
+                                            </c:choose>
                                         </option>
                                     </c:if>
                                 </c:forEach>

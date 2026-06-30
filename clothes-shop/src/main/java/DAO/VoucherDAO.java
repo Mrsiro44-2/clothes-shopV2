@@ -37,7 +37,7 @@ public class VoucherDAO {
 
     public List<Voucher> getPublicVouchers() {
         List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT * FROM Voucher WHERE code LIKE 'PUB_%' ORDER BY ID DESC";
+        String sql = "SELECT * FROM Voucher WHERE code LIKE 'PUB_%' AND status = 1 AND [end] >= CAST(GETDATE() AS DATE) ORDER BY ID DESC";
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
@@ -46,6 +46,21 @@ public class VoucherDAO {
             }
         } catch (Exception e) {
             System.out.println("VoucherDAO getPublicVouchers: " + e);
+        }
+        return list;
+    }
+
+    public List<Voucher> getValidVouchers() {
+        List<Voucher> list = new ArrayList<>();
+        String sql = "SELECT * FROM Voucher WHERE status = 1 AND [end] >= CAST(GETDATE() AS DATE) ORDER BY ID DESC";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                list.add(getVoucher(rs));
+            }
+        } catch (Exception e) {
+            System.out.println("VoucherDAO getValidVouchers: " + e);
         }
         return list;
     }
