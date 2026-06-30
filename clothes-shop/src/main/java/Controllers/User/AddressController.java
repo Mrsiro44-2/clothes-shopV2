@@ -58,12 +58,23 @@ public class AddressController extends HttpServlet {
         String path = request.getRequestURI();
         
         if (path.endsWith("/user/addresses/add")) {
+            String phone = request.getParameter("phone");
+            if (phone == null || !phone.matches("^(0|84)[3|5|7|8|9][0-9]{8}$")) {
+                Utils.SwalFlash.errorSession(request.getSession(), "Thêm địa chỉ", "Số điện thoại không hợp lệ!");
+                ServletPaths.redirect(request, response, "/user/addresses");
+                return;
+            }
             ShippingAddress a = new ShippingAddress();
             a.setAccountID(account.getID());
             a.setFullName(request.getParameter("fullName"));
-            a.setPhone(request.getParameter("phone"));
+            a.setPhone(phone);
             a.setAddress(request.getParameter("address")); // Combined province, district, ward
             a.setDetailAddress(request.getParameter("detailAddress"));
+            a.setWardCode(request.getParameter("wardCode"));
+            String districtStr = request.getParameter("districtId");
+            if (districtStr != null && !districtStr.isEmpty()) {
+                try { a.setDistrictId(Integer.parseInt(districtStr)); } catch (Exception e) {}
+            }
             a.setIsDefault("1".equals(request.getParameter("isDefault")));
             
             // If it's their first address, force default
@@ -84,14 +95,25 @@ public class AddressController extends HttpServlet {
             }
             
         } else if (path.endsWith("/user/addresses/edit")) {
+            String phone = request.getParameter("phone");
+            if (phone == null || !phone.matches("^(0|84)[3|5|7|8|9][0-9]{8}$")) {
+                Utils.SwalFlash.errorSession(request.getSession(), "Cập nhật địa chỉ", "Số điện thoại không hợp lệ!");
+                ServletPaths.redirect(request, response, "/user/addresses");
+                return;
+            }
             int id = Integer.parseInt(request.getParameter("id"));
             ShippingAddress a = new ShippingAddress();
             a.setId(id);
             a.setAccountID(account.getID());
             a.setFullName(request.getParameter("fullName"));
-            a.setPhone(request.getParameter("phone"));
+            a.setPhone(phone);
             a.setAddress(request.getParameter("address"));
             a.setDetailAddress(request.getParameter("detailAddress"));
+            a.setWardCode(request.getParameter("wardCode"));
+            String districtStr = request.getParameter("districtId");
+            if (districtStr != null && !districtStr.isEmpty()) {
+                try { a.setDistrictId(Integer.parseInt(districtStr)); } catch (Exception e) {}
+            }
             a.setIsDefault("1".equals(request.getParameter("isDefault")));
             dao.update(a);
             

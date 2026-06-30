@@ -23,6 +23,7 @@
                 <div>${error}</div>
                 <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
             </div>
+            <c:remove var="error" scope="session"/>
         </c:if>
 
         <div class="card">
@@ -127,3 +128,32 @@
 </div>
 
 <%@include file="../components/footer.jsp"%>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var startInput = document.getElementById('start');
+        var endInput = document.getElementById('end');
+        if (!startInput || !endInput) return;
+        
+        var today = new Date();
+        var tzOffset = today.getTimezoneOffset() * 60000;
+        var localISOTime = (new Date(today - tzOffset)).toISOString().split('T')[0];
+        
+        var currentStart = startInput.value;
+        if (!currentStart || currentStart >= localISOTime) {
+            startInput.setAttribute('min', localISOTime);
+        }
+        
+        function updateEndMin() {
+            var sDate = startInput.value;
+            if (sDate && sDate > localISOTime) {
+                endInput.setAttribute('min', sDate);
+            } else {
+                endInput.setAttribute('min', localISOTime);
+            }
+        }
+        
+        startInput.addEventListener('change', updateEndMin);
+        updateEndMin();
+    });
+</script>

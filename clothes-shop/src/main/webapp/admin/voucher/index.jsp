@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <c:set var="pageTitle" value="Quản lý mã giảm giá" scope="request"/>
@@ -85,8 +85,10 @@
                                     <c:choose>
                                         <c:when test="${v.status == 1}">
                                             <jsp:useBean id="now" class="java.util.Date"/>
+                                            <fmt:formatDate value="${v.end}" pattern="yyyyMMdd" var="endFmt"/>
+                                            <fmt:formatDate value="${now}" pattern="yyyyMMdd" var="nowFmt"/>
                                             <c:choose>
-                                                <c:when test="${v.end < now}"><span class="badge bg-red-lt">Hết hạn</span></c:when>
+                                                <c:when test="${endFmt < nowFmt}"><span class="badge bg-red-lt">Hết hạn</span></c:when>
                                                 <c:when test="${not empty v.usageLimit && v.used >= v.usageLimit}"><span class="badge bg-orange-lt">Hết lượt</span></c:when>
                                                 <c:otherwise><span class="badge bg-success-lt">Hoạt động</span></c:otherwise>
                                             </c:choose>

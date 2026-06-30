@@ -5,6 +5,7 @@
 package Model;
 
 import java.sql.Timestamp;
+
 /**
  *
  * @author HP
@@ -29,6 +30,10 @@ public class Bill {
     private Timestamp dateUpdate;
     private String transactionCode;
     private Integer shippingAddressID;
+    private String cancelReason;
+    private String ghnOrderCode;
+    private String wardCode;
+    private Integer districtId;
 
     public Bill() {
     }
@@ -191,5 +196,37 @@ public class Bill {
 
     public void setShippingAddressID(Integer shippingAddressID) {
         this.shippingAddressID = shippingAddressID;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
+    public String getGhnOrderCode() {
+        return ghnOrderCode;
+    }
+
+    public void setGhnOrderCode(String ghnOrderCode) {
+        this.ghnOrderCode = ghnOrderCode;
+    }
+
+    public String getWardCode() {
+        return wardCode;
+    }
+
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
+    }
+
+    public Integer getDistrictId() {
+        return districtId;
+    }
+
+    public void setDistrictId(Integer districtId) {
+        this.districtId = districtId;
     }
 }

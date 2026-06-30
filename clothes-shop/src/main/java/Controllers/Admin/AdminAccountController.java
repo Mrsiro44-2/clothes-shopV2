@@ -5,6 +5,7 @@ import DAO.RoleDAO;
 import DAO.ShippingAddressDAO;
 import Model.Account;
 import Model.ShippingAddress;
+import Utils.Email;
 import Utils.MD5Hashing;
 import Utils.ServletPaths;
 import Utils.Validation;
@@ -201,7 +202,29 @@ public class AdminAccountController extends HttpServlet {
             a.setStatus(status);
             a.setDate(new Timestamp(System.currentTimeMillis()));
             accountDao.insert(a);
-            request.getSession().setAttribute("adminFlash", "Đã thêm tài khoản \"" + username.trim() + "\" thành công.");
+            
+            // Send email with credentials
+            final String recipientEmail = email.trim();
+            final String recipientName = fullname.trim();
+            final String loginUser = username.trim();
+            final String loginPass = password;
+            
+            new Thread(() -> {
+                Email mailer = new Email();
+                String subject = "Tài khoản của bạn tại Clothing Shop đã được cấp";
+                String body = "<p>Chào <strong>" + recipientName + "</strong>,</p>"
+                        + "<p>Tài khoản của bạn đã được quản trị viên cấp thành công.</p>"
+                        + "<div style='background: #f8f9fa; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #DB4444;'>"
+                        + "<p style='margin: 5px 0;'><strong>Tên đăng nhập:</strong> " + loginUser + "</p>"
+                        + "<p style='margin: 5px 0;'><strong>Mật khẩu:</strong> " + loginPass + "</p>"
+                        + "</div>"
+                        + "<p style='color: #d9534f; font-weight: bold;'>Vui lòng đổi mật khẩu sau khi đăng nhập lần đầu tiên để đảm bảo bảo mật.</p>"
+                        + "<p>Trân trọng,<br>Clothing Shop Team</p>";
+                String htmlContent = Utils.EmailTemplates.getEmailHeader(subject) + body + Utils.EmailTemplates.getEmailFooter();
+                mailer.sendEmail(recipientEmail, subject, htmlContent, null);
+            }).start();
+            
+            request.getSession().setAttribute("adminFlash", "Đã thêm tài khoản \"" + username.trim() + "\" thành công. Email chứa mật khẩu đã được gửi đi.");
             request.getSession().setAttribute("adminFlashType", "success");
         } else if (relative.startsWith("/admin/accounts/edit/")) {
             int id = ServletPaths.idAfter(request, "/admin/accounts/edit");

@@ -182,13 +182,13 @@ public class BlogCommentDAO {
     }
 
     public int delete(int id) {
-        String sql = "DELETE FROM BlogComment WHERE ID = ?";
+        String sql = "{CALL sp_DeleteBlogComment(?, NULL)}";
         try (Connection conn = DBConnection.connect();
-             PreparedStatement st = conn.prepareStatement(sql)) {
+             PreparedStatement st = conn.prepareCall(sql)) {
             st.setInt(1, id);
             return st.executeUpdate();
         } catch (Exception e) {
-            System.out.println("BlogCommentDAO delete: " + e);
+            System.out.println("BlogCommentDAO delete (SP): " + e);
         }
         return 0;
     }
@@ -208,41 +208,14 @@ public class BlogCommentDAO {
     }
 
     public int deleteByUser(int id, int accountId) {
-        String sqlCheck = "SELECT ID FROM BlogComment WHERE ID = ? AND accountID = ?";
-        String sqlReplies = "DELETE FROM BlogComment WHERE parentCommentID = ?";
-        String sqlParent = "DELETE FROM BlogComment WHERE ID = ? AND accountID = ?";
-        try (Connection conn = DBConnection.connect()) {
-            conn.setAutoCommit(false);
-            try (PreparedStatement stCheck = conn.prepareStatement(sqlCheck);
-                 PreparedStatement stReplies = conn.prepareStatement(sqlReplies);
-                 PreparedStatement stParent = conn.prepareStatement(sqlParent)) {
-                
-                stCheck.setInt(1, id);
-                stCheck.setInt(2, accountId);
-                try (ResultSet rs = stCheck.executeQuery()) {
-                    if (!rs.next()) {
-                        conn.rollback();
-                        return 0;
-                    }
-                }
-                
-                stReplies.setInt(1, id);
-                stReplies.executeUpdate();
-                
-                stParent.setInt(1, id);
-                stParent.setInt(2, accountId);
-                int rows = stParent.executeUpdate();
-                
-                conn.commit();
-                return rows;
-            } catch (Exception e) {
-                conn.rollback();
-                System.out.println("BlogCommentDAO deleteByUser inner: " + e);
-            } finally {
-                conn.setAutoCommit(true);
-            }
+        String sql = "{CALL sp_DeleteBlogComment(?, ?)}";
+        try (Connection conn = DBConnection.connect();
+             PreparedStatement st = conn.prepareCall(sql)) {
+            st.setInt(1, id);
+            st.setInt(2, accountId);
+            return st.executeUpdate();
         } catch (Exception e) {
-            System.out.println("BlogCommentDAO deleteByUser: " + e);
+            System.out.println("BlogCommentDAO deleteByUser (SP): " + e);
         }
         return 0;
     }

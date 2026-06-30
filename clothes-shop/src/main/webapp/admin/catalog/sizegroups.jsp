@@ -34,6 +34,7 @@
                         <tr>
                             <th>STT</th>
                             <th>Tên Nhóm kích cỡ</th>
+                            <th>Các kích cỡ</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
@@ -43,6 +44,21 @@
                             <tr>
                                 <td>${(currentPage - 1) * limit + loop.index + 1}</td>
                                 <td><strong>${cat.name}</strong></td>
+                                <td>
+                                    <c:set var="sizes" value="${sizeOptionsMap[cat.ID]}" />
+                                    <c:choose>
+                                        <c:when test="${empty sizes}">
+                                            <span class="text-muted">Chưa có size</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <c:forEach items="${sizes}" var="sz">
+                                                    <span class="badge bg-blue-lt">${sz.label}</span>
+                                                </c:forEach>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${cat.status == 1}">
@@ -54,7 +70,7 @@
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <a href="${ctx}/admin/sizegroups/edit/${cat.ID}" class="btn btn-sm btn-outline-primary me-1">Sửa</a>
+                                    <a href="${ctx}/admin/sizegroups/edit/${cat.ID}" class="btn btn-sm btn-outline-primary me-1">Sửa / Thêm Size</a>
                                     <a href="${ctx}/admin/sizegroups/delete/${cat.ID}" class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Bạn chắc chắn muốn xoá nhóm kích cỡ này?')">Xoá</a>
                                 </td>

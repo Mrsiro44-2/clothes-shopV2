@@ -47,6 +47,12 @@ public class BillDAO {
                 b.setDateOrder(rs.getTimestamp("dateOrder"));
                 b.setDateUpdate(rs.getTimestamp("dateUpdate"));
                 b.setTransactionCode(rs.getString("transactionCode"));
+                b.setCancelReason(rs.getString("cancelReason"));
+                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
+                b.setWardCode(rs.getString("wardCode"));
+                if (rs.getObject("districtId") != null) {
+                    b.setDistrictId(rs.getInt("districtId"));
+                }
                 list.add(b);
             }
         } catch (Exception e) {
@@ -81,6 +87,12 @@ public class BillDAO {
                 b.setDateOrder(rs.getTimestamp("dateOrder"));
                 b.setDateUpdate(rs.getTimestamp("dateUpdate"));
                 b.setTransactionCode(rs.getString("transactionCode"));
+                b.setCancelReason(rs.getString("cancelReason"));
+                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
+                b.setWardCode(rs.getString("wardCode"));
+                if (rs.getObject("districtId") != null) {
+                    b.setDistrictId(rs.getInt("districtId"));
+                }
                 return b;
             }
         } catch (Exception e) {
@@ -133,6 +145,22 @@ public class BillDAO {
         return false;
     }
 
+    public boolean updateStatusWithReason(int id, int status, String reason) {
+        String sql = "UPDATE Bill SET status = ?, cancelReason = ?, dateUpdate = ? WHERE id = ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, status);
+            st.setString(2, reason);
+            st.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+            st.setInt(4, id);
+            int rows = st.executeUpdate();
+            return rows > 0;
+        } catch (Exception e) {
+            System.out.println("BillDAO updateStatusWithReason: " + e);
+        }
+        return false;
+    }
+
     public java.util.Map<String, String> getEmailNameMapOfBuyers() {
         java.util.Map<String, String> map = new java.util.HashMap<>();
         String sql = "SELECT email, customerName FROM Bill WHERE email IS NOT NULL AND email <> '' AND status IN (1,2,3,4,5)";
@@ -180,6 +208,12 @@ public class BillDAO {
                 b.setDateOrder(rs.getTimestamp("dateOrder"));
                 b.setDateUpdate(rs.getTimestamp("dateUpdate"));
                 b.setTransactionCode(rs.getString("transactionCode"));
+                b.setCancelReason(rs.getString("cancelReason"));
+                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
+                b.setWardCode(rs.getString("wardCode"));
+                if (rs.getObject("districtId") != null) {
+                    b.setDistrictId(rs.getInt("districtId"));
+                }
                 list.add(b);
             }
         } catch (Exception e) {
@@ -194,7 +228,11 @@ public class BillDAO {
             sql += " AND (customerName LIKE ? OR phone LIKE ? OR email LIKE ? OR transactionCode LIKE ?)";
         }
         if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql += " AND status = ?";
+            if (statusFilter.contains(",")) {
+                sql += " AND status IN (" + statusFilter + ")";
+            } else {
+                sql += " AND status = ?";
+            }
         }
         if (customerFilter != null && !customerFilter.trim().isEmpty()) {
             sql += " AND customerID = ?";
@@ -209,7 +247,7 @@ public class BillDAO {
                 st.setString(paramIndex++, likeSearch);
                 st.setString(paramIndex++, likeSearch);
             }
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.contains(",")) {
                 st.setInt(paramIndex++, Integer.parseInt(statusFilter));
             }
             if (customerFilter != null && !customerFilter.trim().isEmpty()) {
@@ -230,7 +268,11 @@ public class BillDAO {
             sql += " AND (customerName LIKE ? OR phone LIKE ? OR email LIKE ? OR transactionCode LIKE ?)";
         }
         if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql += " AND status = ?";
+            if (statusFilter.contains(",")) {
+                sql += " AND status IN (" + statusFilter + ")";
+            } else {
+                sql += " AND status = ?";
+            }
         }
         if (customerFilter != null && !customerFilter.trim().isEmpty()) {
             sql += " AND customerID = ?";
@@ -254,7 +296,7 @@ public class BillDAO {
                 st.setString(paramIndex++, likeSearch);
                 st.setString(paramIndex++, likeSearch);
             }
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            if (statusFilter != null && !statusFilter.trim().isEmpty() && !statusFilter.contains(",")) {
                 st.setInt(paramIndex++, Integer.parseInt(statusFilter));
             }
             if (customerFilter != null && !customerFilter.trim().isEmpty()) {
@@ -285,6 +327,12 @@ public class BillDAO {
                 b.setDateOrder(rs.getTimestamp("dateOrder"));
                 b.setDateUpdate(rs.getTimestamp("dateUpdate"));
                 b.setTransactionCode(rs.getString("transactionCode"));
+                b.setCancelReason(rs.getString("cancelReason"));
+                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
+                b.setWardCode(rs.getString("wardCode"));
+                if (rs.getObject("districtId") != null) {
+                    b.setDistrictId(rs.getInt("districtId"));
+                }
                 list.add(b);
             }
         } catch (java.sql.SQLException e) {
@@ -300,8 +348,8 @@ public class BillDAO {
             originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
-            String sqlBill = "INSERT INTO Bill (customerID, email, customerName, phone, address, detailAddress, subtotal, discountAmount, voucherID, voucherCodeSnapshot, total, status, payment, dateOrder, dateUpdate, transactionCode, shippingAddressID) "
-                           + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sqlBill = "INSERT INTO Bill (customerID, email, customerName, phone, address, detailAddress, subtotal, discountAmount, voucherID, voucherCodeSnapshot, total, status, payment, dateOrder, dateUpdate, transactionCode, shippingAddressID, wardCode, districtId) "
+                           + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement psBill = conn.prepareStatement(sqlBill, PreparedStatement.RETURN_GENERATED_KEYS);
             psBill.setInt(1, bill.getCustomerID());
             psBill.setString(2, bill.getEmail());
@@ -320,6 +368,8 @@ public class BillDAO {
             if (bill.getDateUpdate() != null) psBill.setTimestamp(15, bill.getDateUpdate()); else psBill.setNull(15, java.sql.Types.TIMESTAMP);
             if (bill.getTransactionCode() != null) psBill.setString(16, bill.getTransactionCode()); else psBill.setNull(16, java.sql.Types.VARCHAR);
             if (bill.getShippingAddressID() != null) psBill.setInt(17, bill.getShippingAddressID()); else psBill.setNull(17, java.sql.Types.INTEGER);
+            if (bill.getWardCode() != null) psBill.setString(18, bill.getWardCode()); else psBill.setNull(18, java.sql.Types.VARCHAR);
+            if (bill.getDistrictId() != null) psBill.setInt(19, bill.getDistrictId()); else psBill.setNull(19, java.sql.Types.INTEGER);
 
             int affectedRows = psBill.executeUpdate();
             if (affectedRows > 0) {
@@ -394,5 +444,81 @@ public class BillDAO {
             }
         }
         return billId;
+    }
+
+    public boolean updateGHNOrderCode(int billId, String ghnOrderCode) {
+        String sql = "UPDATE Bill SET ghnOrderCode = ? WHERE id = ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, ghnOrderCode);
+            st.setInt(2, billId);
+            return st.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("BillDAO updateGHNOrderCode: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public List<Bill> getActiveGHNOrders() {
+        List<Bill> list = new ArrayList<>();
+        String sql = "SELECT * FROM Bill WHERE ghnOrderCode IS NOT NULL AND status IN (1, 6)";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                Bill b = new Bill();
+                b.setID(rs.getInt("id"));
+                b.setCustomerID(rs.getInt("customerID"));
+                b.setEmail(rs.getString("email"));
+                b.setCustomerName(rs.getString("customerName"));
+                b.setPhone(rs.getString("phone"));
+                b.setAddress(rs.getString("address"));
+                b.setDetailAddress(rs.getString("detailAddress"));
+                b.setSubtotal(rs.getFloat("subtotal"));
+                b.setDiscountAmount(rs.getFloat("discountAmount"));
+                b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
+                b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
+                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
+                b.setTotal(rs.getFloat("total"));
+                b.setStatus(rs.getInt("status"));
+                b.setPayment(rs.getInt("payment"));
+                b.setDateOrder(rs.getTimestamp("dateOrder"));
+                b.setDateUpdate(rs.getTimestamp("dateUpdate"));
+                b.setTransactionCode(rs.getString("transactionCode"));
+                b.setCancelReason(rs.getString("cancelReason"));
+                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
+                b.setWardCode(rs.getString("wardCode"));
+                if (rs.getObject("districtId") != null) {
+                    b.setDistrictId(rs.getInt("districtId"));
+                }
+                list.add(b);
+            }
+        } catch (Exception e) {
+            System.out.println("BillDAO getActiveGHNOrders: " + e);
+        }
+        return list;
+    }
+
+    public boolean updateStatus(int billId, int newStatus, String cancelReason) {
+        String sql;
+        if (cancelReason != null) {
+            sql = "UPDATE Bill SET status = ?, cancelReason = ? WHERE id = ?";
+        } else {
+            sql = "UPDATE Bill SET status = ? WHERE id = ?";
+        }
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, newStatus);
+            if (cancelReason != null) {
+                st.setString(2, cancelReason);
+                st.setInt(3, billId);
+            } else {
+                st.setInt(2, billId);
+            }
+            return st.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("BillDAO updateStatus with reason: " + e.getMessage());
+        }
+        return false;
     }
 }

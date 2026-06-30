@@ -41,6 +41,8 @@ public class CartController extends HttpServlet {
                 Account account = accountDao.getAccountByUsername(username);
                 List<Cart> carts = cartDao.getAllCart(account.getID());
                 request.setAttribute("carts", carts);
+                VoucherDAO voucherDao = new VoucherDAO();
+                request.setAttribute("publicVouchers", voucherDao.getPublicVouchers());
                 request.getRequestDispatcher("./user/cart.jsp").forward(request, response);
             } else {
                 ServletPaths.redirect(request, response, "/login");

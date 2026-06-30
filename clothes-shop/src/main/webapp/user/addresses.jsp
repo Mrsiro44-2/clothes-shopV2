@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page import="Utils.AppConfig"%>
 <%@include file="./components/header.jsp" %>
 <div id="breadcrumb" class="section">
     <div class="container">
@@ -112,7 +113,6 @@
                                             <span class="badge-default">Mặc định</span>
                                         </c:if>
                                     </div>
-                                    <div style="display:flex; gap: 15px; font-size: 14px;">
                                         <a href="javascript:void(0)" onclick="editAddress(${addr.id}, '${addr.fullName}', '${addr.phone}', '${addr.address}', '${addr.detailAddress}', ${addr.isDefault})" style="color:#0056b3;">Cập nhật</a>
                                         <c:if test="${!addr.isDefault}">
                                             <form action="${ctx}/user/addresses/delete" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa địa chỉ này?');">
@@ -120,7 +120,6 @@
                                                 <button type="submit" style="border:none;background:none;color:#d10024;padding:0;cursor:pointer;">Xóa</button>
                                             </form>
                                         </c:if>
-                                    </div>
                                 </div>
                                 <p class="address-text">
                                     ${addr.detailAddress}<br>
@@ -161,9 +160,13 @@
             </div>
             <div class="mb-field">
                 <label>Số điện thoại</label>
-                <input type="text" class="input" name="phone" id="addr_phone" required placeholder="Số điện thoại"/>
+                <input type="text" class="input" name="phone" id="addr_phone" required placeholder="Số điện thoại" pattern="(0|84)[3|5|7|8|9][0-9]{8}" title="Vui lòng nhập số điện thoại hợp lệ (VD: 0912345678)" maxlength="11"/>
             </div>
             
+            <input type="hidden" name="wardCode" id="addr_wardCode" required/>
+            <input type="hidden" name="districtId" id="addr_districtId" required/>
+            <input type="hidden" name="address" id="addr_fullLocation" required/>
+
             <div class="mb-address-selects">
                 <div class="select-col">
                     <label>Tỉnh / Thành phố</label>
@@ -172,13 +175,20 @@
                     </select>
                 </div>
                 <div class="select-col">
-                    <label>Phường / Xã / Quận</label>
-                    <select id="mb-ward" class="input" required disabled>
-                        <option value="">Chọn Quận/Phường</option>
+                    <label>Quận / Huyện</label>
+                    <select id="mb-district" class="input" required disabled>
+                        <option value="">Chọn Quận/Huyện</option>
                     </select>
                 </div>
             </div>
-            <input type="hidden" name="address" id="addr_fullLocation" required/>
+            <div class="mb-address-selects" style="margin-top: 15px;">
+                <div class="select-col">
+                    <label>Phường / Xã</label>
+                    <select id="mb-ward" class="input" required disabled>
+                        <option value="">Chọn Phường/Xã</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="mb-field">
                 <label>Địa chỉ cụ thể</label>
@@ -195,50 +205,101 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    var API = "https://provinces.open-api.vn/api/v2";
+    const GHN_TOKEN = '<%= AppConfig.GHN_TOKEN %>';
     var provinceSelect = document.getElementById("mb-province");
+    var districtSelect = document.getElementById("mb-district");
     var wardSelect = document.getElementById("mb-ward");
     var fullAddressInput = document.getElementById("addr_fullLocation");
+    var districtIdInput = document.getElementById("addr_districtId");
+    var wardCodeInput = document.getElementById("addr_wardCode");
 
     function fetchProvinces() {
-        return fetch(API + "/p/").then(res => res.json()).then(list => {
+        return axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+            headers: { 'Token': GHN_TOKEN }
+        }).then(res => {
             provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/TP</option>';
-            list.forEach(p => {
-                var opt = document.createElement("option");
-                opt.value = p.code;
-                opt.textContent = p.name;
-                provinceSelect.appendChild(opt);
+            res.data.data.forEach(p => {
+                if (!p.ProvinceName.toLowerCase().includes('test')) {
+                    var opt = document.createElement("option");
+                    opt.value = p.ProvinceID;
+                    opt.text = p.ProvinceName;
+                    provinceSelect.add(opt);
+                }
             });
         });
     }
 
     provinceSelect.addEventListener("change", function () {
-        wardSelect.innerHTML = '<option value="">Chọn Quận/Phường</option>';
+        districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+        districtSelect.disabled = true;
         wardSelect.disabled = true;
+        districtIdInput.value = '';
+        wardCodeInput.value = '';
+        
         var pCode = this.value;
         if (!pCode) { buildAddress(); return; }
-        fetch(API + "/p/" + pCode + "?depth=2").then(res => res.json()).then(data => {
-            var wards = data.wards || [];
-            if (wards.length > 0) {
-                wards.forEach(w => {
+
+        axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=' + pCode, {
+            headers: { 'Token': GHN_TOKEN }
+        }).then(res => {
+            res.data.data.forEach(d => {
+                if (!d.DistrictName.toLowerCase().includes('test')) {
                     var opt = document.createElement("option");
-                    opt.value = w.code;
-                    opt.textContent = w.name;
-                    wardSelect.appendChild(opt);
-                });
-                wardSelect.disabled = false;
-            }
-            buildAddress();
+                    opt.value = d.DistrictID;
+                    opt.text = d.DistrictName;
+                    districtSelect.add(opt);
+                }
+            });
+            districtSelect.disabled = false;
         });
+        buildAddress();
     });
 
-    wardSelect.addEventListener("change", buildAddress);
+    districtSelect.addEventListener("change", function () {
+        wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+        wardSelect.disabled = true;
+        wardCodeInput.value = '';
+        
+        var dCode = this.value;
+        if (!dCode) { buildAddress(); return; }
+
+        districtIdInput.value = dCode;
+
+        axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=' + dCode, {
+            headers: { 'Token': GHN_TOKEN }
+        }).then(res => {
+            res.data.data.forEach(w => {
+                if (!w.WardName.toLowerCase().includes('test')) {
+                    var opt = document.createElement("option");
+                    opt.value = w.WardCode;
+                    opt.text = w.WardName;
+                    wardSelect.add(opt);
+                }
+            });
+            wardSelect.disabled = false;
+        });
+        buildAddress();
+    });
+
+    wardSelect.addEventListener("change", function() {
+        wardCodeInput.value = this.value;
+        buildAddress();
+    });
 
     function buildAddress() {
         var pText = provinceSelect.selectedIndex > 0 ? provinceSelect.options[provinceSelect.selectedIndex].text : "";
+        var dText = districtSelect.selectedIndex > 0 ? districtSelect.options[districtSelect.selectedIndex].text : "";
         var wText = wardSelect.selectedIndex > 0 ? wardSelect.options[wardSelect.selectedIndex].text : "";
-        fullAddressInput.value = (wText ? wText + ", " : "") + pText;
+        
+        var parts = [];
+        if (wText) parts.push(wText);
+        if (dText) parts.push(dText);
+        if (pText) parts.push(pText);
+        
+        fullAddressInput.value = parts.join(", ");
     }
 
     // Modal Logic
@@ -247,19 +308,22 @@
         document.getElementById('modalTitle').innerText = 'Thêm địa chỉ mới';
         document.getElementById('addr_id').value = '0';
         document.getElementById('addressForm').reset();
+        districtSelect.disabled = true;
         wardSelect.disabled = true;
         document.getElementById('addressModal').classList.add('active');
-        fetchProvinces(); // Refresh provinces
     }
 
-    function editAddress(id, name, phone, address, detail, isDefault) {
+    function closeAddressModal() {
+        document.getElementById('addressModal').classList.remove('active');
+    }
+
+    function editAddress(id, fullName, phone, address, detailAddress, isDefault) {
         document.getElementById('addressForm').action = '${ctx}/user/addresses/edit';
         document.getElementById('modalTitle').innerText = 'Cập nhật địa chỉ';
         document.getElementById('addr_id').value = id;
-        document.getElementById('addr_fullName').value = name;
+        document.getElementById('addr_fullName').value = fullName;
         document.getElementById('addr_phone').value = phone;
-        document.getElementById('addr_detail').value = detail;
-        document.getElementById('addr_fullLocation').value = address;
+        document.getElementById('addr_detail').value = detailAddress;
         document.getElementById('addr_isDefault').checked = isDefault;
         
         // Load API and try to match (Simplified for edit: we just let them re-select if they want to change province)
@@ -281,6 +345,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        fetchProvinces();
         <c:if test="${not empty param.redirect}">
             openAddressModal();
         </c:if>

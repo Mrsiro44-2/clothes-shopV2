@@ -20,7 +20,7 @@
                         <input class="input" type="text" name="email" placeholder="Email" value="${formEmail != null ? formEmail : ''}" />
                     </div>
                     <div style="width: 400px; margin-bottom: 20px">
-                        <input class="input" type="text" name="phone" placeholder="Số điện thoại" value="${formPhone != null ? formPhone : ''}" />
+                        <input class="input" type="text" name="phone" placeholder="Số điện thoại" value="${formPhone != null ? formPhone : ''}" pattern="(0|84)[3|5|7|8|9][0-9]{8}" title="Vui lòng nhập số điện thoại hợp lệ (VD: 0912345678)" maxlength="11" required />
                     </div>
                     <div style="width: 400px; margin-bottom: 20px">
                         <div class="mb-password-toggle-wrapper">

@@ -63,6 +63,9 @@
                                         <c:when test="${o.status == 5}">
                                             <span class="badge bg-purple text-purple-fg">Đã chuẩn bị hàng</span>
                                         </c:when>
+                                        <c:when test="${o.status == 6}">
+                                            <span class="badge bg-indigo text-indigo-fg">Đã giao ĐVVC</span>
+                                        </c:when>
                                         <c:when test="${o.status == 1}">
                                             <span class="badge bg-blue text-blue-fg">Đang giao</span>
                                         </c:when>
@@ -71,6 +74,15 @@
                                         </c:when>
                                         <c:when test="${o.status == 2}">
                                             <span class="badge bg-red text-red-fg">Đã huỷ</span>
+                                            <c:if test="${not empty o.cancelReason}">
+                                                <div class="small text-muted mt-1" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.cancelReason}">Lý do: ${o.cancelReason}</div>
+                                            </c:if>
+                                        </c:when>
+                                        <c:when test="${o.status == 7}">
+                                            <span class="badge bg-pink text-pink-fg">Đã hoàn tiền</span>
+                                            <c:if test="${not empty o.cancelReason}">
+                                                <div class="small text-muted mt-1" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.cancelReason}">Lý do: ${o.cancelReason}</div>
+                                            </c:if>
                                         </c:when>
                                     </c:choose>
                                 </td>

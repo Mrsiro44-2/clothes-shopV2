@@ -1,6 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@page import="Utils.AppConfig"%>
 <c:set var="pageTitle" value="Chi tiết đơn hàng #${order.ID}" scope="request"/>
 <%@include file="../components/header.jsp"%>
 
@@ -97,7 +99,7 @@
                         <form action="${ctx}/admin/orders/update-status/${order.ID}" method="post">
                             <div class="mb-3">
                                 <label class="form-label">Trạng thái đơn hàng</label>
-                                <select name="status" class="form-select" ${order.status == 2 || order.status == 3 ? 'disabled' : ''}>
+                                <select name="status" id="statusSelect" class="form-select" ${order.status == 3 || order.status == 7 || (order.status == 2 && order.payment != 1) ? 'disabled' : ''}>
                                     <c:choose>
                                         <c:when test="${order.status == 0}">
                                             <option value="0" selected>Chờ xử lý</option>
@@ -116,6 +118,12 @@
                                         </c:when>
                                         <c:when test="${order.status == 5}">
                                             <option value="5" selected>Đã chuẩn bị hàng</option>
+                                            <option value="6">Đã giao ĐVVC</option>
+                                            <option value="1">Đang giao</option>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 6}">
+                                            <option value="6" selected>Đã giao ĐVVC</option>
                                             <option value="1">Đang giao</option>
                                             <option value="2">Đã huỷ</option>
                                         </c:when>
@@ -129,11 +137,27 @@
                                         </c:when>
                                         <c:when test="${order.status == 2}">
                                             <option value="2" selected>Đã huỷ</option>
+                                            <c:if test="${order.payment == 1}">
+                                                <option value="7">Đã hoàn tiền</option>
+                                            </c:if>
+                                        </c:when>
+                                        <c:when test="${order.status == 7}">
+                                            <option value="7" selected>Đã hoàn tiền</option>
                                         </c:when>
                                     </c:choose>
                                 </select>
                             </div>
-                            <c:if test="${order.status != 2 && order.status != 3}">
+
+                            <!-- Bắt đầu phần thêm Lý do hủy -->
+                            <c:if test="${order.status != 2 && order.status != 7}">
+                                <div class="mb-3 mt-3 d-none" id="cancelReasonGroup">
+                                    <label class="form-label text-danger font-weight-bold">Lý do hủy đơn hàng <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="cancelReason" id="cancelReasonInput" rows="2" placeholder="Nhập lý do hủy đơn hàng (Bắt buộc)"></textarea>
+                                </div>
+                            </c:if>
+                            <!-- Kết thúc phần thêm Lý do hủy -->
+
+                            <c:if test="${!(order.status == 3 || order.status == 7 || (order.status == 2 && order.payment != 1))}">
                                 <div class="mb-3 mt-3">
                                     <label class="form-check">
                                         <input class="form-check-input" type="checkbox" required name="confirmChange" id="confirmChange">
@@ -144,12 +168,56 @@
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100">Cập nhật</button>
                             </c:if>
-                            <c:if test="${order.status == 2 || order.status == 3}">
+                            <c:if test="${order.status == 3 || order.status == 7 || (order.status == 2 && order.payment != 1)}">
                                 <div class="alert alert-info mt-2 mb-0">Đơn hàng đã chốt trạng thái, không thể thay đổi.</div>
                             </c:if>
                         </form>
+                        <c:if test="${(order.status == 2 || order.status == 7) && not empty order.cancelReason}">
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <h4 class="alert-title">Lý do huỷ đơn hàng</h4>
+                                <div class="text-secondary">${order.cancelReason}</div>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
+
+                <!-- Bắt đầu Thêm phần Giao Hàng Nhanh -->
+                <c:if test="${order.status >= 5 && order.status != 7}">
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Giao Hàng Nhanh (GHN)</h3>
+                        </div>
+                        <div class="card-body">
+                            <c:choose>
+                                <c:when test="${not empty order.ghnOrderCode}">
+                                    <div class="mb-3">
+                                        <span class="text-muted d-block mb-1 small text-uppercase font-weight-medium">Mã vận đơn GHN</span>
+                                        <span class="font-weight-medium text-dark" style="font-size: 1.1rem;">${order.ghnOrderCode}</span>
+                                    </div>
+                                    <button type="button" class="btn btn-success w-100" onclick="printGHNBill('${order.ghnOrderCode}')">
+                                        <i class="fa fa-print me-2"></i> In vận đơn A5
+                                    </button>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="alert alert-warning mb-3">Đơn hàng chưa được đẩy sang hệ thống Giao Hàng Nhanh.</div>
+                                    <c:choose>
+                                        <c:when test="${not empty order.wardCode and not empty order.districtId}">
+                                            <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#modal-ghn-auto">
+                                                <i class="fa fa-truck me-2"></i> Xác nhận đẩy đơn sang GHN
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#modal-ghn">
+                                                <i class="fa fa-truck me-2"></i> Chuyển đơn sang GHN
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </c:if>
+                <!-- Kết thúc Thêm phần Giao Hàng Nhanh -->
 
                 <div class="card mt-3">
                     <div class="card-header">
@@ -206,4 +274,325 @@
     </div>
 </div>
 
+<!-- Modal GHN -->
+<div class="modal modal-blur fade" id="modal-ghn" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận chuyển đơn sang Giao Hàng Nhanh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row text-sm mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-store"></i> Người gửi:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Tên: <%= AppConfig.GHN_FROM_NAME %></li>
+                            <li>SĐT: <%= AppConfig.GHN_FROM_PHONE %></li>
+                            <li>Đ/C: <%= AppConfig.GHN_FROM_ADDRESS %></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-user"></i> Người nhận:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Tên: ${order.customerName}</li>
+                            <li>SĐT: ${order.phone}</li>
+                            <li>Đ/C: ${order.detailAddress}, ${order.address}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row text-sm mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-cog"></i> Cấu hình GHN:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Trả phí vận chuyển: <strong><%= AppConfig.GHN_PAYMENT_TYPE_ID == 1 ? "Shop/Người gửi" : "Khách/Người nhận" %></strong></li>
+                            <li>Ghi chú bắt buộc: <%= AppConfig.GHN_REQUIRED_NOTE %></li>
+                            <li>Ghi chú: <%= AppConfig.GHN_NOTE %></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-money-bill-wave"></i> Thu hộ (COD):</strong>
+                        <div class="mt-1 text-danger font-weight-bold" style="font-size: 1.1rem;">
+                            <c:choose>
+                                <c:when test="${order.payment == 1}">0đ <small class="text-muted">(Đã thanh toán)</small></c:when>
+                                <c:otherwise><fmt:formatNumber value="${order.total}" type="currency" currencySymbol="đ" maxFractionDigits="0"/></c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </div>
+                <hr class="mt-2 mb-3">
+                <div class="alert alert-info">
+                    Do đơn vị hành chính mới, hệ thống chưa lưu mã Phường/Xã đúng chuẩn GHN, vui lòng chọn thủ công để tiếp tục. <br/>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Tỉnh / Thành phố <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ghnProvince" required>
+                                <option value="">Chọn Tỉnh/Thành</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Quận / Huyện <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ghnDistrict" disabled required>
+                                <option value="">Chọn Quận/Huyện</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">Phường / Xã <span class="text-danger">*</span></label>
+                            <select class="form-select" id="ghnWard" disabled required>
+                                <option value="">Chọn Phường/Xã</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmGHN" onclick="sendToGHN()">Chính thức đẩy lên GHN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal GHN Auto -->
+<div class="modal modal-blur fade" id="modal-ghn-auto" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem trước cấu hình đẩy đơn GHN</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row text-sm mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-store"></i> Người gửi:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Tên: <%= AppConfig.GHN_FROM_NAME %></li>
+                            <li>SĐT: <%= AppConfig.GHN_FROM_PHONE %></li>
+                            <li>Đ/C: <%= AppConfig.GHN_FROM_ADDRESS %></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-user"></i> Người nhận:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Tên: ${order.customerName}</li>
+                            <li>SĐT: ${order.phone}</li>
+                            <li>Đ/C: ${order.detailAddress}, ${order.address}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row text-sm mb-0">
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-cog"></i> Cấu hình GHN:</strong>
+                        <ul class="list-unstyled mt-1 mb-0">
+                            <li>Trả phí vận chuyển: <strong><%= AppConfig.GHN_PAYMENT_TYPE_ID == 1 ? "Shop/Người gửi" : "Khách/Người nhận" %></strong></li>
+                            <li>Ghi chú bắt buộc: <%= AppConfig.GHN_REQUIRED_NOTE %></li>
+                            <li>Ghi chú: <%= AppConfig.GHN_NOTE %></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="fa fa-money-bill-wave"></i> Thu hộ (COD):</strong>
+                        <div class="mt-1 text-danger font-weight-bold" style="font-size: 1.1rem;">
+                            <c:choose>
+                                <c:when test="${order.payment == 1}">0đ <small class="text-muted">(Đã thanh toán)</small></c:when>
+                                <c:otherwise><fmt:formatNumber value="${order.total}" type="currency" currencySymbol="đ" maxFractionDigits="0"/></c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn me-auto" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnAutoGHN" onclick="sendToGHNAuto('${order.districtId}', '${order.wardCode}')">Chính thức đẩy lên GHN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <%@include file="../components/footer.jsp"%>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const GHN_TOKEN = '<%= AppConfig.GHN_TOKEN %>';
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusSelect = document.getElementById('statusSelect');
+        const cancelReasonGroup = document.getElementById('cancelReasonGroup');
+        const cancelReasonInput = document.getElementById('cancelReasonInput');
+
+        if(statusSelect && cancelReasonGroup && cancelReasonInput) {
+            statusSelect.addEventListener('change', function() {
+                if(this.value == '2') {
+                    cancelReasonGroup.classList.remove('d-none');
+                    cancelReasonInput.setAttribute('required', 'required');
+                } else {
+                    cancelReasonGroup.classList.add('d-none');
+                    cancelReasonInput.removeAttribute('required');
+                }
+            });
+            statusSelect.dispatchEvent(new Event('change'));
+        }
+
+        // --- Logic Load GHN ---
+        const ghnProvince = document.getElementById('ghnProvince');
+        const ghnDistrict = document.getElementById('ghnDistrict');
+        const ghnWard = document.getElementById('ghnWard');
+
+        if (ghnProvince) {
+            axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+                headers: { 'Token': GHN_TOKEN }
+            }).then(res => {
+                let data = res.data.data;
+                data.forEach(item => {
+                    if (!item.ProvinceName.toLowerCase().includes('test')) {
+                        let option = document.createElement('option');
+                        option.value = item.ProvinceID;
+                        option.text = item.ProvinceName;
+                        ghnProvince.add(option);
+                    }
+                });
+            });
+
+            ghnProvince.addEventListener('change', function() {
+                ghnDistrict.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
+                ghnWard.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                ghnDistrict.disabled = true;
+                ghnWard.disabled = true;
+
+                if (this.value) {
+                    axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district?province_id=' + this.value, {
+                        headers: { 'Token': GHN_TOKEN }
+                    }).then(res => {
+                        let data = res.data.data;
+                        data.forEach(item => {
+                            if (!item.DistrictName.toLowerCase().includes('test')) {
+                                let option = document.createElement('option');
+                                option.value = item.DistrictID;
+                                option.text = item.DistrictName;
+                                ghnDistrict.add(option);
+                            }
+                        });
+                        ghnDistrict.disabled = false;
+                    });
+                }
+            });
+
+            ghnDistrict.addEventListener('change', function() {
+                ghnWard.innerHTML = '<option value="">Chọn Phường/Xã</option>';
+                ghnWard.disabled = true;
+
+                if (this.value) {
+                    axios.get('https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=' + this.value, {
+                        headers: { 'Token': GHN_TOKEN }
+                    }).then(res => {
+                        let data = res.data.data;
+                        data.forEach(item => {
+                            if (!item.WardName.toLowerCase().includes('test')) {
+                                let option = document.createElement('option');
+                                option.value = item.WardCode;
+                                option.text = item.WardName;
+                                ghnWard.add(option);
+                            }
+                        });
+                        ghnWard.disabled = false;
+                    });
+                }
+            });
+        }
+    });
+
+    function sendToGHN() {
+        const toWardCode = document.getElementById('ghnWard').value;
+        const toDistrictId = document.getElementById('ghnDistrict').value;
+        const btnConfirm = document.getElementById('btnConfirmGHN');
+
+        if (!toWardCode || !toDistrictId) {
+            alert('Vui lòng chọn đầy đủ Tỉnh/Thành, Quận/Huyện, Phường/Xã');
+            return;
+        }
+
+        btnConfirm.disabled = true;
+        btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+        axios.post('${ctx}/admin/orders/sendtoghn', {
+            orderId: ${order.ID},
+            to_ward_code: toWardCode,
+            to_district_id: toDistrictId
+        }, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformRequest: [function (data) {
+                return Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+            }]
+        })
+        .then(res => {
+            if (res.data.status === 'success') {
+                alert('Đã chuyển đơn sang GHN thành công!');
+                window.location.reload();
+            } else {
+                alert('Lỗi: ' + res.data.message);
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = 'Xác nhận đẩy đơn';
+            }
+        })
+        .catch(err => {
+            alert('Lỗi khi gọi API: ' + err);
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = 'Xác nhận đẩy đơn';
+        });
+    }
+
+    function sendToGHNAuto(toDistrictId, toWardCode) {
+        const btnConfirm = document.getElementById('btnAutoGHN');
+        btnConfirm.disabled = true;
+        btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+
+        axios.post('${ctx}/admin/orders/sendtoghn', {
+            orderId: ${order.ID},
+            to_ward_code: toWardCode,
+            to_district_id: toDistrictId
+        }, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformRequest: [function (data) {
+                return Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+            }]
+        })
+        .then(res => {
+            if (res.data.status === 'success') {
+                alert('Đã chuyển đơn sang GHN thành công!');
+                window.location.reload();
+            } else {
+                alert('Lỗi: ' + res.data.message);
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = '<i class="fa fa-truck me-2"></i> Xác nhận đẩy đơn sang GHN';
+            }
+        })
+        .catch(err => {
+            alert('Lỗi khi gọi API: ' + err);
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = '<i class="fa fa-truck me-2"></i> Xác nhận đẩy đơn sang GHN';
+        });
+    }
+
+    function printGHNBill(orderCode) {
+        axios.get('${ctx}/admin/orders/get-ghn-bill?orderCode=' + orderCode)
+        .then(res => {
+            if (res.data.success) {
+                window.open(res.data.invoiceUrl, '_blank');
+            } else {
+                alert('Lỗi: ' + res.data.message);
+            }
+        })
+        .catch(err => {
+            alert('Lỗi khi lấy hóa đơn: ' + err);
+        });
+    }
+</script>

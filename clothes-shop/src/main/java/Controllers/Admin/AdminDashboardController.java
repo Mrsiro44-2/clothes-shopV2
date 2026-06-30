@@ -64,17 +64,32 @@ public class AdminDashboardController extends HttpServlet {
             request.setAttribute("worstSelling", worstSelling);
             request.setAttribute("topCustomers", topCustomers);
             
-            // Xây dựng chuỗi JSON cho biểu đồ (đơn giản)
+            // Map existing revenue
+            java.util.Map<String, Float> revMap = new java.util.HashMap<>();
+            for (Map<String, Object> map : revenueOverTime) {
+                String d = map.get("date").toString();
+                float rev = Float.parseFloat(map.get("revenue").toString());
+                revMap.put(d, rev);
+            }
+
+            // Xây dựng chuỗi JSON cho biểu đồ (đơn giản), fill những ngày không có doanh thu
             StringBuilder datesJson = new StringBuilder("[");
             StringBuilder revsJson = new StringBuilder("[");
-            for (int i = 0; i < revenueOverTime.size(); i++) {
-                Map<String, Object> map = revenueOverTime.get(i);
-                datesJson.append("'").append(map.get("date")).append("'");
-                revsJson.append(map.get("revenue"));
-                if (i < revenueOverTime.size() - 1) {
+            
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            boolean first = true;
+            
+            for (LocalDate d = start; !d.isAfter(end); d = d.plusDays(1)) {
+                String dStr = d.toString();
+                float rev = revMap.getOrDefault(dStr, 0f);
+                if (!first) {
                     datesJson.append(",");
                     revsJson.append(",");
                 }
+                datesJson.append("'").append(dStr).append("'");
+                revsJson.append(rev);
+                first = false;
             }
             datesJson.append("]");
             revsJson.append("]");

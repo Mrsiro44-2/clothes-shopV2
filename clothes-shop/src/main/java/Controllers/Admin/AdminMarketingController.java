@@ -41,8 +41,8 @@ public class AdminMarketingController extends HttpServlet {
         String relative = ServletPaths.relative(request);
 
         if (relative.equals("/admin/marketing") || relative.equals("/admin/marketing/")) {
-            // Get all active vouchers
-            List<Voucher> vouchers = voucherDao.getPaginated("", "1", "ID-DESC", 1, 100);
+            // Get all active and valid vouchers
+            List<Voucher> vouchers = voucherDao.getValidVouchers();
             request.setAttribute("vouchers", vouchers);
             request.setAttribute("pageTitle", "Email Marketing");
             request.getRequestDispatcher("/admin/email_marketing/index.jsp").forward(request, response);

@@ -141,6 +141,9 @@ public class CheckoutController extends HttpServlet {
         request.setAttribute("discount", discount);
         request.setAttribute("total", subtotal - discount);
         request.setAttribute("voucherCode", session.getAttribute("appliedVoucherCode"));
+        
+        VoucherDAO voucherDao = new VoucherDAO();
+        request.setAttribute("publicVouchers", voucherDao.getPublicVouchers());
 
         request.getRequestDispatcher("/user/checkout.jsp").forward(request, response);
     }
@@ -175,6 +178,13 @@ public class CheckoutController extends HttpServlet {
         String addressIdStr = request.getParameter("shippingAddressID");
         Integer shippingAddressID = null;
 
+        String wardCode = request.getParameter("wardCode");
+        Integer districtId = null;
+        String districtStr = request.getParameter("districtId");
+        if (districtStr != null && !districtStr.isEmpty()) {
+            try { districtId = Integer.parseInt(districtStr); } catch (Exception e) {}
+        }
+
         if (addressIdStr != null && !addressIdStr.isEmpty()) {
             try { shippingAddressID = Integer.parseInt(addressIdStr); } catch (Exception e) {}
         }
@@ -187,6 +197,8 @@ public class CheckoutController extends HttpServlet {
                  phone = addr.getPhone();
                  address = addr.getAddress();
                  detailAddress = addr.getDetailAddress();
+                 wardCode = addr.getWardCode();
+                 districtId = addr.getDistrictId();
              } else {
                  shippingAddressID = null;
              }
@@ -259,6 +271,8 @@ public class CheckoutController extends HttpServlet {
         bill.setStatus(0); // 0 = Chờ xử lý (Pending)
         bill.setPayment("payos".equals(paymentMethod) ? 1 : 0);
         bill.setShippingAddressID(shippingAddressID);
+        bill.setWardCode(wardCode);
+        bill.setDistrictId(districtId);
         bill.setDateOrder(new Timestamp(System.currentTimeMillis()));
         bill.setDateUpdate(new Timestamp(System.currentTimeMillis()));
         bill.setTransactionCode("payos".equals(paymentMethod) ? "PAYOS" + System.currentTimeMillis() : null);

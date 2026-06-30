@@ -99,9 +99,12 @@
                     <strong>Miễn phí</strong>
                 </div>
                 <div class="mb-cart-promo">
-                    <label>MÃ GIẢM GIÁ</label>
-                    <form action="${ctx}/voucher" method="post" class="mb-cart-promo-row">
-                        <input type="text" name="couponCode" placeholder="Nhập mã voucher"/>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin: 0;">MÃ GIẢM GIÁ</label>
+                        <button type="button" onclick="var m = document.getElementById('voucherModal'); if(m) m.classList.add('active'); else alert('Lỗi: Không tìm thấy popup mã giảm giá!');" style="background:none; border:none; color:#DB4444; cursor:pointer; font-size:12px; font-weight:bold; padding:0;">Gợi ý mã giảm giá</button>
+                    </div>
+                    <form action="${ctx}/voucher" method="post" class="mb-cart-promo-row" id="cartVoucherForm">
+                        <input type="text" name="couponCode" id="cartVoucherInput" placeholder="Nhập mã voucher"/>
                         <button type="submit" name="use-voucher">ÁP DỤNG</button>
                     </form>
                     <c:if test="${sessionScope.couponStatus == 'invalid'}">
@@ -112,6 +115,9 @@
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'min_order'}">
                         <p style="color:#d10024;font-size:12px;margin-top:8px">Đơn hàng tối thiểu phải từ ${currency.currencyFormat(sessionScope.couponMinAmount)} để áp dụng.</p>
+                    </c:if>
+                    <c:if test="${sessionScope.couponStatus == 'already_used'}">
+                        <p style="color:#d10024;font-size:12px;margin-top:8px">Bạn đã sử dụng mã giảm giá này rồi.</p>
                     </c:if>
                     <c:if test="${sessionScope.couponStatus == 'applied'}">
                         <p style="color:#2e7d32;font-size:12px;margin-top:8px">Đã áp dụng mã giảm giá thành công.</p>
@@ -232,4 +238,48 @@
     </script>
     <c:remove var="checkoutError" scope="session"/>
 </c:if>
+
+<!-- Modal Voucher -->
+<div id="voucherModal" class="mb-modal">
+    <div class="mb-modal-content" style="max-width: 450px;">
+        <div class="mb-modal-header">
+            <h3 class="mb-modal-title">Chọn mã giảm giá</h3>
+            <button type="button" class="mb-modal-close" onclick="var m = document.getElementById('voucherModal'); if(m) m.classList.remove('active');">&times;</button>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto; padding: 10px 0;">
+            <c:if test="${empty publicVouchers}">
+                <p style="text-align:center; color:#666; font-size:14px;">Hiện chưa có mã giảm giá nào.</p>
+            </c:if>
+            <c:forEach items="${publicVouchers}" var="v">
+                <c:set var="displayVoucher" value="${fn:replace(fn:replace(v.code, 'PUB_', ''), 'PRI_', '')}" />
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.borderColor='#DB4444'" onmouseout="this.style.borderColor='#e5e7eb'" onclick="applyVoucher('${displayVoucher}')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color:#DB4444; font-size:16px;">${displayVoucher}</strong>
+                        <span style="font-size:12px; color:#555;">HSD: <strong>${v.end}</strong></span>
+                    </div>
+                    <div style="font-size:13px; color:#333; margin-top:6px;">
+                        Giảm ${v.discountType == 0 ? currency.currencyFormat(v.value) : v.value.toString().concat('%')} 
+                        đơn tối thiểu ${currency.currencyFormat(v.minOrderAmount)}
+                        <c:if test="${v.discountType == 1 && v.maxDiscount != null && v.maxDiscount > 0}">
+                            (Tối đa ${currency.currencyFormat(v.maxDiscount)})
+                        </c:if>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openVoucherModal() {
+        document.getElementById('voucherModal').classList.add('active');
+    }
+    function closeVoucherModal() {
+        document.getElementById('voucherModal').classList.remove('active');
+    }
+    function applyVoucher(code) {
+        document.getElementById('cartVoucherInput').value = code;
+        document.getElementById('cartVoucherForm').submit();
+    }
+</script>
 <%@include file="./components/footer.jsp" %>
