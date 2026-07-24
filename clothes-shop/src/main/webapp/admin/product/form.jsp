@@ -98,9 +98,13 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Độ ưu tiên (số lớn hơn xếp trước)</label>
-                            <input type="number" class="form-control" name="priority" min="0"
-                                   value="${isEdit ? product.priority : (not empty param.priority ? param.priority : '0')}"/>
+                            <label class="form-label">Loại sản phẩm (Độ ưu tiên)</label>
+                            <select name="priority" class="form-select">
+                                <c:set var="cPriority" value="${isEdit ? product.priority : (not empty param.priority ? param.priority : '1')}"/>
+                                <option value="1" ${cPriority == 1 ? 'selected' : ''}>Sản phẩm thường (1)</option>
+                                <option value="2" ${cPriority == 2 ? 'selected' : ''}>Sản phẩm Deal (2)</option>
+                                <option value="3" ${cPriority == 3 ? 'selected' : ''}>Sản phẩm Nổi bật (3)</option>
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Trạng thái</label>

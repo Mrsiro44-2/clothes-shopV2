@@ -14,6 +14,7 @@ public class AppConfig {
     public static final String EMAIL_USERNAME = "Clothing Shop";
     public static final String EMAIL_FROM = "kimlt.develop@gmail.com";
     public static final String EMAIL_PASSWORD = "xlwizpsnqzazjkry";
+    public static final String ADMIN_EMAIL = "kimlt.develop@gmail.com"; // Email nhận thông báo liên hệ
     // ==========================================
     // 3. CẤU HÌNH PAYOS (THANH TOÁN ONLINE)
     // ==========================================

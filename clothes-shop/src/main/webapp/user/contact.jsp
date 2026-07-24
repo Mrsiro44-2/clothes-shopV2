@@ -23,20 +23,26 @@
                 </ul>
             </div>
             <div class="col-md-6">
-                <form class="mb-checkout-form" onsubmit="return false;">
+                <form class="mb-checkout-form" action="${ctx}/contact" method="POST">
+                    <c:if test="${not empty message}">
+                        <div class="alert alert-success">${message}</div>
+                    </c:if>
+                    <c:if test="${not empty error}">
+                        <div class="alert alert-danger">${error}</div>
+                    </c:if>
                     <div class="mb-field">
                         <label>Họ tên</label>
-                        <input class="input" type="text" placeholder="Nhập họ tên"/>
+                        <input class="input" type="text" name="name" placeholder="Nhập họ tên" required/>
                     </div>
                     <div class="mb-field">
                         <label>Email</label>
-                        <input class="input" type="email" placeholder="email@example.com"/>
+                        <input class="input" type="email" name="email" placeholder="email@example.com" required/>
                     </div>
                     <div class="mb-field">
                         <label>Nội dung</label>
-                        <textarea class="input" rows="4" placeholder="Tin nhắn của bạn..."></textarea>
+                        <textarea class="input" name="content" rows="4" placeholder="Tin nhắn của bạn..." required></textarea>
                     </div>
-                    <button type="button" class="mb-checkout-submit">Gửi tin nhắn</button>
+                    <button type="submit" class="mb-checkout-submit">Gửi tin nhắn</button>
                 </form>
             </div>
         </div>
