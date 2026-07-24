@@ -131,34 +131,11 @@ public class BillDAO {
     }
 
     public boolean updateStatus(int id, int status) {
-        String sql = "UPDATE Bill SET status = ?, dateUpdate = ? WHERE id = ?";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setInt(1, status);
-            st.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-            st.setInt(3, id);
-            int rows = st.executeUpdate();
-            return rows > 0;
-        } catch (Exception e) {
-            System.out.println("BillDAO updateStatus: " + e);
-        }
-        return false;
+        return updateStatusCore(id, status, null);
     }
 
     public boolean updateStatusWithReason(int id, int status, String reason) {
-        String sql = "UPDATE Bill SET status = ?, cancelReason = ?, dateUpdate = ? WHERE id = ?";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setInt(1, status);
-            st.setString(2, reason);
-            st.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
-            st.setInt(4, id);
-            int rows = st.executeUpdate();
-            return rows > 0;
-        } catch (Exception e) {
-            System.out.println("BillDAO updateStatusWithReason: " + e);
-        }
-        return false;
+        return updateStatusCore(id, status, reason);
     }
 
     public java.util.Map<String, String> getEmailNameMapOfBuyers() {
@@ -500,25 +477,69 @@ public class BillDAO {
     }
 
     public boolean updateStatus(int billId, int newStatus, String cancelReason) {
-        String sql;
-        if (cancelReason != null) {
-            sql = "UPDATE Bill SET status = ?, cancelReason = ? WHERE id = ?";
-        } else {
-            sql = "UPDATE Bill SET status = ? WHERE id = ?";
-        }
+        return updateStatusCore(billId, newStatus, cancelReason);
+    }
+
+    private boolean updateStatusCore(int id, int status, String reason) {
+        Bill b = getBillById(id);
+        if (b == null) return false;
+        
+        boolean isCancelling = (status == 2 && b.getStatus() != 2);
+        boolean originalAutoCommit = true;
+        
         try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setInt(1, newStatus);
-            if (cancelReason != null) {
-                st.setString(2, cancelReason);
-                st.setInt(3, billId);
-            } else {
-                st.setInt(2, billId);
+            if (isCancelling) {
+                originalAutoCommit = conn.getAutoCommit();
+                conn.setAutoCommit(false);
             }
-            return st.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.out.println("BillDAO updateStatus with reason: " + e.getMessage());
+            
+            String sql;
+            PreparedStatement st;
+            if (reason != null) {
+                sql = "UPDATE Bill SET status = ?, cancelReason = ?, dateUpdate = ? WHERE id = ?";
+                st = conn.prepareStatement(sql);
+                st.setInt(1, status);
+                st.setString(2, reason);
+                st.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+                st.setInt(4, id);
+            } else {
+                sql = "UPDATE Bill SET status = ?, dateUpdate = ? WHERE id = ?";
+                st = conn.prepareStatement(sql);
+                st.setInt(1, status);
+                st.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                st.setInt(3, id);
+            }
+            
+            int rows = st.executeUpdate();
+            
+            if (rows > 0 && isCancelling) {
+                List<BillDetail> details = getBillDetails(id);
+                String sqlStock = "UPDATE ProductVariant SET quantity = quantity + ? WHERE ID = ?";
+                PreparedStatement psStock = conn.prepareStatement(sqlStock);
+                for (BillDetail d : details) {
+                    if (d.getProductVariantID() != null) {
+                        psStock.setInt(1, d.getNumberOfProduct());
+                        psStock.setInt(2, d.getProductVariantID());
+                        psStock.executeUpdate();
+                    }
+                }
+            }
+            
+            if (isCancelling) {
+                conn.commit();
+            }
+            return rows > 0;
+            
+        } catch (Exception e) {
+            System.out.println("BillDAO updateStatusCore: " + e);
+            if (isCancelling) {
+                try { if (conn != null) conn.rollback(); } catch (SQLException ex) {}
+            }
+            return false;
+        } finally {
+            if (isCancelling) {
+                try { if (conn != null) conn.setAutoCommit(originalAutoCommit); } catch (SQLException ex) {}
+            }
         }
-        return false;
     }
 }
