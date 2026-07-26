@@ -151,7 +151,7 @@
                                                             ${currency.currencyFormat(lineTot)}
                                                         </h4>
                                                     </div>
-                                                    <button class="delete">
+                                                    <button class="delete" onclick="if(confirm('Bạn có chắc muốn xóa khỏi giỏ hàng?')) window.location.href='${ctx}/cart/remove?cartId=${cart.ID}'">
                                                         <i class="fa fa-close"></i>
                                                     </button>
                                                 </div>
@@ -193,8 +193,15 @@
                                             class="dropdown-toggle"
                                             data-toggle="dropdown"
                                             aria-expanded="true"
+                                            style="cursor: pointer"
                                             >
                                             <i class="fa fa-user-o"></i>
+                                            <span>
+                                                <c:choose>
+                                                    <c:when test="${not empty userLogin.fullname}">${userLogin.fullname}</c:when>
+                                                    <c:otherwise>${userLoginUsername}</c:otherwise>
+                                                </c:choose>
+                                            </span>
                                         </a>
                                         <div class="account-dropdown">
                                             <div>
