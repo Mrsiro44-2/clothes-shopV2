@@ -32,7 +32,7 @@ public class BrandDAO {
 
 //  user
     public List<Brand> getTopBrand() {
-        String sql = "SELECT TOP 7 b.*, ISNULL(SUM(bd.numberOfProduct), 0) AS total_sold "
+        String sql = "SELECT TOP 6 b.*, ISNULL(SUM(bd.numberOfProduct), 0) AS total_sold "
                 + "FROM Brand b "
                 + "INNER JOIN Product p ON p.brandID = b.ID AND p.status = 1 "
                 + "LEFT JOIN ProductVariant v ON v.productID = p.ID "
