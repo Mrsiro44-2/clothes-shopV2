@@ -9,6 +9,7 @@ import Model.Account;
 import Model.Bill;
 import Model.BillDetail;
 import Model.Feedback;
+import Model.ReviewableProduct;
 import Utils.ServletPaths;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -22,46 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "OrdersController", urlPatterns = {"/orders", "/orders/detail", "/orders/cancel", "/orders/review"})
 public class OrdersController extends HttpServlet {
-
-    public static class ReviewableProduct {
-        private String productName;
-        private int billId;
-        private int productId;
-        private String imgProduct;
-
-        public String getProductName() {
-            return productName;
-        }
-
-        public void setProductName(String productName) {
-            this.productName = productName;
-        }
-
-        public int getBillId() {
-            return billId;
-        }
-
-        public void setBillId(int billId) {
-            this.billId = billId;
-        }
-
-        public int getProductId() {
-            return productId;
-        }
-
-        public void setProductId(int productId) {
-            this.productId = productId;
-        }
-
-        public String getImgProduct() {
-            return imgProduct;
-        }
-
-        public void setImgProduct(String imgProduct) {
-            this.imgProduct = imgProduct;
-        }
-    }
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

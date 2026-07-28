@@ -9,6 +9,7 @@ public class OrderStatus {
     public static final int CANCELLED = 2;
     public static final int REFUNDED = 7;
     public static final int COMPLETED = 3;
+    public static final int APPROVED = 8;
 
     public static String getStatusLabel(int status) {
         switch (status) {
@@ -20,6 +21,7 @@ public class OrderStatus {
             case CANCELLED: return "Đã hủy";
             case REFUNDED: return "Đã hoàn tiền";
             case COMPLETED: return "Hoàn thành";
+            case APPROVED: return "Đã duyệt";
             default: return "Không xác định";
         }
     }
@@ -34,6 +36,7 @@ public class OrderStatus {
             case CANCELLED: return "status-cancelled";
             case REFUNDED: return "status-refunded";
             case COMPLETED: return "status-completed";
+            case APPROVED: return "status-approved";
             default: return "";
         }
     }

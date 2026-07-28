@@ -56,20 +56,6 @@ public class PasswordResetTokenDAO {
         return null;
     }
 
-    public boolean markTokenAsUsed(int tokenId) {
-        String sql = "UPDATE PasswordResetToken SET usedAt = ? WHERE ID = ?";
-        try (Connection conn = DBConnection.connect();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-             
-            ps.setTimestamp(1, new Timestamp(System.currentTimeMillis()));
-            ps.setInt(2, tokenId);
-            
-            return ps.executeUpdate() > 0;
-        } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "Lỗi markTokenAsUsed", ex);
-        }
-        return false;
-    }
 
     public boolean deleteToken(int tokenId) {
         String sql = "DELETE FROM PasswordResetToken WHERE ID = ?";

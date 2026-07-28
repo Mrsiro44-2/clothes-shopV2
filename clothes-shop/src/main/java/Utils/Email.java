@@ -63,9 +63,4 @@ public class Email {
         }
     }
 
-    public static void logResetLink(String link) {
-        LOG.severe("========== LINK DAT LAI MAT KHAU (copy de test) ==========");
-        LOG.severe(link);
-        LOG.severe("===========================================================");
-    }
 }

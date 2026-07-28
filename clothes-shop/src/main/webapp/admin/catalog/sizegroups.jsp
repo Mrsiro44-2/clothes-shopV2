@@ -33,6 +33,7 @@
                     <thead>
                         <tr>
                             <th>STT</th>
+                            <th>Mã nhóm</th>
                             <th>Tên Nhóm kích cỡ</th>
                             <th>Các kích cỡ</th>
                             <th>Trạng thái</th>
@@ -43,6 +44,7 @@
                         <c:forEach items="${sizeGroups}" var="cat" varStatus="loop">
                             <tr>
                                 <td>${(currentPage - 1) * limit + loop.index + 1}</td>
+                                <td>${cat.code}</td>
                                 <td><strong>${cat.name}</strong></td>
                                 <td>
                                     <c:set var="sizes" value="${sizeOptionsMap[cat.ID]}" />
@@ -77,7 +79,7 @@
                             </tr>
                         </c:forEach>
                         <c:if test="${empty sizeGroups}">
-                            <tr><td colspan="4" class="text-center text-muted py-4">Chưa có Nhóm kích cỡ nào.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-4">Chưa có Nhóm kích cỡ nào.</td></tr>
                         </c:if>
                     </tbody>
                 </table>

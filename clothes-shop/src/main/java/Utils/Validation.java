@@ -48,17 +48,6 @@ public class Validation {
     }
 
     /** Chuẩn hoá số tiền từ form (dấu phẩy / khoảng trắng). */
-    public float parseMoney(String raw) {
-        if (raw == null) {
-            return -1;
-        }
-        String s = raw.trim().replace(".", "").replace(",", "").replace(" ", "");
-        try {
-            return Float.parseFloat(s);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
 
     public int clampQty(int qty, int stock) {
         if (qty < 1) {

@@ -6,10 +6,6 @@ package Utils;
  */
 public class Sale {
 
-    public String calculateSale(double newPrice, double oldPrice) {
-        int pct = salePercent(newPrice, oldPrice);
-        return pct > 0 ? pct + " %" : "0 %";
-    }
 
     /** Phần trăm giảm (0 nếu không giảm). */
     public int salePercent(double newPrice, double oldPrice) {

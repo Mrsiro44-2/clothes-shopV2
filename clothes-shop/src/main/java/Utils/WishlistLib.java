@@ -22,12 +22,6 @@ public class WishlistLib {
         return new WishlistDAO().countByAccount(accountId);
     }
 
-    public List<WishlistItem> list(int accountId) {
-        if (accountId <= 0) {
-            return Collections.emptyList();
-        }
-        return new WishlistDAO().findByAccount(accountId);
-    }
 
     /**
      * Tải map yêu thích một lần mỗi request (dùng cho product card trên shop/home).

@@ -25,9 +25,6 @@ public class BlogPostDAO {
     private static final String PUBLISHED_WHERE = "WHERE p.status = 1 AND p.publishedAt IS NOT NULL "
             + "AND p.publishedAt <= GETDATE() ";
 
-    public List<BlogPost> listPublished(int offset, int limit) {
-        return searchPublished(null, null, null, offset, limit);
-    }
 
     public List<BlogPost> searchPublished(String keyword, Integer categoryId, List<String> tagSlugs, int offset, int limit) {
         List<BlogPost> list = new ArrayList<>();

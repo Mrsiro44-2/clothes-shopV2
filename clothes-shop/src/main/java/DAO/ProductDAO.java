@@ -44,69 +44,6 @@ public class ProductDAO {
         }
     }
 
-    public List<Product> filterProduct(int[] idCategory, int[] idBrand, float from, float to, int time) {
-        List<Product> products = new ArrayList<>();
-        String sql = P_SEL + P_AGG_JOIN
-                + "JOIN Category AS c ON c.ID = p.categoryID "
-                + "JOIN Producer AS pr ON pr.ID = p.producerID "
-                + "JOIN Brand AS br ON br.ID = p.brandID "
-                + "WHERE p.status = 1 AND pr.status = 1 AND c.status = 1 AND br.status = 1 ";
-        int i = 0;
-        for (int id : idCategory) {
-            if (idCategory.length - 1 == 0) {
-                sql += " AND p.categoryID = ? ";
-                break;
-            } else if (i == 0) {
-                sql += "AND (p.categoryID = ? ";
-            } else if (i == idCategory.length - 1) {
-                sql += "OR p.categoryID = ? ) ";
-            } else {
-                sql += "OR p.categoryID = ? ";
-            }
-            i++;
-        }
-        for (int id : idBrand) {
-            if (idBrand.length - 1 == 0) {
-                sql += " AND p.brandID = ? ";
-                break;
-            } else if (i == 0) {
-                sql += "AND (p.brandID = ? ";
-            } else if (i == idBrand.length - 1) {
-                sql += "OR p.brandID = ? ) ";
-            } else {
-                sql += "OR p.brandID = ? ";
-            }
-            i++;
-        }
-        sql += "AND ((ISNULL(va.aggMinNew, 0) >= ? AND ISNULL(va.aggMinNew, 0) <= ?) "
-                + "OR (ISNULL(va.aggMaxOld, 0) >= ? AND ISNULL(va.aggMaxOld, 0) <= ?)) ";
-        if (time == 0) {
-            sql += "ORDER BY p.ID ASC";
-        } else {
-            sql += "ORDER BY p.ID DESC";
-        }
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            int index = 1;
-            for (int id : idCategory) {
-                st.setInt(index++, id);
-            }
-            for (int id : idBrand) {
-                st.setInt(index++, id);
-            }
-            st.setFloat(index++, from);
-            st.setFloat(index++, to);
-            st.setFloat(index++, from);
-            st.setFloat(index++, to);
-            ResultSet result = st.executeQuery();
-            while (result.next()) {
-                products.add(this.getProduct(result));
-            }
-        } catch (SQLException e) {
-            System.out.println("filterProduct: " + e);
-        }
-        return products;
-    }
 
     public List<Product> getProductByPriority(int status) {
         List<Product> products = new ArrayList<>();

@@ -20,20 +20,6 @@ public class VoucherDAO {
         }
     }
 
-    public List<Voucher> allVoucher() {
-        List<Voucher> list = new ArrayList<>();
-        String sql = "SELECT * FROM Voucher ORDER BY ID DESC";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                list.add(getVoucher(rs));
-            }
-        } catch (Exception e) {
-            System.out.println("VoucherDAO allVoucher: " + e);
-        }
-        return list;
-    }
 
     public List<Voucher> getPublicVouchers() {
         List<Voucher> list = new ArrayList<>();
@@ -266,7 +252,7 @@ public class VoucherDAO {
      * Kiểm tra user đã sử dụng voucher này chưa (qua bảng Bill).
      */
     public boolean hasUserUsedVoucher(int voucherId, int userId) {
-        String sql = "SELECT COUNT(*) FROM Bill WHERE voucherID = ? AND customerID = ?";
+        String sql = "SELECT COUNT(*) FROM Bill WHERE voucherID = ? AND customerID = ? AND status != 2";
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             st.setInt(1, voucherId);

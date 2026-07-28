@@ -51,6 +51,23 @@ public class SizeOptionDAO {
         return list;
     }
 
+    public boolean isExistName(String label, int sizeGroupId, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM SizeOption WHERE sizeGroupID = ? AND LOWER(label) = LOWER(?) AND ID != ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setInt(1, sizeGroupId);
+            st.setString(2, label.trim());
+            st.setInt(3, excludeId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("SizeOptionDAO.isExistName: " + e);
+        }
+        return false;
+    }
+
     public SizeOption getSizeOptionById(int id) {
         String sql = "SELECT * FROM SizeOption WHERE ID = ?";
         try {

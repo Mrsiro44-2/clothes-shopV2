@@ -108,6 +108,17 @@ public class AdminCategoryController extends HttpServlet {
         if (status != 0 && status != 1) {
             errors.append("Trạng thái không hợp lệ. ");
         }
+        
+        int currentId = -1;
+        if (relative.contains("/edit/")) {
+            currentId = ServletPaths.idAfter(request, "/admin/categories/edit");
+        }
+        
+        if (name != null && !name.trim().isEmpty()) {
+            if (categoryDao.isExistName(name.trim(), currentId)) {
+                errors.append("Tên danh mục này đã tồn tại. Vui lòng chọn tên khác. ");
+            }
+        }
 
         if (errors.length() > 0) {
             request.setAttribute("error", errors.toString().trim());

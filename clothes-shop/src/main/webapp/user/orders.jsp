@@ -173,6 +173,9 @@
                                                 <c:when test="${o.status == 4}">
                                                     <span class="status-tag status-paid">Đã thanh toán</span>
                                                 </c:when>
+                                                <c:when test="${o.status == 8}">
+                                                    <span class="status-tag" style="background-color: #0dcaf0; color: #fff;">Đã duyệt</span>
+                                                </c:when>
                                                 <c:when test="${o.status == 5}">
                                                     <span class="status-tag status-prepared">Đã chuẩn bị hàng</span>
                                                 </c:when>

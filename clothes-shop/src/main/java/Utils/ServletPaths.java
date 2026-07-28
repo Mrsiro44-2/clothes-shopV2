@@ -88,16 +88,6 @@ public final class ServletPaths {
         return rel.startsWith(prefix);
     }
 
-    public static boolean relativeEndsWith(HttpServletRequest request, String suffix) {
-        String rel = relative(request);
-        if (suffix == null) {
-            return false;
-        }
-        if (!suffix.startsWith("/")) {
-            suffix = "/" + suffix;
-        }
-        return rel.equals(suffix) || rel.equals(suffix + "/") || rel.endsWith(suffix);
-    }
 
     /**
      * Phần path sau tiền tố prefix (relative), không gồm query.
@@ -156,18 +146,4 @@ public final class ServletPaths {
         return new Validation().getInt(seg.substring(pagePrefix.length()));
     }
 
-    public static String publicBaseUrl(HttpServletRequest request) {
-        String scheme = request.getScheme();
-        String host = request.getServerName();
-        int port = request.getServerPort();
-        StringBuilder b = new StringBuilder();
-        b.append(scheme).append("://").append(host);
-        boolean def = ("http".equalsIgnoreCase(scheme) && port == 80)
-                || ("https".equalsIgnoreCase(scheme) && port == 443);
-        if (!def) {
-            b.append(":").append(port);
-        }
-        b.append(ctx(request));
-        return b.toString();
-    }
 }

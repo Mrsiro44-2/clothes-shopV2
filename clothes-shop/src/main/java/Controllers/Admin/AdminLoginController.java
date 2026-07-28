@@ -92,6 +92,11 @@ public class AdminLoginController extends HttpServlet {
             return;
         }
 
+        HttpSession oldSession = request.getSession(false);
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+
         HttpSession session = request.getSession(true);
         session.setAttribute("adminUser", account.getUsername());
         session.setAttribute("adminRole", roleName.toLowerCase());

@@ -35,7 +35,7 @@ public class HomeController extends HttpServlet {
         request.setAttribute("productsFeature", productsFeature);
         request.setAttribute("productsNormal", productsNormal);
         request.setAttribute("homeBanners", AppImages.HOME_BANNER_URLS);
-        request.getRequestDispatcher("/user/index.jsp").forward(request, response);
+        request.getRequestDispatcher("/user/home.jsp").forward(request, response);
     }
 
     @Override

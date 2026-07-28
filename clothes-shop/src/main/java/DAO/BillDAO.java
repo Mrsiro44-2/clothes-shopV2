@@ -21,45 +21,6 @@ public class BillDAO {
         }
     }
 
-    public List<Bill> allBill() {
-        List<Bill> list = new ArrayList<>();
-        String sql = "SELECT * FROM Bill ORDER BY dateOrder DESC";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                Bill b = new Bill();
-                b.setID(rs.getInt("id"));
-                b.setCustomerID(rs.getInt("customerID"));
-                b.setEmail(rs.getString("email"));
-                b.setCustomerName(rs.getString("customerName"));
-                b.setPhone(rs.getString("phone"));
-                b.setAddress(rs.getString("address"));
-                b.setDetailAddress(rs.getString("detailAddress"));
-                b.setSubtotal(rs.getFloat("subtotal"));
-                b.setDiscountAmount(rs.getFloat("discountAmount"));
-                b.setVoucherID(rs.getObject("voucherID") != null ? rs.getInt("voucherID") : null);
-                b.setVoucherCodeSnapshot(rs.getString("voucherCodeSnapshot"));
-                b.setShippingAddressID(rs.getObject("shippingAddressID") != null ? rs.getInt("shippingAddressID") : null);
-                b.setTotal(rs.getFloat("total"));
-                b.setStatus(rs.getInt("status"));
-                b.setPayment(rs.getInt("payment"));
-                b.setDateOrder(rs.getTimestamp("dateOrder"));
-                b.setDateUpdate(rs.getTimestamp("dateUpdate"));
-                b.setTransactionCode(rs.getString("transactionCode"));
-                b.setCancelReason(rs.getString("cancelReason"));
-                b.setGhnOrderCode(rs.getString("ghnOrderCode"));
-                b.setWardCode(rs.getString("wardCode"));
-                if (rs.getObject("districtId") != null) {
-                    b.setDistrictId(rs.getInt("districtId"));
-                }
-                list.add(b);
-            }
-        } catch (Exception e) {
-            System.out.println("BillDAO allBill: " + e);
-        }
-        return list;
-    }
 
     public Bill getBillById(int id) {
         String sql = "SELECT * FROM Bill WHERE id = ?";
@@ -378,21 +339,16 @@ public class BillDAO {
                 psDetail.executeUpdate();
             }
 
-            String sqlStock = "UPDATE ProductVariant SET quantity = quantity - ? WHERE ID = ?";
-            PreparedStatement psStock = conn.prepareStatement(sqlStock);
-            for (BillDetail d : details) {
-                if (d.getProductVariantID() != null) {
-                    psStock.setInt(1, d.getNumberOfProduct());
-                    psStock.setInt(2, d.getProductVariantID());
-                    psStock.executeUpdate();
-                }
-            }
+            // Stock decrement logic has been removed here. Stock will only be decremented upon admin approval.
 
             if (bill.getVoucherID() != null) {
-                String sqlVoucher = "UPDATE Voucher SET used = used + 1 WHERE ID = ?";
+                String sqlVoucher = "UPDATE Voucher SET used = used + 1 WHERE ID = ? AND (usageLimit IS NULL OR used < usageLimit)";
                 PreparedStatement psVoucher = conn.prepareStatement(sqlVoucher);
                 psVoucher.setInt(1, bill.getVoucherID());
-                psVoucher.executeUpdate();
+                int affected = psVoucher.executeUpdate();
+                if (affected == 0) {
+                    throw new SQLException("Voucher_Limit_Reached");
+                }
             }
 
             String sqlCart = "DELETE FROM Cart WHERE accountID = ?";
@@ -410,7 +366,11 @@ public class BillDAO {
             } catch (SQLException ex) {
                 System.out.println("Rollback fail: " + ex);
             }
-            billId = 0;
+            if (e.getMessage() != null && e.getMessage().contains("Voucher_Limit_Reached")) {
+                billId = -1;
+            } else {
+                billId = 0;
+            }
         } finally {
             try {
                 if (conn != null) {
@@ -484,11 +444,17 @@ public class BillDAO {
         Bill b = getBillById(id);
         if (b == null) return false;
         
-        boolean isCancelling = (status == 2 && b.getStatus() != 2);
+        int oldStatus = b.getStatus();
+        boolean isCancelling = (status == 2 && oldStatus != 2);
+        boolean wasApproved = (oldStatus != 0 && oldStatus != 4);
+        boolean isApproving = ((oldStatus == 0 || oldStatus == 4) && (status == 8 || status == 1 || status == 5 || status == 6));
+        
+        boolean needsStockUpdate = isApproving || (isCancelling && wasApproved);
+        
         boolean originalAutoCommit = true;
         
         try {
-            if (isCancelling) {
+            if (needsStockUpdate || isCancelling) {
                 originalAutoCommit = conn.getAutoCommit();
                 conn.setAutoCommit(false);
             }
@@ -496,48 +462,69 @@ public class BillDAO {
             String sql;
             PreparedStatement st;
             if (reason != null) {
-                sql = "UPDATE Bill SET status = ?, cancelReason = ?, dateUpdate = ? WHERE id = ?";
+                sql = "UPDATE Bill SET status = ?, cancelReason = ?, dateUpdate = ? WHERE id = ? AND status = ?";
                 st = conn.prepareStatement(sql);
                 st.setInt(1, status);
                 st.setString(2, reason);
                 st.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
                 st.setInt(4, id);
+                st.setInt(5, oldStatus);
             } else {
-                sql = "UPDATE Bill SET status = ?, dateUpdate = ? WHERE id = ?";
+                sql = "UPDATE Bill SET status = ?, dateUpdate = ? WHERE id = ? AND status = ?";
                 st = conn.prepareStatement(sql);
                 st.setInt(1, status);
                 st.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
                 st.setInt(3, id);
+                st.setInt(4, oldStatus);
             }
             
             int rows = st.executeUpdate();
             
-            if (rows > 0 && isCancelling) {
+            if (rows > 0 && needsStockUpdate) {
                 List<BillDetail> details = getBillDetails(id);
-                String sqlStock = "UPDATE ProductVariant SET quantity = quantity + ? WHERE ID = ?";
+                String sqlStock;
+                if (isApproving) {
+                    sqlStock = "UPDATE ProductVariant SET quantity = quantity - ? WHERE ID = ? AND quantity >= ?";
+                } else {
+                    sqlStock = "UPDATE ProductVariant SET quantity = quantity + ? WHERE ID = ?";
+                }
                 PreparedStatement psStock = conn.prepareStatement(sqlStock);
                 for (BillDetail d : details) {
                     if (d.getProductVariantID() != null) {
                         psStock.setInt(1, d.getNumberOfProduct());
                         psStock.setInt(2, d.getProductVariantID());
-                        psStock.executeUpdate();
+                        if (isApproving) {
+                            psStock.setInt(3, d.getNumberOfProduct());
+                        }
+                        int updatedStock = psStock.executeUpdate();
+                        if (isApproving && updatedStock == 0) {
+                            throw new SQLException("Not_Enough_Stock");
+                        }
                     }
                 }
             }
             
-            if (isCancelling) {
+            if (needsStockUpdate || isCancelling) {
+                // Restore voucher count if cancelling
+                if (isCancelling && b.getVoucherID() != null) {
+                    String sqlVoucher = "UPDATE Voucher SET used = used - 1 WHERE ID = ? AND used > 0";
+                    PreparedStatement psVoucher = conn.prepareStatement(sqlVoucher);
+                    psVoucher.setInt(1, b.getVoucherID());
+                    psVoucher.executeUpdate();
+                }
+                
                 conn.commit();
             }
             return rows > 0;
             
         } catch (Exception e) {
             System.out.println("BillDAO updateStatusCore: " + e);
-            if (isCancelling) {
+            if (needsStockUpdate || isCancelling) {
                 try { if (conn != null) conn.rollback(); } catch (SQLException ex) {}
             }
             return false;
         } finally {
-            if (isCancelling) {
+            if (needsStockUpdate || isCancelling) {
                 try { if (conn != null) conn.setAutoCommit(originalAutoCommit); } catch (SQLException ex) {}
             }
         }

@@ -38,6 +38,44 @@ public class ProductVariantDAO {
         return list;
     }
 
+    public List<ProductVariant> findAllByProductId(int productId) {
+        List<ProductVariant> list = new ArrayList<>();
+        String sql = "SELECT v.*, s.label AS sizeLabel, c.name AS colorName, c.hexCode AS colorHex "
+                + "FROM ProductVariant v "
+                + "JOIN SizeOption s ON s.ID = v.sizeOptionID "
+                + "JOIN ColorOption c ON c.ID = v.colorOptionID "
+                + "WHERE v.productID = ? ORDER BY v.isDefault DESC, v.ID";
+        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, productId);
+            try ( ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapJoin(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ProductVariantDAO.findAllByProductId: " + e);
+        }
+        return list;
+    }
+
+    public boolean isExist(int productId, int sizeId, int colorId, int excludeVariantId) {
+        String sql = "SELECT COUNT(*) FROM ProductVariant WHERE productID = ? AND sizeOptionID = ? AND colorOptionID = ? AND ID != ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, productId);
+            st.setInt(2, sizeId);
+            st.setInt(3, colorId);
+            st.setInt(4, excludeVariantId);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ProductVariantDAO.isExist: " + e);
+        }
+        return false;
+    }
+
     public ProductVariant findById(int id) {
         String sql = "SELECT v.*, s.label AS sizeLabel, c.name AS colorName, c.hexCode AS colorHex "
                 + "FROM ProductVariant v "
@@ -85,24 +123,6 @@ public class ProductVariantDAO {
         return null;
     }
 
-    public boolean skuExists(String sku, Integer excludeId) {
-        String sql = "SELECT COUNT(*) FROM ProductVariant WHERE sku = ?"
-                + (excludeId != null ? " AND ID <> ?" : "");
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setString(1, sku);
-            if (excludeId != null) {
-                st.setInt(2, excludeId);
-            }
-            try ( ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("ProductVariantDAO.skuExists: " + e);
-        }
-        return false;
-    }
 
     public int insert(ProductVariant v) {
         String sql = "INSERT INTO ProductVariant (productID, sizeOptionID, colorOptionID, sku, barcode, oldPrice, newPrice, quantity, variantImg, weightGrams, isDefault, status, dateCreated) "
@@ -166,30 +186,8 @@ public class ProductVariantDAO {
         return 0;
     }
 
-    public void clearDefaultFlagExcept(int productId, int keepVariantId) {
-        String sql = "UPDATE ProductVariant SET isDefault = 0 WHERE productID = ? AND ID <> ?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, productId);
-            st.setInt(2, keepVariantId);
-            st.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("ProductVariantDAO.clearDefaultFlagExcept: " + e);
-        }
-    }
 
     /** Giảm tồn kho sau khi đặt hàng thành công. */
-    public int decrementStock(int variantId, int qty) {
-        String sql = "UPDATE ProductVariant SET quantity = quantity - ? WHERE ID = ? AND quantity >= ?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, qty);
-            st.setInt(2, variantId);
-            st.setInt(3, qty);
-            return st.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("ProductVariantDAO.decrementStock: " + e);
-        }
-        return 0;
-    }
 
     /** Hoàn tồn kho khi hủy đơn (đã từng trừ kho). */
     public int incrementStock(int variantId, int qty) {

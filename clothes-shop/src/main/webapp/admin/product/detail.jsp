@@ -175,7 +175,8 @@
                                     </c:forEach>
                                 </div>
                                 <div>
-                                    <span class="badge ${v.quantity > 0 ? 'bg-success text-white' : 'bg-danger text-white'}">${v.quantity} kho</span>
+                                    <span class="badge ${v.status == 1 ? 'bg-success text-white' : 'bg-secondary text-white'} me-1">${v.status == 1 ? 'Đang bán' : 'Đã ẩn'}</span>
+                                    <span class="badge ${v.quantity > 0 ? 'bg-info text-white' : 'bg-danger text-white'}">${v.quantity} kho</span>
                                 </div>
                             </div>
                         </c:forEach>
