@@ -128,6 +128,12 @@ public class AdminSizeGroupController extends HttpServlet {
             return;
         }
 
+        if (sizeGroupDao.isExistName(name, -1)) {
+            request.getSession().setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
+            return;
+        }
+
         SizeGroup sg = new SizeGroup(0, code, name, sortOrder, status);
         if (sizeGroupDao.insert(sg) > 0) {
             request.getSession().setAttribute("success", "Thêm nhóm kích cỡ thành công");
@@ -151,6 +157,12 @@ public class AdminSizeGroupController extends HttpServlet {
 
         if (validate.isBlank(code) || validate.isBlank(name)) {
             request.getSession().setAttribute("error", "Vui lòng nhập đủ thông tin");
+            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
+            return;
+        }
+
+        if (sizeGroupDao.isExistName(name, id)) {
+            request.getSession().setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
             return;
         }

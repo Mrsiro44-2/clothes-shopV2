@@ -113,21 +113,6 @@ public class AccountDAO {
         return null;
     }
 
-    public List<Account> allAccount(String username) {
-        String sql = "select A.*, R.name as roleName from [Account] as A join [Role] as R on R.id = A.role order by A.role desc, A.id desc";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            ResultSet rs = st.executeQuery();
-            List<Account> accounts = new ArrayList<>();
-            while (rs.next()) {
-                accounts.add(this.getAccount(rs));
-            }
-            return accounts;
-        } catch (SQLException er) {
-            System.out.println("Get all account: " + er);
-        }
-        return null;
-    }
     
     public List<Account> allAccountByStaff() {
         String sql = "select A.*, R.name as roleName from [Account] as A join [Role] as R on R.id = A.role"

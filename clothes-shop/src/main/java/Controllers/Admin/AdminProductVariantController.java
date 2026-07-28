@@ -90,6 +90,12 @@ public class AdminProductVariantController extends HttpServlet {
             return;
         }
 
+        if (variantDao.isExist(productID, sizeOptionID, colorOptionID, -1)) {
+            request.getSession().setAttribute("error", "Lỗi: Kích cỡ và Màu sắc này đã tồn tại trong sản phẩm.");
+            response.sendRedirect(request.getContextPath() + "/admin/products/edit/" + productID);
+            return;
+        }
+
         ProductVariant v = new ProductVariant();
         v.setProductID(productID);
         v.setSizeOptionID(sizeOptionID);
@@ -143,6 +149,12 @@ public class AdminProductVariantController extends HttpServlet {
             System.out.println("No file upload: " + e);
         }
 
+        if (variantDao.isExist(productID, sizeOptionID, colorOptionID, id)) {
+            request.getSession().setAttribute("error", "Lỗi: Kích cỡ và Màu sắc này đã tồn tại trong sản phẩm.");
+            response.sendRedirect(request.getContextPath() + "/admin/products/edit/" + productID);
+            return;
+        }
+
         ProductVariant v = new ProductVariant();
         v.setID(id);
         v.setProductID(productID);
@@ -179,9 +191,10 @@ public class AdminProductVariantController extends HttpServlet {
         
         ProductVariant v = variantDao.findById(id);
         if (v != null) {
-            v.setStatus(0);
+            int newStatus = v.getStatus() == 1 ? 0 : 1;
+            v.setStatus(newStatus);
             variantDao.update(v);
-            request.getSession().setAttribute("success", "Đã khoá biến thể");
+            request.getSession().setAttribute("success", newStatus == 0 ? "Đã khoá biến thể" : "Đã mở khoá biến thể");
         }
 
         if (productIdStr != null && !productIdStr.isEmpty()) {

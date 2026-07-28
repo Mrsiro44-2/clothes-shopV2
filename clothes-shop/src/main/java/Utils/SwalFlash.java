@@ -57,12 +57,4 @@ public final class SwalFlash {
         session.setAttribute(ATTR_MESSAGE, message != null ? message : "");
     }
 
-    public static void clearSession(HttpSession session) {
-        if (session == null) {
-            return;
-        }
-        session.removeAttribute(ATTR_ICON);
-        session.removeAttribute(ATTR_TITLE);
-        session.removeAttribute(ATTR_MESSAGE);
-    }
 }

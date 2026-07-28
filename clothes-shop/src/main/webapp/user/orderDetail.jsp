@@ -90,8 +90,8 @@
         content: "";
         position: absolute;
         top: 24px;
-        left: 10%;
-        right: 10%;
+        left: 8.333%;
+        right: 8.333%;
         height: 3px;
         background-color: #f1f5f9;
         z-index: 1;
@@ -99,7 +99,7 @@
     .mb-order-stepper-line {
         position: absolute;
         top: 24px;
-        left: 10%;
+        left: 8.333%;
         height: 3px;
         background-color: #2b2b2b;
         z-index: 2;
@@ -443,10 +443,14 @@
                     </c:when>
                     <c:otherwise>
                         <!-- Normal Stepper -->
-                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 5 ? '20%' : (order.status == 6 ? '40%' : (order.status == 1 ? '60%' : '80%')))};"></div>
+                        <div class="mb-order-stepper-line" style="width: ${order.status == 0 || order.status == 4 ? '0' : (order.status == 8 ? '16.666%' : (order.status == 5 ? '33.333%' : (order.status == 6 ? '50%' : (order.status == 1 ? '66.666%' : '83.333%'))))};"></div>
                         <div class="mb-stepper-step ${(order.status >= 0 && order.status != 2 && order.status != 7) ? 'completed' : ''} ${order.status == 0 || order.status == 4 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-shopping-bag"></i></div>
                             <div class="mb-step-label">${order.status == 4 ? 'Đã thanh toán' : 'Đã đặt hàng'}</div>
+                        </div>
+                        <div class="mb-stepper-step ${order.status == 8 || order.status == 5 || order.status == 6 || order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 8 ? 'active' : ''}">
+                            <div class="mb-step-icon"><i class="fa fa-check-circle-o"></i></div>
+                            <div class="mb-step-label">Đã duyệt</div>
                         </div>
                         <div class="mb-stepper-step ${order.status == 5 || order.status == 6 || order.status == 1 || order.status == 3 ? 'completed' : ''} ${order.status == 5 ? 'active' : ''}">
                             <div class="mb-step-icon"><i class="fa fa-archive"></i></div>
@@ -543,6 +547,9 @@
                                 </c:when>
                                 <c:when test="${order.status == 4}">
                                     <span class="mb-badge mb-badge-paid"><i class="fa fa-money"></i> Đã thanh toán</span>
+                                </c:when>
+                                <c:when test="${order.status == 8}">
+                                    <span class="mb-badge" style="background-color: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;"><i class="fa fa-check-circle-o"></i> Đã duyệt</span>
                                 </c:when>
                                 <c:when test="${order.status == 5}">
                                     <span class="mb-badge mb-badge-prepared"><i class="fa fa-archive"></i> Đã chuẩn bị hàng</span>

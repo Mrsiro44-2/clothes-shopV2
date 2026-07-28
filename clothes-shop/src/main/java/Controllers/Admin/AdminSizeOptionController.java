@@ -126,14 +126,10 @@ public class AdminSizeOptionController extends HttpServlet {
             return;
         }
 
-        // Check for duplicates in the same size group
-        java.util.List<SizeOption> existings = sizeOptionDao.getByGroupId(sizeGroupID);
-        for (SizeOption existing : existings) {
-            if (existing.getCode().trim().equalsIgnoreCase(code.trim()) || existing.getLabel().trim().equalsIgnoreCase(label.trim())) {
-                request.getSession().setAttribute("error", "Mã hoặc tên kích cỡ đã tồn tại trong nhóm này!");
-                response.sendRedirect(redirectUrl);
-                return;
-            }
+        if (sizeOptionDao.isExistName(label, sizeGroupID, -1)) {
+            request.getSession().setAttribute("error", "Tên kích cỡ đã tồn tại trong nhóm này!");
+            response.sendRedirect(redirectUrl);
+            return;
         }
 
         SizeOption s = new SizeOption(0, code, label, sortOrder, status, sizeGroupID);
@@ -163,6 +159,12 @@ public class AdminSizeOptionController extends HttpServlet {
 
         if (validate.isBlank(label)) {
             request.getSession().setAttribute("error", "Vui lòng nhập tên (label)");
+            response.sendRedirect(redirectUrl);
+            return;
+        }
+
+        if (sizeOptionDao.isExistName(label, sizeGroupID, id)) {
+            request.getSession().setAttribute("error", "Tên kích cỡ đã tồn tại trong nhóm này!");
             response.sendRedirect(redirectUrl);
             return;
         }

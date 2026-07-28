@@ -27,11 +27,4 @@ public class CurrencyConverter {
         return "0 " + sfx;
     }
 
-    public String currencyFormatInput(double number) {
-        if (number != 0) {
-            DecimalFormat decimalFormat = new DecimalFormat("###.###");
-            return decimalFormat.format(number);
-        }
-        return "0";
-    }
 }

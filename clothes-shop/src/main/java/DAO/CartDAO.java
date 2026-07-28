@@ -110,16 +110,6 @@ public class CartDAO {
         return 0;
     }
 
-    public int deleteCartItemByUser(int user) {
-        String sql = "DELETE FROM Cart WHERE accountID = ?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, user);
-            return st.executeUpdate();
-        } catch (Exception e) {
-            System.out.println("Delete cart error by user: " + e);
-        }
-        return 0;
-    }
 
     private Cart mapEnriched(ResultSet rs) throws SQLException {
         Cart c = new Cart();

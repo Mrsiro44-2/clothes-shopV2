@@ -77,17 +77,5 @@ public class ImgDescriptionDAO {
         return result;
     }
     
-    public int deleteByProduct(int idProduct) {
-        int result = 0;
-        String sql = "delete from imgDescription where productID=?";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setInt(1, idProduct);
-            result = st.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e);
-        }
-        return result;
-    }
 }
 

@@ -48,11 +48,26 @@ public class BrandDAO {
             while (result.next()) {
                 brands.add(this.getBrand(result));
             }
-            return brands;
         } catch (SQLException er) {
             System.out.println("Get top brand: " + er);
         }
         return brands;
+    }
+    
+    public boolean isExistName(String name, int excludeId) {
+        String sql = "SELECT COUNT(*) FROM Brand WHERE LOWER(name) = LOWER(?) AND ID != ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, name.trim());
+            st.setInt(2, excludeId);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("BrandDAO.isExistName: " + e);
+        }
+        return false;
     }
     
     public List<Brand> getBrandActive() {

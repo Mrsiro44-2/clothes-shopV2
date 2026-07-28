@@ -127,17 +127,6 @@ public class WishlistDAO {
         return map;
     }
 
-    public int removeByVariant(int accountId, int variantId) {
-        String sql = "DELETE FROM Wishlist WHERE accountID = ? AND productVariantID = ?";
-        try (PreparedStatement st = conn.prepareStatement(sql)) {
-            st.setInt(1, accountId);
-            st.setInt(2, variantId);
-            return st.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("WishlistDAO.removeByVariant: " + e);
-        }
-        return 0;
-    }
 
     private WishlistItem map(ResultSet rs) throws SQLException {
         WishlistItem w = new WishlistItem();

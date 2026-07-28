@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "CheckoutController", urlPatterns = {"/checkout", "/checkout/success"})
+@WebServlet(name = "CheckoutController", urlPatterns = { "/checkout", "/checkout/success" })
 public class CheckoutController extends HttpServlet {
 
     @Override
@@ -49,7 +49,8 @@ public class CheckoutController extends HttpServlet {
             int billId = 0;
             try {
                 billId = Integer.parseInt(idStr);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
 
             if (billId <= 0) {
                 ServletPaths.redirect(request, response, "/home");
@@ -90,7 +91,7 @@ public class CheckoutController extends HttpServlet {
         HttpSession session = request.getSession();
         String voucherCode = (String) session.getAttribute("appliedVoucherCode");
         float discount = 0;
-        
+
         if (voucherCode != null) {
             VoucherDAO voucherDao = new VoucherDAO();
             Voucher v = voucherDao.getVoucherByCode(voucherCode);
@@ -141,7 +142,7 @@ public class CheckoutController extends HttpServlet {
         request.setAttribute("discount", discount);
         request.setAttribute("total", subtotal - discount);
         request.setAttribute("voucherCode", session.getAttribute("appliedVoucherCode"));
-        
+
         VoucherDAO voucherDao = new VoucherDAO();
         request.setAttribute("publicVouchers", voucherDao.getPublicVouchers());
 
@@ -182,33 +183,39 @@ public class CheckoutController extends HttpServlet {
         Integer districtId = null;
         String districtStr = request.getParameter("districtId");
         if (districtStr != null && !districtStr.isEmpty()) {
-            try { districtId = Integer.parseInt(districtStr); } catch (Exception e) {}
+            try {
+                districtId = Integer.parseInt(districtStr);
+            } catch (Exception e) {
+            }
         }
 
         if (addressIdStr != null && !addressIdStr.isEmpty()) {
-            try { shippingAddressID = Integer.parseInt(addressIdStr); } catch (Exception e) {}
+            try {
+                shippingAddressID = Integer.parseInt(addressIdStr);
+            } catch (Exception e) {
+            }
         }
-        
+
         if (shippingAddressID != null && shippingAddressID > 0) {
-             DAO.ShippingAddressDAO addrDao = new DAO.ShippingAddressDAO();
-             Model.ShippingAddress addr = addrDao.getAddressById(shippingAddressID);
-             if (addr != null && addr.getAccountID() == account.getID()) {
-                 customerName = addr.getFullName();
-                 phone = addr.getPhone();
-                 address = addr.getAddress();
-                 detailAddress = addr.getDetailAddress();
-                 wardCode = addr.getWardCode();
-                 districtId = addr.getDistrictId();
-             } else {
-                 shippingAddressID = null;
-             }
+            DAO.ShippingAddressDAO addrDao = new DAO.ShippingAddressDAO();
+            Model.ShippingAddress addr = addrDao.getAddressById(shippingAddressID);
+            if (addr != null && addr.getAccountID() == account.getID()) {
+                customerName = addr.getFullName();
+                phone = addr.getPhone();
+                address = addr.getAddress();
+                detailAddress = addr.getDetailAddress();
+                wardCode = addr.getWardCode();
+                districtId = addr.getDistrictId();
+            } else {
+                shippingAddressID = null;
+            }
         }
 
         if (customerName == null || customerName.trim().isEmpty() ||
-            phone == null || phone.trim().isEmpty() ||
-            email == null || email.trim().isEmpty() ||
-            address == null || address.trim().isEmpty()) {
-            
+                phone == null || phone.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                address == null || address.trim().isEmpty()) {
+
             request.getSession().setAttribute("checkoutError", "Vui lòng nhập đầy đủ thông tin giao hàng.");
             ServletPaths.redirect(request, response, "/checkout");
             return;
@@ -284,10 +291,11 @@ public class CheckoutController extends HttpServlet {
         for (Cart c : carts) {
             ProductVariant pv = variantDao.findById(c.getProductVariantID());
             Product p = productDao.getProductByID(c.getProductID());
-            
+
             // Check stock availability
             if (pv == null || pv.getQuantity() < c.getQuantity()) {
-                request.getSession().setAttribute("checkoutError", "Sản phẩm " + c.getProductName() + " đã hết hàng hoặc không đủ tồn kho.");
+                request.getSession().setAttribute("checkoutError",
+                        "Sản phẩm " + c.getProductName() + " đã hết hàng hoặc không đủ tồn kho.");
                 ServletPaths.redirect(request, response, "/cart");
                 return;
             }
@@ -311,26 +319,19 @@ public class CheckoutController extends HttpServlet {
 
         if (newBillId > 0) {
             bill.setID(newBillId);
-            
-            // Chỉ gửi email nếu là COD (Thanh toán khi nhận hàng)
+
             if (!"payos".equals(paymentMethod)) {
-                // Send email async
                 final String customerEmail = bill.getEmail();
                 final Bill finalBill = bill;
                 final List<BillDetail> finalDetails = new ArrayList<>(details);
                 new Thread(() -> {
                     Utils.Email emailSender = new Utils.Email();
                     String htmlContent = Utils.EmailTemplates.getOrderConfirmationTemplate(finalBill, finalDetails);
-                    emailSender.sendEmail(customerEmail, "Xác Nhận Đơn Hàng #" + newBillId + " - Clothing Shop", htmlContent, null);
+                    emailSender.sendEmail(customerEmail, "Xác Nhận Đơn Hàng #" + newBillId + " - Clothing Shop",
+                            htmlContent, null);
                 }).start();
             }
 
-            // Increment voucher used count
-            if (voucherId != null && discount > 0) {
-                voucherDao.incrementUsed(voucherId);
-            }
-
-            // Clear voucher session fields
             session.removeAttribute("appliedVoucherId");
             session.removeAttribute("appliedVoucherCode");
             session.removeAttribute("discount");
@@ -339,7 +340,8 @@ public class CheckoutController extends HttpServlet {
 
             if ("payos".equals(paymentMethod)) {
                 try {
-                    String checkoutUrl = Utils.PayOSUtils.createPaymentLink(newBillId, (int) total, "Thanh toan don " + newBillId);
+                    String checkoutUrl = Utils.PayOSUtils.createPaymentLink(newBillId, (int) total,
+                            "Thanh toan don " + newBillId);
                     response.sendRedirect(checkoutUrl);
                     return;
                 } catch (Exception e) {
@@ -351,6 +353,9 @@ public class CheckoutController extends HttpServlet {
             }
 
             ServletPaths.redirect(request, response, "/checkout/success?id=" + newBillId);
+        } else if (newBillId == -1) {
+            request.getSession().setAttribute("checkoutError", "Mã giảm giá bạn chọn đã hết lượt sử dụng trong tích tắc. Vui lòng thử lại!");
+            ServletPaths.redirect(request, response, "/checkout");
         } else {
             request.getSession().setAttribute("checkoutError", "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
             ServletPaths.redirect(request, response, "/checkout");

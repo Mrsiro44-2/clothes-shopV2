@@ -288,7 +288,14 @@
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editVariantModal" onclick="populateEditVariantModal('${v.ID}', '${v.sku}', '${v.barcode}', '${v.colorOptionID}', '${v.sizeOptionID}', '${v.oldPrice}', '${v.newPrice}', '${v.quantity}', '${v.status}', '${v.variantImg}')">Sửa</button>
-                                            <a href="${ctx}/admin/product-variants/delete/${v.ID}?productID=${product.ID}" class="btn btn-sm btn-danger" onclick="return confirm('Khoá biến thể này?')">Khoá</a>
+                                            <c:choose>
+                                                <c:when test="${v.status == 1}">
+                                                    <a href="${ctx}/admin/product-variants/delete/${v.ID}?productID=${product.ID}" class="btn btn-sm btn-danger" onclick="return confirm('Khoá biến thể này?')">Khoá</a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <a href="${ctx}/admin/product-variants/delete/${v.ID}?productID=${product.ID}" class="btn btn-sm btn-success" onclick="return confirm('Mở khoá biến thể này?')">Mở khoá</a>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                     </tr>
                                 </c:forEach>

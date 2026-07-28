@@ -107,12 +107,17 @@
                                                 <option value="4">Đã thanh toán</option>
                                             </c:if>
                                             <c:if test="${order.payment != 1}">
-                                                <option value="5">Đã chuẩn bị hàng</option>
+                                                <option value="8">Đã duyệt</option>
                                             </c:if>
                                             <option value="2">Đã huỷ</option>
                                         </c:when>
                                         <c:when test="${order.status == 4}">
                                             <option value="4" selected>Đã thanh toán</option>
+                                            <option value="8">Đã duyệt</option>
+                                            <option value="2">Đã huỷ</option>
+                                        </c:when>
+                                        <c:when test="${order.status == 8}">
+                                            <option value="8" selected>Đã duyệt</option>
                                             <option value="5">Đã chuẩn bị hàng</option>
                                             <option value="2">Đã huỷ</option>
                                         </c:when>

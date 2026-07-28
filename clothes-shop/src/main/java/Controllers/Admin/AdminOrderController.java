@@ -126,16 +126,18 @@ public class AdminOrderController extends HttpServlet {
             int id = ServletPaths.idAfter(request, "/admin/orders/update-status");
             int status = validate.getInt(request.getParameter("status"));
 
-            if (id > 0 && status >= 0 && status <= 7) {
+            if (id > 0 && status >= 0 && status <= 8) {
                 Bill order = billDao.getBillById(id);
                 if (order != null) {
                     int currentStatus = order.getStatus();
                     boolean validTransition = false;
                     
                     if (currentStatus == 0) {
-                        validTransition = (status == 4 && order.getPayment() == 1) || (status == 5 && order.getPayment() != 1) || status == 2 || status == 0;
+                        validTransition = (status == 4 && order.getPayment() == 1) || (status == 8) || status == 2 || status == 0;
                     } else if (currentStatus == 4) {
-                        validTransition = (status == 5 || status == 2 || status == 4);
+                        validTransition = (status == 8 || status == 2 || status == 4);
+                    } else if (currentStatus == 8) {
+                        validTransition = (status == 5 || status == 2 || status == 8);
                     } else if (currentStatus == 5) {
                         validTransition = (status == 6 || status == 1 || status == 2 || status == 5);
                     } else if (currentStatus == 6) {
@@ -151,6 +153,32 @@ public class AdminOrderController extends HttpServlet {
                     }
                     
                     if (validTransition) {
+                        if (status == 8 || status == 5 || status == 1 || status == 6) {
+                            Model.Bill currentBill = billDao.getBillById(id);
+                            if (currentBill != null && (currentBill.getStatus() == 0 || currentBill.getStatus() == 4)) {
+                                boolean hasEnoughStock = true;
+                                String outOfStockItem = "";
+                                DAO.ProductVariantDAO pvDao = new DAO.ProductVariantDAO();
+                                java.util.List<Model.BillDetail> details = billDao.getBillDetails(id);
+                                for (Model.BillDetail d : details) {
+                                    if (d.getProductVariantID() != null) {
+                                        Model.ProductVariant pv = pvDao.findById(d.getProductVariantID());
+                                        if (pv == null || pv.getQuantity() < d.getNumberOfProduct()) {
+                                            hasEnoughStock = false;
+                                            outOfStockItem = d.getNameProduct() + " (Màu: " + d.getColorLabelSnapshot() + ", Size: " + d.getSizeLabelSnapshot() + ")";
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!hasEnoughStock) {
+                                    request.getSession().setAttribute("adminFlash", "Không đủ số lượng trong kho cho sản phẩm: " + outOfStockItem);
+                                    request.getSession().setAttribute("adminFlashType", "danger");
+                                    response.sendRedirect(request.getContextPath() + "/admin/orders/detail/" + id);
+                                    return;
+                                }
+                            }
+                        }
+
                         String cancelReason = request.getParameter("cancelReason");
                         boolean success;
                         if (status == 2 && cancelReason != null && !cancelReason.trim().isEmpty()) {

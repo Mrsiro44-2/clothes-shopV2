@@ -44,9 +44,6 @@ public class ProductPriceRange {
         this.maxOld = maxOld;
     }
 
-    public boolean isHasRange() {
-        return hasRange;
-    }
 
     public void setHasRange(boolean hasRange) {
         this.hasRange = hasRange;

@@ -98,6 +98,13 @@ public class LoginUserController extends HttpServlet {
                 return;
             }
             String isRemember = request.getParameter("remember");
+            
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
+            session = request.getSession(true);
+            
             session.setAttribute("usernameUser", a.getUsername());
             session.setAttribute("usernameRole", a.getRoleName());
             ServletPaths.redirectHome(request, response);

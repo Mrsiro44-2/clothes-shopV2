@@ -105,7 +105,7 @@ public class AdminProductController extends HttpServlet {
             if (p == null) { response.sendRedirect(request.getContextPath() + "/admin/products"); return; }
             loadForeignKeys(request);
             request.setAttribute("product", p);
-            request.setAttribute("variants", variantDao.findByProductId(id));
+            request.setAttribute("variants", variantDao.findAllByProductId(id));
             request.setAttribute("images", imgDao.getAllImgDescriptionByProduct(id));
             
             DAO.FeedbackDAO fbDao = new DAO.FeedbackDAO();
@@ -121,7 +121,7 @@ public class AdminProductController extends HttpServlet {
             if (p == null) { response.sendRedirect(request.getContextPath() + "/admin/products"); return; }
             loadForeignKeys(request);
             request.setAttribute("product", p);
-            request.setAttribute("variants", variantDao.findByProductId(id));
+            request.setAttribute("variants", variantDao.findAllByProductId(id));
             request.setAttribute("images", imgDao.getAllImgDescriptionByProduct(id));
             request.setAttribute("pageTitle", "Sửa sản phẩm");
             request.getRequestDispatcher("/admin/product/form.jsp").forward(request, response);
