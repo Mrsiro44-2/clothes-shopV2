@@ -116,6 +116,9 @@ public class SizeGroupDAO {
         s.setName(rs.getString("name"));
         s.setSortOrder(rs.getInt("sortOrder"));
         s.setStatus(rs.getInt("status"));
+        try {
+            s.setProductCount(rs.getInt("productCount"));
+        } catch (SQLException e) {}
         return s;
     }
 
@@ -146,18 +149,18 @@ public class SizeGroupDAO {
 
     public java.util.List<Model.SizeGroup> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
         java.util.List<Model.SizeGroup> list = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM SizeGroup WHERE 1=1";
+        String sql = "SELECT sg.*, (SELECT COUNT(DISTINCT pv.productID) FROM ProductVariant pv INNER JOIN SizeOption so ON so.ID = pv.sizeOptionID WHERE so.sizeGroupID = sg.ID AND pv.status = 1) AS productCount FROM SizeGroup sg WHERE 1=1";
         if (search != null && !search.trim().isEmpty()) {
             sql += " AND name LIKE ?";
         }
         if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql += " AND status = ?";
+            sql += " AND sg.status = ?";
         }
         
         if ("oldest".equals(sort)) {
-            sql += " ORDER BY id ASC";
+            sql += " ORDER BY sg.id ASC";
         } else {
-            sql += " ORDER BY id DESC";
+            sql += " ORDER BY sg.id DESC";
         }
         
         sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";

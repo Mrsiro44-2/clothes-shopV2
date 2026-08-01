@@ -111,17 +111,20 @@ public class AdminColorController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(name)) {
-            request.getSession().setAttribute("error", "Vui lòng nhập tên màu");
+            request.getSession().setAttribute("adminFlash", "Vui lòng nhập tên màu");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/colors/add");
             return;
         }
 
         ColorOption c = new ColorOption(0, name, hexCode, sortOrder, status);
         if (colorDao.insert(c) > 0) {
-            request.getSession().setAttribute("success", "Thêm màu thành công");
+            request.getSession().setAttribute("adminFlash", "Thêm màu thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
             response.sendRedirect(request.getContextPath() + "/admin/colors");
         } else {
-            request.getSession().setAttribute("error", "Có lỗi xảy ra");
+            request.getSession().setAttribute("adminFlash", "Có lỗi xảy ra");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/colors/add");
         }
     }
@@ -138,16 +141,19 @@ public class AdminColorController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(name)) {
-            request.getSession().setAttribute("error", "Vui lòng nhập tên màu");
+            request.getSession().setAttribute("adminFlash", "Vui lòng nhập tên màu");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/colors/edit/" + id);
             return;
         }
 
         ColorOption c = new ColorOption(id, name, hexCode, sortOrder, status);
         if (colorDao.update(c) > 0) {
-            request.getSession().setAttribute("success", "Cập nhật thành công");
+            request.getSession().setAttribute("adminFlash", "Cập nhật thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
         } else {
-            request.getSession().setAttribute("error", "Cập nhật thất bại");
+            request.getSession().setAttribute("adminFlash", "Cập nhật thất bại");
+            request.getSession().setAttribute("adminFlashType", "danger");
         }
         response.sendRedirect(request.getContextPath() + "/admin/colors");
     }
@@ -156,9 +162,11 @@ public class AdminColorController extends HttpServlet {
             throws ServletException, IOException {
         int id = ServletPaths.getIdFromPath(request.getPathInfo());
         if (colorDao.delete(id) > 0) {
-            request.getSession().setAttribute("success", "Xoá thành công");
+            request.getSession().setAttribute("adminFlash", "Xoá thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
         } else {
-            request.getSession().setAttribute("error", "Xoá thất bại");
+            request.getSession().setAttribute("adminFlash", "Xoá thất bại (Có thể màu sắc đã được sử dụng)");
+            request.getSession().setAttribute("adminFlashType", "danger");
         }
         response.sendRedirect(request.getContextPath() + "/admin/colors");
     }

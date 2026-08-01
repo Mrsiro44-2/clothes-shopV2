@@ -129,7 +129,7 @@
                                                                 class="btn btn-sm btn-outline-primary">Lưu</button>
                                                         </form>
                                                     </td>
-                                                    <td></td> <!-- merged above -->
+                                                    <td>${sz.label}</td> <!-- merged above -->
                                                     <td>
                                                         <form action="${ctx}/admin/sizeoptions/delete/${sz.ID}"
                                                             method="get" class="d-inline"

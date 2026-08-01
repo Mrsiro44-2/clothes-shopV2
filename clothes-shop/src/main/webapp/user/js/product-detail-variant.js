@@ -1,5 +1,8 @@
 /**
  * Product detail: chọn màu / size -> gán productVariantID, giá, tồn kho.
+ * Thứ tự gallery: Ảnh chính → Ảnh phụ (imgDesc) → Ảnh biến thể (variant).
+ * Tất cả ảnh của mọi biến thể (cả màu và size) đều được load lên.
+ * Khi chọn màu hoặc size -> nhảy đến ảnh của biến thể tương ứng.
  */
 (function () {
     var variants = window.MB_PRODUCT_VARIANTS || [];
@@ -39,6 +42,7 @@
         active = variants;
     }
 
+    // Build unique color list
     var colors = [];
     var colorMap = {};
     active.forEach(function (v) {
@@ -47,7 +51,7 @@
             colorMap[cid] = {
                 id: cid,
                 name: v.colorName || "Màu",
-                hex: v.colorHex || "#cccccc",
+                hex: v.colorHex || "#cccccc"
             };
             colors.push(colorMap[cid]);
         }
@@ -55,6 +59,25 @@
 
     var selectedColorId = null;
     var selectedVariantId = null;
+
+    // Map: variantID -> slide index in the Slick slider
+    var variantSlideMap = {};
+    var slickReady = false;
+
+    function resolveImgSrc(img) {
+        if (!img) return "";
+        var src = img;
+        if (img.indexOf("http") !== 0) {
+            if (ctx && img.indexOf(ctx + "/") === 0) {
+                src = img;
+            } else if (img.indexOf("/") === 0) {
+                src = ctx + img;
+            } else {
+                src = ctx + "/" + img.replace(/^\.\//, "");
+            }
+        }
+        return src;
+    }
 
     function formatPrice(n) {
         n = parseFloat(n) || 0;
@@ -64,12 +87,6 @@
     function findVariant(colorId, sizeId) {
         return active.find(function (v) {
             return v.colorOptionID === colorId && v.sizeOptionID === sizeId;
-        });
-    }
-
-    function findFirstForColor(colorId) {
-        return active.find(function (v) {
-            return v.colorOptionID === colorId;
         });
     }
 
@@ -121,34 +138,30 @@
             }
             $priceBox.innerHTML = html;
         }
-        var img = v.variantImg || mainImg;
-        if (img) {
-            var src = img;
-            if (img.indexOf("http") !== 0) {
-                // If it already starts with ctx, don't prepend again
-                if (ctx && img.indexOf(ctx + "/") === 0) {
-                    src = img;
-                } else if (img.indexOf("/") === 0) {
-                    src = ctx + img;
-                } else {
-                    src = ctx + "/" + img.replace(/^\.\//, "");
-                }
-            }
-            var targetImgSelectors = [
-                "#product-main-img .slick-slide[data-slick-index='0'] img",
-                "#product-imgs .slick-slide[data-slick-index='0'] img"
-            ];
-            var elements = document.querySelectorAll(targetImgSelectors.join(', '));
-            if (elements.length === 0) {
-                // Fallback before slick is initialized
-                elements = document.querySelectorAll("#product-main-img .product-preview:first-child img, #product-imgs .product-preview:first-child img");
-            }
-            elements.forEach(function (el) {
-                el.src = src;
-                if (el.parentElement && el.parentElement.tagName === 'A') {
-                    el.parentElement.href = src;
-                }
-            });
+
+        // Navigate slider to this variant's image (if slick is ready)
+        goToVariantSlide(v.ID);
+    }
+
+    /**
+     * Navigate slider to the image corresponding to the selected variant.
+     */
+    function goToVariantSlide(variantId) {
+        if (!slickReady || !window.jQuery) return;
+
+        var slideIdx = variantSlideMap[variantId];
+        if (slideIdx === undefined || slideIdx === null) {
+            slideIdx = 0; // fallback to main image
+        }
+
+        var $mainImg = jQuery('#product-main-img');
+        var $thumbImgs = jQuery('#product-imgs');
+
+        if ($mainImg.length && $mainImg.hasClass('slick-initialized')) {
+            $mainImg.slick('slickGoTo', slideIdx);
+        }
+        if ($thumbImgs.length && $thumbImgs.hasClass('slick-initialized')) {
+            $thumbImgs.slick('slickGoTo', slideIdx);
         }
     }
 
@@ -219,9 +232,13 @@
                 btn.classList.toggle("active", parseInt(btn.getAttribute("data-color-id"), 10) === colorId);
             });
         }
+        
+        // renderSizes will automatically select the first available size and call applyVariant
+        // which in turn will trigger goToVariantSlide
         renderSizes(colorId);
     }
 
+    // Render color swatches immediately
     if ($colorWrap) {
         colors.forEach(function (c, idx) {
             var btn = document.createElement("button");
@@ -249,6 +266,7 @@
         });
     }
 
+    // Set initial variant data (price, stock, etc.) immediately - no Slick needed
     var initial = active.find(function (v) {
         return v.ID === defaultId;
     }) || active[0];
@@ -260,6 +278,140 @@
         }
     } else if (colors.length) {
         selectColor(colors[0].id);
+    }
+
+    /**
+     * Inject ALL unique variant images into the Slick slider.
+     * Thứ tự: Ảnh chính (slide 0) → Ảnh phụ imgDesc (slide 1..N) → Ảnh variant (cuối cùng).
+     * Must be called AFTER Slick is initialized (inside $(document).ready).
+     */
+    function injectVariantImages() {
+        if (!window.jQuery) return;
+
+        var $mainSlider = jQuery('#product-main-img');
+        var $thumbSlider = jQuery('#product-imgs');
+        var mainSlickInit = $mainSlider.length && $mainSlider.hasClass('slick-initialized');
+        var thumbSlickInit = $thumbSlider.length && $thumbSlider.hasClass('slick-initialized');
+
+        if (!mainSlickInit && !thumbSlickInit) {
+            active.forEach(function (v) {
+                variantSlideMap[v.ID] = 0;
+            });
+            slickReady = true;
+            return;
+        }
+
+        var existingSlideCount = 0;
+        if (mainSlickInit) {
+            existingSlideCount = $mainSlider.slick('getSlick').slideCount;
+        }
+
+        // Collect unique images from ALL variants
+        var seenSrcs = {};
+        var mainSrc = resolveImgSrc(mainImg);
+        if (mainSrc) {
+            seenSrcs[mainSrc] = true;
+        }
+
+        var existingSlides = document.querySelectorAll('#product-main-img .slick-slide:not(.slick-cloned) img');
+        existingSlides.forEach(function (el) {
+            if (el.src) {
+                seenSrcs[el.src] = true;
+            }
+        });
+
+        var uniqueImgs = []; // list of { src: string, variantIds: [id1, id2], name: string }
+        
+        active.forEach(function (v) {
+            if (v.variantImg) {
+                var src = resolveImgSrc(v.variantImg);
+                if (src && !seenSrcs[src]) {
+                    seenSrcs[src] = true;
+                    uniqueImgs.push({ src: src, variantIds: [v.ID], name: v.colorName + " " + v.sizeLabel });
+                } else if (src && seenSrcs[src]) {
+                    var existingItem = uniqueImgs.find(function(item) { return item.src === src; });
+                    if (existingItem) {
+                        existingItem.variantIds.push(v.ID);
+                    } else {
+                        // Image already in gallery (e.g. main image or imgDesc)
+                        var foundIdx = findExistingSlideIndex($mainSlider, src);
+                        if (foundIdx >= 0) {
+                            variantSlideMap[v.ID] = foundIdx;
+                        }
+                    }
+                }
+            }
+        });
+
+        // Add variant images at the END of the slider
+        for (var i = 0; i < uniqueImgs.length; i++) {
+            var item = uniqueImgs[i];
+            var mainSlideHtml = '<div class="product-preview" data-variant-ids="' + item.variantIds.join(',') + '">' +
+                '<a data-fancybox="product-gallery" href="' + item.src + '">' +
+                '<img class="mb-img" src="' + item.src + '" alt="' + item.name + '" onerror="mbImgOnError(this)"/>' +
+                '</a></div>';
+            var thumbSlideHtml = '<div class="product-preview" data-variant-ids="' + item.variantIds.join(',') + '">' +
+                '<img class="mb-img" src="' + item.src + '" alt="' + item.name + '" onerror="mbImgOnError(this)"/>' +
+                '</div>';
+
+            if (mainSlickInit) {
+                $mainSlider.slick('slickAdd', mainSlideHtml); // no index = add at END
+            }
+            if (thumbSlickInit) {
+                $thumbSlider.slick('slickAdd', thumbSlideHtml); // no index = add at END
+            }
+
+            var newIdx = existingSlideCount + i;
+            item.variantIds.forEach(function(vid) {
+                variantSlideMap[vid] = newIdx;
+            });
+        }
+
+        // For variants with no image, fallback to 0 (main image)
+        active.forEach(function (v) {
+            if (variantSlideMap[v.ID] === undefined) {
+                variantSlideMap[v.ID] = 0;
+            }
+        });
+
+        slickReady = true;
+
+        // Reset to slide 0 (main image) upon load
+        if (mainSlickInit) {
+            $mainSlider.slick('slickGoTo', 0);
+        }
+        if (thumbSlickInit) {
+            $thumbSlider.slick('slickGoTo', 0);
+        }
+    }
+
+    function findExistingSlideIndex($slider, src) {
+        if (!$slider.length || !$slider.hasClass('slick-initialized')) return -1;
+        var idx = -1;
+        $slider.find('.slick-slide:not(.slick-cloned)').each(function () {
+            var img = this.querySelector('img');
+            if (img && img.src === src) {
+                idx = parseInt(jQuery(this).attr('data-slick-index'), 10);
+                return false; 
+            }
+        });
+        return idx;
+    }
+
+    if (window.jQuery) {
+        jQuery(document).ready(function () {
+            setTimeout(function () {
+                injectVariantImages();
+            }, 150);
+        });
+    } else {
+        window.addEventListener('load', function () {
+            setTimeout(function () {
+                if (window.jQuery) {
+                    injectVariantImages();
+                }
+            }, 300);
+        });
     }
 
     var form = document.querySelector("form[action*='cart/add']");

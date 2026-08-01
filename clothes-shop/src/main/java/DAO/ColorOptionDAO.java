@@ -102,13 +102,18 @@ public class ColorOptionDAO {
     }
 
     private ColorOption map(ResultSet rs) throws SQLException {
-        return new ColorOption(
+        ColorOption c = new ColorOption(
                 rs.getInt("ID"),
                 rs.getString("name"),
                 rs.getString("hexCode"),
                 rs.getInt("sortOrder"),
                 rs.getInt("status")
         );
+        try {
+            c.setProductCount(rs.getInt("productCount"));
+        } catch (SQLException e) {
+        }
+        return c;
     }
 
     public int count(String search, String statusFilter) {
@@ -138,18 +143,18 @@ public class ColorOptionDAO {
 
     public java.util.List<Model.ColorOption> getPaginated(String search, String statusFilter, String sort, int page, int limit) {
         java.util.List<Model.ColorOption> list = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM ColorOption WHERE 1=1";
+        String sql = "SELECT c.*, (SELECT COUNT(DISTINCT productID) FROM ProductVariant WHERE colorOptionID = c.ID AND status = 1) AS productCount FROM ColorOption c WHERE 1=1";
         if (search != null && !search.trim().isEmpty()) {
             sql += " AND name LIKE ?";
         }
         if (statusFilter != null && !statusFilter.trim().isEmpty()) {
-            sql += " AND status = ?";
+            sql += " AND c.status = ?";
         }
         
         if ("oldest".equals(sort)) {
-            sql += " ORDER BY id ASC";
+            sql += " ORDER BY c.id ASC";
         } else {
-            sql += " ORDER BY id DESC";
+            sql += " ORDER BY c.id DESC";
         }
         
         sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";

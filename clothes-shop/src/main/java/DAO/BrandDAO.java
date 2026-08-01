@@ -37,7 +37,7 @@ public class BrandDAO {
                 + "INNER JOIN Product p ON p.brandID = b.ID AND p.status = 1 "
                 + "LEFT JOIN ProductVariant v ON v.productID = p.ID "
                 + "LEFT JOIN BillDetail bd ON bd.productVariantID = v.ID "
-                + "LEFT JOIN Bill bl ON bl.id = bd.billID AND bl.status <> 0 "
+                + "LEFT JOIN Bill bl ON bl.id = bd.billID AND bl.status NOT IN (0, 2, 4) "
                 + "WHERE b.status = 1 "
                 + "GROUP BY b.ID, b.name, b.img, b.status, b.datePost, b.dateUpdate "
                 + "ORDER BY total_sold DESC";
@@ -76,7 +76,7 @@ public class BrandDAO {
                 + "INNER JOIN Product p ON p.brandID = b.ID AND p.status = 1 "
                 + "LEFT JOIN ProductVariant v ON v.productID = p.ID "
                 + "LEFT JOIN BillDetail bd ON bd.productVariantID = v.ID "
-                + "LEFT JOIN Bill bl ON bl.id = bd.billID AND bl.status <> 0 "
+                + "LEFT JOIN Bill bl ON bl.id = bd.billID AND bl.status NOT IN (0, 2, 4) "
                 + "WHERE b.status = 1 "
                 + "GROUP BY b.ID, b.name, b.img, b.status, b.datePost, b.dateUpdate "
                 + "ORDER BY total_sold DESC";
