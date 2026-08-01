@@ -14,9 +14,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Product master + giÃƒÆ’Ã‚Â¡/tÃƒÂ¡Ã‚Â»Ã¢â‚¬Å“n tÃƒÂ¡Ã‚Â»Ã¢â‚¬Â¢ng hÃƒÂ¡Ã‚Â»Ã‚Â£p tÃƒÂ¡Ã‚Â»Ã‚Â« ProductVariant (schema v2).
- */
 public class ProductDAO {
 
     private static final String P_SEL = "SELECT p.ID, p.name, p.slug, p.description, p.datePost, p.dateUpdate, p.mainImg, p.status, p.model, p.priority, "
@@ -31,7 +28,7 @@ public class ProductDAO {
             + "LEFT JOIN (SELECT pv.productID, SUM(bd.numberOfProduct) AS aggSumSold "
             + "FROM BillDetail bd "
             + "INNER JOIN ProductVariant pv ON pv.ID = bd.productVariantID "
-            + "INNER JOIN Bill b ON b.id = bd.billID AND b.status <> 0 "
+            + "INNER JOIN Bill b ON b.id = bd.billID AND b.status NOT IN (0, 2, 4) "
             + "GROUP BY pv.productID) soldAgg ON soldAgg.productID = p.ID ";
 
     private Connection conn;
@@ -43,7 +40,6 @@ public class ProductDAO {
             System.out.println("Connection fail: " + e);
         }
     }
-
 
     public List<Product> getProductByPriority(int status) {
         List<Product> products = new ArrayList<>();
@@ -306,47 +302,51 @@ public class ProductDAO {
             int categoryID = rs.getInt("categoryID");
             int producerID = rs.getInt("producerID");
             int brandID = rs.getInt("brandID");
-            return new Product(ID, name, slug, oldPrice, newPrice, description, datePost, dateUpdate, mainImg, status, quantity, sold, model, priority, categoryID, producerID, brandID);
+            return new Product(ID, name, slug, oldPrice, newPrice, description, datePost, dateUpdate, mainImg, status,
+                    quantity, sold, model, priority, categoryID, producerID, brandID);
         } catch (Exception e) {
             System.out.println("Get product: " + e);
         }
         return null;
     }
 
-    public List<Product> searchAndFilterProducts(String keyword, String[] categoryIds, String[] brandIds, float minPrice, float maxPrice, int sort, int page, int pageSize) {
+    public List<Product> searchAndFilterProducts(String keyword, String[] categoryIds, String[] brandIds,
+            float minPrice, float maxPrice, int sort, int page, int pageSize) {
         List<Product> products = new ArrayList<>();
         StringBuilder sql = new StringBuilder(P_SEL + P_AGG_JOIN
                 + "JOIN Category AS c ON c.ID = p.categoryID "
                 + "JOIN Producer AS pr ON pr.ID = p.producerID "
                 + "JOIN Brand AS br ON br.ID = p.brandID "
                 + "WHERE p.status = 1 AND pr.status = 1 AND c.status = 1 AND br.status = 1 ");
-        
+
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND p.name LIKE ? ");
         }
-        
+
         if (categoryIds != null && categoryIds.length > 0) {
             sql.append("AND p.categoryID IN (");
             for (int i = 0; i < categoryIds.length; i++) {
                 sql.append("?");
-                if (i < categoryIds.length - 1) sql.append(",");
+                if (i < categoryIds.length - 1)
+                    sql.append(",");
             }
             sql.append(") ");
         }
-        
+
         if (brandIds != null && brandIds.length > 0) {
             sql.append("AND p.brandID IN (");
             for (int i = 0; i < brandIds.length; i++) {
                 sql.append("?");
-                if (i < brandIds.length - 1) sql.append(",");
+                if (i < brandIds.length - 1)
+                    sql.append(",");
             }
             sql.append(") ");
         }
-        
+
         if (maxPrice > 0 && maxPrice >= minPrice) {
             sql.append("AND (ISNULL(va.aggMinNew, 0) BETWEEN ? AND ?) ");
         }
-        
+
         if (sort == 1) {
             sql.append("ORDER BY ISNULL(va.aggMinNew, 0) DESC, p.ID DESC ");
         } else if (sort == 0) {
@@ -354,38 +354,38 @@ public class ProductDAO {
         } else {
             sql.append("ORDER BY p.ID DESC ");
         }
-        
+
         sql.append("OFFSET ? ROWS FETCH FIRST ? ROWS ONLY");
-        
+
         try {
             PreparedStatement st = conn.prepareStatement(sql.toString());
             int index = 1;
-            
+
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(index++, "%" + keyword.trim() + "%");
             }
-            
+
             if (categoryIds != null && categoryIds.length > 0) {
                 for (String id : categoryIds) {
                     st.setInt(index++, Integer.parseInt(id));
                 }
             }
-            
+
             if (brandIds != null && brandIds.length > 0) {
                 for (String id : brandIds) {
                     st.setInt(index++, Integer.parseInt(id));
                 }
             }
-            
+
             if (maxPrice > 0 && maxPrice >= minPrice) {
                 st.setFloat(index++, minPrice);
                 st.setFloat(index++, maxPrice);
             }
-            
+
             int offset = (page - 1) * pageSize;
             st.setInt(index++, offset);
             st.setInt(index++, pageSize);
-            
+
             ResultSet result = st.executeQuery();
             while (result.next()) {
                 products.add(this.getProduct(result));
@@ -396,65 +396,68 @@ public class ProductDAO {
         return products;
     }
 
-    public int countSearchAndFilterProducts(String keyword, String[] categoryIds, String[] brandIds, float minPrice, float maxPrice) {
+    public int countSearchAndFilterProducts(String keyword, String[] categoryIds, String[] brandIds, float minPrice,
+            float maxPrice) {
         int count = 0;
         StringBuilder sql = new StringBuilder("SELECT COUNT(p.ID) " + P_AGG_JOIN
                 + "JOIN Category AS c ON c.ID = p.categoryID "
                 + "JOIN Producer AS pr ON pr.ID = p.producerID "
                 + "JOIN Brand AS br ON br.ID = p.brandID "
                 + "WHERE p.status = 1 AND pr.status = 1 AND c.status = 1 AND br.status = 1 ");
-        
+
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append("AND p.name LIKE ? ");
         }
-        
+
         if (categoryIds != null && categoryIds.length > 0) {
             sql.append("AND p.categoryID IN (");
             for (int i = 0; i < categoryIds.length; i++) {
                 sql.append("?");
-                if (i < categoryIds.length - 1) sql.append(",");
+                if (i < categoryIds.length - 1)
+                    sql.append(",");
             }
             sql.append(") ");
         }
-        
+
         if (brandIds != null && brandIds.length > 0) {
             sql.append("AND p.brandID IN (");
             for (int i = 0; i < brandIds.length; i++) {
                 sql.append("?");
-                if (i < brandIds.length - 1) sql.append(",");
+                if (i < brandIds.length - 1)
+                    sql.append(",");
             }
             sql.append(") ");
         }
-        
+
         if (maxPrice > 0 && maxPrice >= minPrice) {
             sql.append("AND (ISNULL(va.aggMinNew, 0) BETWEEN ? AND ?) ");
         }
-        
+
         try {
             PreparedStatement st = conn.prepareStatement(sql.toString());
             int index = 1;
-            
+
             if (keyword != null && !keyword.trim().isEmpty()) {
                 st.setString(index++, "%" + keyword.trim() + "%");
             }
-            
+
             if (categoryIds != null && categoryIds.length > 0) {
                 for (String id : categoryIds) {
                     st.setInt(index++, Integer.parseInt(id));
                 }
             }
-            
+
             if (brandIds != null && brandIds.length > 0) {
                 for (String id : brandIds) {
                     st.setInt(index++, Integer.parseInt(id));
                 }
             }
-            
+
             if (maxPrice > 0 && maxPrice >= minPrice) {
                 st.setFloat(index++, minPrice);
                 st.setFloat(index++, maxPrice);
             }
-            
+
             ResultSet result = st.executeQuery();
             if (result.next()) {
                 count = result.getInt(1);
@@ -484,7 +487,7 @@ public class ProductDAO {
             st.setInt(i++, p.getBrandID());
             int result = st.executeUpdate();
             if (result > 0) {
-                try ( ResultSet generatedKeys = st.getGeneratedKeys()) {
+                try (ResultSet generatedKeys = st.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         return generatedKeys.getInt(1);
                     }
@@ -531,12 +534,24 @@ public class ProductDAO {
         return 0;
     }
 
-    public int count(String search, String statusFilter, String categoryFilter, String producerFilter, String brandFilter) {
+    public int count(String search, String statusFilter, String categoryFilter, String producerFilter,
+            String brandFilter) {
         String sql = "SELECT COUNT(*) FROM Product p WHERE 1=1";
         if (search != null && !search.trim().isEmpty()) {
             sql += " AND (p.name LIKE ? OR p.model LIKE ?)";
         }
-        if (statusFilter != null && !statusFilter.trim().isEmpty()) { sql += " AND p.status = ?"; } if (categoryFilter != null && !categoryFilter.trim().isEmpty()) { sql += " AND p.categoryID = ?"; } if (producerFilter != null && !producerFilter.trim().isEmpty()) { sql += " AND p.producerID = ?"; } if (brandFilter != null && !brandFilter.trim().isEmpty()) { sql += " AND p.brandID = ?"; }
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND p.status = ?";
+        }
+        if (categoryFilter != null && !categoryFilter.trim().isEmpty()) {
+            sql += " AND p.categoryID = ?";
+        }
+        if (producerFilter != null && !producerFilter.trim().isEmpty()) {
+            sql += " AND p.producerID = ?";
+        }
+        if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+            sql += " AND p.brandID = ?";
+        }
         try {
             java.sql.PreparedStatement st = conn.prepareStatement(sql);
             int paramIndex = 1;
@@ -545,31 +560,55 @@ public class ProductDAO {
                 st.setString(paramIndex++, likeSearch);
                 st.setString(paramIndex++, likeSearch);
             }
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(statusFilter)); } if (categoryFilter != null && !categoryFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(categoryFilter)); } if (producerFilter != null && !producerFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(producerFilter)); } if (brandFilter != null && !brandFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(brandFilter)); }
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            if (categoryFilter != null && !categoryFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(categoryFilter));
+            }
+            if (producerFilter != null && !producerFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(producerFilter));
+            }
+            if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(brandFilter));
+            }
             java.sql.ResultSet rs = st.executeQuery();
-            if (rs.next()) return rs.getInt(1);
+            if (rs.next())
+                return rs.getInt(1);
         } catch (java.sql.SQLException e) {
             System.out.println("ProductDAO count: " + e);
         }
         return 0;
     }
 
-    public java.util.List<Model.Product> getPaginated(String search, String statusFilter, String categoryFilter, String producerFilter, String brandFilter, String sort, int page, int limit) {
+    public java.util.List<Model.Product> getPaginated(String search, String statusFilter, String categoryFilter,
+            String producerFilter, String brandFilter, String sort, int page, int limit) {
         java.util.List<Model.Product> list = new java.util.ArrayList<>();
         String sql = P_SEL + P_AGG_JOIN + "WHERE 1=1";
         if (search != null && !search.trim().isEmpty()) {
             sql += " AND (p.name LIKE ? OR p.model LIKE ?)";
         }
-        if (statusFilter != null && !statusFilter.trim().isEmpty()) { sql += " AND p.status = ?"; } if (categoryFilter != null && !categoryFilter.trim().isEmpty()) { sql += " AND p.categoryID = ?"; } if (producerFilter != null && !producerFilter.trim().isEmpty()) { sql += " AND p.producerID = ?"; } if (brandFilter != null && !brandFilter.trim().isEmpty()) { sql += " AND p.brandID = ?"; }
-        
+        if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+            sql += " AND p.status = ?";
+        }
+        if (categoryFilter != null && !categoryFilter.trim().isEmpty()) {
+            sql += " AND p.categoryID = ?";
+        }
+        if (producerFilter != null && !producerFilter.trim().isEmpty()) {
+            sql += " AND p.producerID = ?";
+        }
+        if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+            sql += " AND p.brandID = ?";
+        }
+
         if ("oldest".equals(sort)) {
             sql += " ORDER BY p.ID ASC";
         } else {
             sql += " ORDER BY p.ID DESC";
         }
-        
+
         sql += " OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        
+
         try {
             java.sql.PreparedStatement st = conn.prepareStatement(sql);
             int paramIndex = 1;
@@ -578,11 +617,22 @@ public class ProductDAO {
                 st.setString(paramIndex++, likeSearch);
                 st.setString(paramIndex++, likeSearch);
             }
-            if (statusFilter != null && !statusFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(statusFilter)); } if (categoryFilter != null && !categoryFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(categoryFilter)); } if (producerFilter != null && !producerFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(producerFilter)); } if (brandFilter != null && !brandFilter.trim().isEmpty()) { st.setInt(paramIndex++, Integer.parseInt(brandFilter)); }
-            
+            if (statusFilter != null && !statusFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(statusFilter));
+            }
+            if (categoryFilter != null && !categoryFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(categoryFilter));
+            }
+            if (producerFilter != null && !producerFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(producerFilter));
+            }
+            if (brandFilter != null && !brandFilter.trim().isEmpty()) {
+                st.setInt(paramIndex++, Integer.parseInt(brandFilter));
+            }
+
             st.setInt(paramIndex++, (page - 1) * limit);
             st.setInt(paramIndex++, limit);
-            
+
             java.sql.ResultSet result = st.executeQuery();
             while (result.next()) {
                 list.add(this.getProduct(result));

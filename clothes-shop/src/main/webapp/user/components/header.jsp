@@ -107,6 +107,7 @@
                                 <div>
                                     <a href="${pageContext.request.contextPath}/wishlist" title="Yêu thích">
                                         <i class="fa fa-heart-o"></i>
+                                        <span>Yêu thích</span>
                                         <c:if test="${userLogin != null}">
                                             <div class="qty">${wishlistLib.count(userLogin.ID)}</div>
                                         </c:if>
@@ -122,8 +123,10 @@
                                         class="dropdown-toggle"
                                         data-toggle="dropdown"
                                         aria-expanded="true"
+                                        style="cursor: pointer"
                                         >
                                         <i class="fa fa-shopping-cart"></i>
+                                        <span>Giỏ hàng</span>
                                         <div class="qty">${empty carts ? 0 : carts.size()}</div>
                                     </a>
                                     <div class="cart-dropdown">
@@ -186,6 +189,7 @@
                                            class="dropdown-toggle"
                                            >
                                             <i class="fa fa-user-o"></i>
+                                            <span>Đăng nhập</span>
                                         </a>
                                     </c:if>
                                     <c:if test="${userLoginUsername != null && userLoginRole != null}">

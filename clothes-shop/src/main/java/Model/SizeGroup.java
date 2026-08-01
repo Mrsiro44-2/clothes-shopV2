@@ -7,6 +7,7 @@ public class SizeGroup {
     private String name;
     private int sortOrder;
     private int status;
+    private int productCount;
 
     public SizeGroup() {
     }
@@ -57,5 +58,13 @@ public class SizeGroup {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
     }
 }

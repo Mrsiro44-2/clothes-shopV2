@@ -123,23 +123,27 @@ public class AdminSizeGroupController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(code) || validate.isBlank(name)) {
-            request.getSession().setAttribute("error", "Vui lòng nhập đủ mã và tên");
+            request.getSession().setAttribute("adminFlash", "Vui lòng nhập đủ thông tin");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
             return;
         }
 
-        if (sizeGroupDao.isExistName(name, -1)) {
-            request.getSession().setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+        if (sizeGroupDao.isExistName(name, 0)) {
+            request.getSession().setAttribute("adminFlash", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
             return;
         }
 
         SizeGroup sg = new SizeGroup(0, code, name, sortOrder, status);
         if (sizeGroupDao.insert(sg) > 0) {
-            request.getSession().setAttribute("success", "Thêm nhóm kích cỡ thành công");
+            request.getSession().setAttribute("adminFlash", "Thêm nhóm kích cỡ thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
         } else {
-            request.getSession().setAttribute("error", "Có lỗi xảy ra (có thể trùng mã)");
+            request.getSession().setAttribute("adminFlash", "Có lỗi xảy ra");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
         }
     }
@@ -156,22 +160,26 @@ public class AdminSizeGroupController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(code) || validate.isBlank(name)) {
-            request.getSession().setAttribute("error", "Vui lòng nhập đủ thông tin");
+            request.getSession().setAttribute("adminFlash", "Vui lòng nhập đủ thông tin");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
             return;
         }
 
         if (sizeGroupDao.isExistName(name, id)) {
-            request.getSession().setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            request.getSession().setAttribute("adminFlash", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            request.getSession().setAttribute("adminFlashType", "danger");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
             return;
         }
 
         SizeGroup sg = new SizeGroup(id, code, name, sortOrder, status);
         if (sizeGroupDao.update(sg) > 0) {
-            request.getSession().setAttribute("success", "Cập nhật thành công");
+            request.getSession().setAttribute("adminFlash", "Cập nhật thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
         } else {
-            request.getSession().setAttribute("error", "Cập nhật thất bại");
+            request.getSession().setAttribute("adminFlash", "Cập nhật thất bại");
+            request.getSession().setAttribute("adminFlashType", "danger");
         }
         response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
     }
@@ -180,9 +188,11 @@ public class AdminSizeGroupController extends HttpServlet {
             throws ServletException, IOException {
         int id = ServletPaths.getIdFromPath(request.getPathInfo());
         if (sizeGroupDao.delete(id) > 0) {
-            request.getSession().setAttribute("success", "Xoá thành công");
+            request.getSession().setAttribute("adminFlash", "Xoá thành công");
+            request.getSession().setAttribute("adminFlashType", "success");
         } else {
-            request.getSession().setAttribute("error", "Xoá thất bại (có thể nhóm này đang được sử dụng)");
+            request.getSession().setAttribute("adminFlash", "Xoá thất bại (có thể nhóm này đang được sử dụng)");
+            request.getSession().setAttribute("adminFlashType", "danger");
         }
         response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
     }

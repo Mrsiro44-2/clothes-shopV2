@@ -36,6 +36,7 @@
                             <th>Mã nhóm</th>
                             <th>Tên Nhóm kích cỡ</th>
                             <th>Các kích cỡ</th>
+                            <th>Số sản phẩm</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
@@ -71,6 +72,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
+                                <td><span class="badge bg-purple-lt">${cat.productCount}</span></td>
                                 <td>
                                     <a href="${ctx}/admin/sizegroups/edit/${cat.ID}" class="btn btn-sm btn-outline-primary me-1">Sửa / Thêm Size</a>
                                     <a href="${ctx}/admin/sizegroups/delete/${cat.ID}" class="btn btn-sm btn-outline-danger"
@@ -79,7 +81,7 @@
                             </tr>
                         </c:forEach>
                         <c:if test="${empty sizeGroups}">
-                            <tr><td colspan="6" class="text-center text-muted py-4">Chưa có Nhóm kích cỡ nào.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted py-4">Chưa có Nhóm kích cỡ nào.</td></tr>
                         </c:if>
                     </tbody>
                 </table>

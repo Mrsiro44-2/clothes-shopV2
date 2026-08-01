@@ -7,6 +7,7 @@ public class ColorOption {
     private String hexCode;
     private int sortOrder;
     private int status;
+    private int productCount;
 
     public ColorOption() {
     }
@@ -57,5 +58,13 @@ public class ColorOption {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
     }
 }

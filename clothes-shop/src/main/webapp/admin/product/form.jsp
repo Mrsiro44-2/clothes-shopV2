@@ -144,9 +144,9 @@
                                 <label class="form-label">Hoặc nhập URL</label>
                                 <input type="text" name="imgUrl" class="form-control" placeholder="https://..." />
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-2" style="display: none">
                                 <label class="form-label">Thứ tự</label>
-                                <input type="number" name="sortOrder" class="form-control" value="0" />
+                                <input type="number" name="sortOrder" class="form-control" value="1" />
                             </div>
                             <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary w-100">Thêm ảnh</button>

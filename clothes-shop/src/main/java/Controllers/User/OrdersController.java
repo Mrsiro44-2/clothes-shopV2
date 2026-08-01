@@ -211,17 +211,8 @@ public class OrdersController extends HttpServlet {
                 BillDAO billDao = new BillDAO();
                 Bill order = billDao.getBillById(orderId);
                 if (order != null && order.getCustomerID() == account.getID() && order.getStatus() == 0) {
-                    // Update status to 2 = Cancelled with reason
                     boolean updated = billDao.updateStatusWithReason(orderId, Utils.OrderStatus.CANCELLED, cancelReason.trim());
                     if (updated) {
-                        // Restore variant stock
-                        ProductVariantDAO variantDao = new ProductVariantDAO();
-                        List<BillDetail> details = billDao.getBillDetails(orderId);
-                        for (BillDetail d : details) {
-                            if (d.getProductVariantID() != null) {
-                                variantDao.incrementStock(d.getProductVariantID(), d.getNumberOfProduct());
-                            }
-                        }
                         request.getSession().setAttribute("orderFlash", "Đã hủy đơn hàng #" + orderId + " thành công.");
                         request.getSession().setAttribute("orderFlashType", "success");
                     } else {

@@ -35,6 +35,7 @@
                             <th>STT</th>
                             <th>Tên Màu sắc</th>
                             <th>Mã Hex</th>
+                            <th>Số sản phẩm</th>
                             <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
@@ -45,6 +46,7 @@
                                 <td>${(currentPage - 1) * limit + loop.index + 1}</td>
                                 <td><strong>${cat.name}</strong></td>
                                 <td><span class="badge" style="background-color: ${cat.hexCode};">&nbsp;&nbsp;&nbsp;</span> ${cat.hexCode}</td>
+                                <td><span class="badge bg-purple-lt">${cat.productCount}</span></td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${cat.status == 1}">
@@ -63,7 +65,7 @@
                             </tr>
                         </c:forEach>
                         <c:if test="${empty colors}">
-                            <tr><td colspan="5" class="text-center text-muted py-4">Chưa có Màu sắc nào.</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted py-4">Chưa có Màu sắc nào.</td></tr>
                         </c:if>
                     </tbody>
                 </table>
