@@ -86,9 +86,14 @@ public class AdminAccountController extends HttpServlet {
                     request.getSession().setAttribute("adminFlash", "Bạn không thể xoá tài khoản của chính mình.");
                     request.getSession().setAttribute("adminFlashType", "danger");
                 } else {
-                    accountDao.delete(id);
-                    request.getSession().setAttribute("adminFlash", "Đã xoá tài khoản thành công.");
-                    request.getSession().setAttribute("adminFlashType", "success");
+                    int result = accountDao.delete(id);
+                    if (result > 0) {
+                        request.getSession().setAttribute("adminFlash", "Đã xoá tài khoản thành công.");
+                        request.getSession().setAttribute("adminFlashType", "success");
+                    } else {
+                        request.getSession().setAttribute("adminFlash", "Không thể xoá tài khoản (có thể tài khoản này có dữ liệu liên quan).");
+                        request.getSession().setAttribute("adminFlashType", "danger");
+                    }
                 }
             }
             response.sendRedirect(request.getContextPath() + "/admin/accounts");

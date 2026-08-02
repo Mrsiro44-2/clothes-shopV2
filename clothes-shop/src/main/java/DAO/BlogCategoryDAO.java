@@ -51,6 +51,64 @@ public class BlogCategoryDAO {
         return list;
     }
 
+    public List<BlogCategory> listAllPaginated(String keyword, int status, int offset, int limit) {
+        List<BlogCategory> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM BlogCategory WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (status >= 0) {
+            sql.append("AND status = ? ");
+            params.add(status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (name LIKE ? OR slug LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        sql.append("ORDER BY sortOrder, ID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object p : params) {
+                st.setObject(idx++, p);
+            }
+            st.setInt(idx++, offset);
+            st.setInt(idx, limit);
+            try ( ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogCategoryDAO.listAllPaginated: " + e);
+        }
+        return list;
+    }
+
+    public int countAll(String keyword, int status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM BlogCategory WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (status >= 0) {
+            sql.append("AND status = ? ");
+            params.add(status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (name LIKE ? OR slug LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object p : params) {
+                st.setObject(idx++, p);
+            }
+            try ( ResultSet rs = st.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogCategoryDAO.countAll: " + e);
+        }
+        return 0;
+    }
+
     public BlogCategory findById(int id) {
         String sql = "SELECT * FROM BlogCategory WHERE ID = ?";
         try ( PreparedStatement st = conn.prepareStatement(sql)) {

@@ -523,13 +523,59 @@ public class ProductDAO {
         return 0;
     }
 
+    public boolean hasOrders(int productId) {
+        String sql = "SELECT COUNT(*) FROM BillDetail bd JOIN ProductVariant pv ON bd.productVariantID = pv.ID WHERE pv.productID = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, productId);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ProductDAO.hasOrders: " + e);
+        }
+        return false;
+    }
+
     public int delete(int id) {
         try {
-            PreparedStatement st = conn.prepareStatement("DELETE FROM Product WHERE ID = ?");
-            st.setInt(1, id);
-            return st.executeUpdate();
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement st0 = conn.prepareStatement("DELETE FROM Cart WHERE productVariantID IN (SELECT ID FROM ProductVariant WHERE productID = ?)")) {
+                st0.setInt(1, id);
+                st0.executeUpdate();
+            }
+            try (PreparedStatement st1 = conn.prepareStatement("DELETE FROM Wishlist WHERE productVariantID IN (SELECT ID FROM ProductVariant WHERE productID = ?)")) {
+                st1.setInt(1, id);
+                st1.executeUpdate();
+            }
+            try (PreparedStatement st2 = conn.prepareStatement("DELETE FROM Feedback WHERE productID = ?")) {
+                st2.setInt(1, id);
+                st2.executeUpdate();
+            }
+            try (PreparedStatement st3 = conn.prepareStatement("DELETE FROM ImgDescription WHERE productID = ?")) {
+                st3.setInt(1, id);
+                st3.executeUpdate();
+            }
+            try (PreparedStatement st4 = conn.prepareStatement("DELETE FROM ProductVariant WHERE productID = ?")) {
+                st4.setInt(1, id);
+                st4.executeUpdate();
+            }
+            
+            int rows = 0;
+            try (PreparedStatement st5 = conn.prepareStatement("DELETE FROM Product WHERE ID = ?")) {
+                st5.setInt(1, id);
+                rows = st5.executeUpdate();
+            }
+            
+            conn.commit();
+            return rows;
         } catch (SQLException e) {
-            System.out.println("Delete product: " + e);
+            try { conn.rollback(); } catch (SQLException ex) {}
+            System.out.println("Delete product with transaction: " + e);
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException ex) {}
         }
         return 0;
     }

@@ -101,10 +101,13 @@ public class AdminBrandController extends HttpServlet {
 
         Upload upload = new Upload();
         jakarta.servlet.http.Part filePart = request.getPart("img");
+        String imgUrl = request.getParameter("imgUrl");
         String img = null;
         if (filePart != null && filePart.getSize() > 0) {
             String uploadPath = request.getServletContext().getRealPath("") + "uploads" + java.io.File.separator + "brand";
             img = upload.uploadImg(filePart, uploadPath);
+        } else if (imgUrl != null && !imgUrl.trim().isEmpty()) {
+            img = imgUrl.trim();
         }
 
         // Validate
@@ -138,7 +141,7 @@ public class AdminBrandController extends HttpServlet {
                 request.setAttribute("pageTitle", "Thêm thương hiệu");
             }
             request.setAttribute("inputName", name);
-            request.setAttribute("inputImg", img);
+            request.setAttribute("inputImgUrl", imgUrl);
             request.setAttribute("inputStatus", status);
             request.getRequestDispatcher("/admin/catalog/brand-form.jsp").forward(request, response);
             return;

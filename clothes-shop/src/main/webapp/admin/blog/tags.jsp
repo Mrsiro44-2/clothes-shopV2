@@ -133,23 +133,7 @@
                     </tbody>
                 </table>
             </div>
-            <c:if test="${totalPages > 1}">
-                <div class="card-footer d-flex align-items-center">
-                    <ul class="pagination m-0 ms-auto">
-                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a class="page-link" href="?page=${currentPage - 1}&keyword=${keyword}&limit=${limit}" tabindex="-1">Trước</a>
-                        </li>
-                        <c:forEach begin="1" end="${totalPages}" var="i">
-                            <li class="page-item ${currentPage == i ? 'active' : ''}">
-                                <a class="page-link" href="?page=${i}&keyword=${keyword}&limit=${limit}">${i}</a>
-                            </li>
-                        </c:forEach>
-                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                            <a class="page-link" href="?page=${currentPage + 1}&keyword=${keyword}&limit=${limit}">Sau</a>
-                        </li>
-                    </ul>
-                </div>
-            </c:if>
+            <jsp:include page="/admin/components/pagination.jsp"/>
         </div>
     </div>
 </div>

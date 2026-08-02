@@ -123,16 +123,26 @@ public class AdminSizeGroupController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(code) || validate.isBlank(name)) {
-            request.getSession().setAttribute("adminFlash", "Vui lòng nhập đủ thông tin");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
+            request.setAttribute("error", "Vui lòng nhập đủ thông tin");
+            request.setAttribute("inputCode", code);
+            request.setAttribute("inputName", name);
+            request.setAttribute("inputSortOrder", sortOrder);
+            request.setAttribute("inputStatus", status);
+            request.setAttribute("isEdit", false);
+            request.setAttribute("pageTitle", "Thêm Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
             return;
         }
 
         if (sizeGroupDao.isExistName(name, 0)) {
-            request.getSession().setAttribute("adminFlash", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
+            request.setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            request.setAttribute("inputCode", code);
+            request.setAttribute("inputName", name);
+            request.setAttribute("inputSortOrder", sortOrder);
+            request.setAttribute("inputStatus", status);
+            request.setAttribute("isEdit", false);
+            request.setAttribute("pageTitle", "Thêm Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
             return;
         }
 
@@ -142,9 +152,14 @@ public class AdminSizeGroupController extends HttpServlet {
             request.getSession().setAttribute("adminFlashType", "success");
             response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
         } else {
-            request.getSession().setAttribute("adminFlash", "Có lỗi xảy ra");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/add");
+            request.setAttribute("error", "Có lỗi xảy ra khi thêm");
+            request.setAttribute("inputCode", code);
+            request.setAttribute("inputName", name);
+            request.setAttribute("inputSortOrder", sortOrder);
+            request.setAttribute("inputStatus", status);
+            request.setAttribute("isEdit", false);
+            request.setAttribute("pageTitle", "Thêm Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
         }
     }
 
@@ -160,16 +175,24 @@ public class AdminSizeGroupController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(code) || validate.isBlank(name)) {
-            request.getSession().setAttribute("adminFlash", "Vui lòng nhập đủ thông tin");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
+            request.setAttribute("error", "Vui lòng nhập đủ thông tin");
+            Model.SizeGroup sizeGroup = sizeGroupDao.getSizeGroupById(id);
+            request.setAttribute("sizeGroup", sizeGroup);
+            request.setAttribute("sizeOptions", sizeOptionDao.getByGroupId(id));
+            request.setAttribute("isEdit", true);
+            request.setAttribute("pageTitle", "Sửa Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
             return;
         }
 
         if (sizeGroupDao.isExistName(name, id)) {
-            request.getSession().setAttribute("adminFlash", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/sizegroups/edit/" + id);
+            request.setAttribute("error", "Tên nhóm kích cỡ này đã tồn tại. Vui lòng chọn tên khác.");
+            Model.SizeGroup sizeGroup = sizeGroupDao.getSizeGroupById(id);
+            request.setAttribute("sizeGroup", sizeGroup);
+            request.setAttribute("sizeOptions", sizeOptionDao.getByGroupId(id));
+            request.setAttribute("isEdit", true);
+            request.setAttribute("pageTitle", "Sửa Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
             return;
         }
 
@@ -177,11 +200,16 @@ public class AdminSizeGroupController extends HttpServlet {
         if (sizeGroupDao.update(sg) > 0) {
             request.getSession().setAttribute("adminFlash", "Cập nhật thành công");
             request.getSession().setAttribute("adminFlashType", "success");
+            response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
         } else {
-            request.getSession().setAttribute("adminFlash", "Cập nhật thất bại");
-            request.getSession().setAttribute("adminFlashType", "danger");
+            request.setAttribute("error", "Cập nhật thất bại");
+            Model.SizeGroup sizeGroup = sizeGroupDao.getSizeGroupById(id);
+            request.setAttribute("sizeGroup", sizeGroup);
+            request.setAttribute("sizeOptions", sizeOptionDao.getByGroupId(id));
+            request.setAttribute("isEdit", true);
+            request.setAttribute("pageTitle", "Sửa Nhóm Kích Cỡ");
+            request.getRequestDispatcher("/admin/catalog/sizegroup-form.jsp").forward(request, response);
         }
-        response.sendRedirect(request.getContextPath() + "/admin/sizegroups");
     }
 
     private void deleteSizeGroup(HttpServletRequest request, HttpServletResponse response)

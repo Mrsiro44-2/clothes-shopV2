@@ -113,6 +113,7 @@
                     </tbody>
                 </table>
             </div>
+            <jsp:include page="../components/pagination.jsp"/>
         </div>
 
     </div>

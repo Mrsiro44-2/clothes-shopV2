@@ -155,6 +155,38 @@ public class VoucherDAO {
         return v;
     }
 
+    public boolean isExistName(String name, int id) {
+        String sql = "SELECT COUNT(*) FROM Voucher WHERE name = ? AND ID != ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, name);
+            st.setInt(2, id);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("VoucherDAO isExistName: " + e);
+        }
+        return false;
+    }
+
+    public boolean isExistCode(String code, int id) {
+        String sql = "SELECT COUNT(*) FROM Voucher WHERE code = ? AND ID != ?";
+        try {
+            PreparedStatement st = conn.prepareStatement(sql);
+            st.setString(1, code);
+            st.setInt(2, id);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            System.out.println("VoucherDAO isExistCode: " + e);
+        }
+        return false;
+    }
+
     public int count(String search, String statusFilter) {
         String sql = "SELECT COUNT(*) FROM Voucher WHERE 1=1";
         if (search != null && !search.trim().isEmpty()) {

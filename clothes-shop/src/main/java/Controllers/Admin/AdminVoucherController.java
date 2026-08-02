@@ -130,7 +130,25 @@ public class AdminVoucherController extends HttpServlet {
 
         StringBuilder errors = new StringBuilder();
         if (name == null || name.trim().isEmpty()) errors.append("Tên voucher không được để trống. ");
+        else {
+            int idCheck = 0;
+            if (relative.contains("/edit/")) {
+                idCheck = ServletPaths.idAfter(request, "/admin/vouchers/edit");
+            }
+            if (voucherDao.isExistName(name.trim(), idCheck)) {
+                errors.append("Tên chương trình mã giảm giá đã tồn tại. ");
+            }
+        }
         if (code == null || code.trim().isEmpty()) errors.append("Mã voucher không được để trống. ");
+        else {
+            int idCheck = 0;
+            if (relative.contains("/edit/")) {
+                idCheck = ServletPaths.idAfter(request, "/admin/vouchers/edit");
+            }
+            if (voucherDao.isExistCode(code.trim(), idCheck)) {
+                errors.append("Mã voucher đã tồn tại. ");
+            }
+        }
         if (value <= 0) errors.append("Giá trị giảm phải lớn hơn 0. ");
         if (discountType == 1 && value > 100) errors.append("Giảm theo % không được vượt quá 100%. ");
         java.time.LocalDate todayDate = java.time.LocalDate.now();

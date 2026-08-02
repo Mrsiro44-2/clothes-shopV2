@@ -192,6 +192,68 @@ public class BlogPostDAO {
         return list;
     }
 
+    public List<BlogPost> listAllForAdmin(String keyword, int status, int offset, int limit) {
+        List<BlogPost> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.*, c.name AS categoryName, a.fullname AS authorName "
+                + "FROM BlogPost p "
+                + "LEFT JOIN BlogCategory c ON c.ID = p.blogCategoryID "
+                + "JOIN [Account] a ON a.ID = p.authorAccountID WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (status >= 0) {
+            sql.append("AND p.status = ? ");
+            params.add(status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (p.title LIKE ? OR p.slug LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        sql.append("ORDER BY p.ID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object p : params) {
+                st.setObject(idx++, p);
+            }
+            st.setInt(idx++, offset);
+            st.setInt(idx, limit);
+            try ( ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    list.add(map(rs));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.listAllForAdmin (paginated): " + e);
+        }
+        return list;
+    }
+
+    public int countAllForAdmin(String keyword, int status) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM BlogPost p WHERE 1=1 ");
+        List<Object> params = new ArrayList<>();
+        if (status >= 0) {
+            sql.append("AND p.status = ? ");
+            params.add(status);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append("AND (p.title LIKE ? OR p.slug LIKE ?) ");
+            params.add("%" + keyword.trim() + "%");
+            params.add("%" + keyword.trim() + "%");
+        }
+        try ( PreparedStatement st = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object p : params) {
+                st.setObject(idx++, p);
+            }
+            try ( ResultSet rs = st.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("BlogPostDAO.countAllForAdmin: " + e);
+        }
+        return 0;
+    }
+
     public int insert(BlogPost p) {
         String sql = "INSERT INTO BlogPost (blogCategoryID, authorAccountID, title, slug, excerpt, contentHtml, coverImg, status, isFeatured, publishedAt, "
                 + "seoTitle, seoDescription, readingMinutes) "

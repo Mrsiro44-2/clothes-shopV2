@@ -62,6 +62,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
+                                <td><span class="badge bg-purple-lt">${cat.productCount}</span></td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${cat.status == 1}">
@@ -72,7 +73,6 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
-                                <td><span class="badge bg-purple-lt">${cat.productCount}</span></td>
                                 <td>
                                     <a href="${ctx}/admin/sizegroups/edit/${cat.ID}" class="btn btn-sm btn-outline-primary me-1">Sửa / Thêm Size</a>
                                     <a href="${ctx}/admin/sizegroups/delete/${cat.ID}" class="btn btn-sm btn-outline-danger"

@@ -36,11 +36,26 @@
                                placeholder="Nhập tên thương hiệu..."/>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="img">Ảnh Logo</label>
+                        <label class="form-label" for="img">Ảnh Logo (Tải lên từ máy)</label>
                         <input type="file" class="form-control" id="img" name="img" accept="image/*" />
-                        <small class="form-hint">Chọn tệp hình ảnh từ máy tính của bạn để làm logo (không bắt buộc).
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="imgUrl">Hoặc nhập URL ảnh Logo</label>
+                        <input type="text" class="form-control" id="imgUrl" name="imgUrl" 
+                               value="${not empty inputImgUrl ? inputImgUrl : (isEdit && brand.img != null && brand.img.startsWith('http') ? brand.img : '')}" 
+                               placeholder="https://example.com/logo.png" />
+                        <small class="form-hint">Hệ thống sẽ ưu tiên ảnh tải lên từ máy tính nếu bạn nhập cả hai.
                             <c:if test="${isEdit && not empty brand.img}">
-                                <br/>Đang có ảnh: <strong>${brand.img}</strong>. Nếu không chọn file mới, ảnh cũ sẽ được giữ nguyên.
+                                <br/>Đang có ảnh: 
+                                <c:choose>
+                                    <c:when test="${brand.img.startsWith('http')}">
+                                        <a href="${brand.img}" target="_blank">Xem ảnh gốc</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <strong>${brand.img}</strong>
+                                    </c:otherwise>
+                                </c:choose>
+                                . Nếu không chọn file mới hoặc nhập URL mới, ảnh cũ sẽ được giữ nguyên.
                             </c:if>
                         </small>
                     </div>

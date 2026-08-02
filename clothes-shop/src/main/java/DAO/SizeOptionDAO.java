@@ -116,16 +116,20 @@ public class SizeOptionDAO {
         return 0;
     }
 
-    public int delete(int id) {
+    public String delete(int id) {
         String sql = "DELETE FROM SizeOption WHERE ID=?";
         try {
             PreparedStatement st = conn.prepareStatement(sql);
             st.setInt(1, id);
-            return st.executeUpdate();
+            if (st.executeUpdate() > 0) return null;
+            return "Không tìm thấy kích cỡ để xoá.";
         } catch (Exception e) {
             System.out.println("SizeOptionDAO delete: " + e);
+            if (e.getMessage() != null && e.getMessage().contains("REFERENCE constraint")) {
+                return "Không thể xoá kích cỡ này vì đang có sản phẩm (biến thể) sử dụng nó.";
+            }
+            return "Lỗi CSDL khi xoá kích cỡ: " + e.getMessage();
         }
-        return 0;
     }
 
     private SizeOption getSizeOption(ResultSet rs) throws SQLException {

@@ -42,8 +42,29 @@ public class AdminBlogController extends HttpServlet {
         String relative = ServletPaths.relative(request);
 
         if (relative.equals("/admin/blogs") || relative.equals("/admin/blogs/")) {
-            List<BlogPost> posts = blogPostDAO.listAllForAdmin();
+            int page = 1;
+            int limit = 15;
+            int status = -1;
+            String keyword = request.getParameter("q");
+
+            try { if (request.getParameter("page") != null) page = Integer.parseInt(request.getParameter("page")); } catch (Exception e) {}
+            try { if (request.getParameter("limit") != null) limit = Integer.parseInt(request.getParameter("limit")); } catch (Exception e) {}
+            try { if (request.getParameter("status") != null && !request.getParameter("status").isEmpty()) status = Integer.parseInt(request.getParameter("status")); } catch (Exception e) {}
+
+            int totalRows = blogPostDAO.countAllForAdmin(keyword, status);
+            int totalPages = (int) Math.ceil((double) totalRows / limit);
+            int offset = (page - 1) * limit;
+
+            List<BlogPost> posts = blogPostDAO.listAllForAdmin(keyword, status, offset, limit);
+            
             request.setAttribute("posts", posts);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("limit", limit);
+            request.setAttribute("q", keyword);
+            if(status != -1) request.setAttribute("status", status);
+            
+            request.setAttribute("isBlog", true);
             request.setAttribute("pageTitle", "Quản lý bài viết");
             request.getRequestDispatcher("/admin/blog/index.jsp").forward(request, response);
 

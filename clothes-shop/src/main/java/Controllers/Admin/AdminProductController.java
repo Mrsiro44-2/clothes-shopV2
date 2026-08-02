@@ -129,14 +129,18 @@ public class AdminProductController extends HttpServlet {
         } else if (relative.startsWith("/admin/products/delete/")) {
             int id = ServletPaths.idAfter(request, "/admin/products/delete");
             if (id > 0) {
-                // Sẽ không xoá được nếu còn tồn tại ProductVariant, tuỳ theo khoá ngoại
-                int res = productDao.delete(id);
-                if (res > 0) {
-                    request.getSession().setAttribute("adminFlash", "Đã xoá sản phẩm thành công.");
-                    request.getSession().setAttribute("adminFlashType", "success");
-                } else {
-                    request.getSession().setAttribute("adminFlash", "Không thể xoá sản phẩm này (có thể do vẫn còn biến thể/đơn hàng liên quan).");
+                if (productDao.hasOrders(id)) {
+                    request.getSession().setAttribute("adminFlash", "Không thể xoá sản phẩm này vì đã có biến thể được mua (nằm trong đơn hàng).");
                     request.getSession().setAttribute("adminFlashType", "danger");
+                } else {
+                    int res = productDao.delete(id);
+                    if (res > 0) {
+                        request.getSession().setAttribute("adminFlash", "Đã xoá sản phẩm thành công.");
+                        request.getSession().setAttribute("adminFlashType", "success");
+                    } else {
+                        request.getSession().setAttribute("adminFlash", "Lỗi khi xoá sản phẩm.");
+                        request.getSession().setAttribute("adminFlashType", "danger");
+                    }
                 }
             }
             response.sendRedirect(request.getContextPath() + "/admin/products");

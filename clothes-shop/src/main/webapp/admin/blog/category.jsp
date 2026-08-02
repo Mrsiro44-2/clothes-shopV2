@@ -36,11 +36,13 @@
         <div class="row row-deck row-cards">
             <div class="col-12">
                 <div class="card">
+                    <jsp:include page="/admin/components/filter.jsp" />
                     <div class="table-responsive">
                         <table class="table card-table table-vcenter text-nowrap datatable">
                             <thead>
                                 <tr>
-                                    <th class="w-1">ID</th>
+                                    <th class="w-1">STT</th>
+                                    <th>ID</th>
                                     <th>Ảnh Cover</th>
                                     <th>Tên danh mục</th>
                                     <th>Đường dẫn (Slug)</th>
@@ -50,8 +52,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <c:forEach items="${categories}" var="c">
+                                <c:forEach items="${categories}" var="c" varStatus="loop">
                                     <tr>
+                                        <td>${(currentPage - 1) * limit + loop.index + 1}</td>
                                         <td><span class="text-muted">${c.ID}</span></td>
                                         <td>
                                             <c:if test="${not empty c.coverImg}">
@@ -77,9 +80,15 @@
                                         </td>
                                     </tr>
                                 </c:forEach>
+                                <c:if test="${empty categories}">
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">Chưa có danh mục nào</td>
+                                    </tr>
+                                </c:if>
                             </tbody>
                         </table>
                     </div>
+                    <jsp:include page="/admin/components/pagination.jsp" />
                 </div>
             </div>
         </div>

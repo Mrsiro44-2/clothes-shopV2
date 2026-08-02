@@ -98,6 +98,14 @@ public class AdminProducerController extends HttpServlet {
         StringBuilder errors = new StringBuilder();
         if (name == null || name.trim().isEmpty()) {
             errors.append("Tên nhà sản xuất không được để trống. ");
+        } else {
+            int idCheck = 0;
+            if (relative.contains("/edit/")) {
+                idCheck = ServletPaths.idAfter(request, "/admin/producers/edit");
+            }
+            if (producerDao.isExistName(name.trim(), idCheck)) {
+                errors.append("Tên nhà sản xuất đã tồn tại. ");
+            }
         }
         if (status != 0 && status != 1) {
             errors.append("Trạng thái không hợp lệ. ");
