@@ -25,9 +25,9 @@ public class ProductVariantDAO {
                 + "JOIN SizeOption s ON s.ID = v.sizeOptionID "
                 + "JOIN ColorOption c ON c.ID = v.colorOptionID "
                 + "WHERE v.productID = ? AND v.status = 1 ORDER BY v.isDefault DESC, v.ID";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, productId);
-            try ( ResultSet rs = st.executeQuery()) {
+            try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapJoin(rs));
                 }
@@ -45,9 +45,9 @@ public class ProductVariantDAO {
                 + "JOIN SizeOption s ON s.ID = v.sizeOptionID "
                 + "JOIN ColorOption c ON c.ID = v.colorOptionID "
                 + "WHERE v.productID = ? ORDER BY v.isDefault DESC, v.ID";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, productId);
-            try ( ResultSet rs = st.executeQuery()) {
+            try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
                     list.add(mapJoin(rs));
                 }
@@ -82,9 +82,9 @@ public class ProductVariantDAO {
                 + "JOIN SizeOption s ON s.ID = v.sizeOptionID "
                 + "JOIN ColorOption c ON c.ID = v.colorOptionID "
                 + "WHERE v.ID = ?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, id);
-            try ( ResultSet rs = st.executeQuery()) {
+            try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
                     return mapJoin(rs);
                 }
@@ -110,9 +110,9 @@ public class ProductVariantDAO {
                 + "JOIN SizeOption s ON s.ID = v.sizeOptionID "
                 + "JOIN ColorOption c ON c.ID = v.colorOptionID "
                 + "WHERE v.productID = ? AND v.isDefault = 1 AND v.status = 1 ORDER BY v.ID";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, productId);
-            try ( ResultSet rs = st.executeQuery()) {
+            try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
                     return mapJoin(rs);
                 }
@@ -123,11 +123,10 @@ public class ProductVariantDAO {
         return null;
     }
 
-
     public int insert(ProductVariant v) {
         String sql = "INSERT INTO ProductVariant (productID, sizeOptionID, colorOptionID, sku, barcode, oldPrice, newPrice, quantity, variantImg, weightGrams, isDefault, status, dateCreated) "
                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?, SYSUTCDATETIME())";
-        try ( PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             int i = 1;
             st.setInt(i++, v.getProductID());
             st.setInt(i++, v.getSizeOptionID());
@@ -147,7 +146,7 @@ public class ProductVariantDAO {
             st.setInt(i++, v.getStatus());
             int rows = st.executeUpdate();
             if (rows > 0) {
-                try ( ResultSet keys = st.getGeneratedKeys()) {
+                try (ResultSet keys = st.getGeneratedKeys()) {
                     if (keys.next()) {
                         return keys.getInt(1);
                     }
@@ -161,7 +160,7 @@ public class ProductVariantDAO {
 
     public int update(ProductVariant v) {
         String sql = "UPDATE ProductVariant SET sizeOptionID=?, colorOptionID=?, sku=?, barcode=?, oldPrice=?, newPrice=?, quantity=?, variantImg=?, weightGrams=?, isDefault=?, status=?, dateUpdated=SYSUTCDATETIME() WHERE ID=?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             int i = 1;
             st.setInt(i++, v.getSizeOptionID());
             st.setInt(i++, v.getColorOptionID());
@@ -186,8 +185,58 @@ public class ProductVariantDAO {
         return 0;
     }
 
+    public boolean hasOrders(int variantId) {
+        String sql = "SELECT COUNT(*) FROM BillDetail WHERE productVariantID = ?";
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
+            st.setInt(1, variantId);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("ProductVariantDAO.hasOrders: " + e);
+        }
+        return false;
+    }
 
-    /** Giảm tồn kho sau khi đặt hàng thành công. */
+    public String delete(int id) {
+        try {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement st1 = conn.prepareStatement("DELETE FROM Cart WHERE productVariantID = ?")) {
+                st1.setInt(1, id);
+                st1.executeUpdate();
+            }
+
+            try (PreparedStatement st2 = conn.prepareStatement("DELETE FROM Wishlist WHERE productVariantID = ?")) {
+                st2.setInt(1, id);
+                st2.executeUpdate();
+            }
+
+            int rows = 0;
+            try (PreparedStatement st3 = conn.prepareStatement("DELETE FROM ProductVariant WHERE ID = ?")) {
+                st3.setInt(1, id);
+                rows = st3.executeUpdate();
+            }
+
+            conn.commit();
+            if (rows > 0)
+                return null;
+            return "Không tìm thấy biến thể để xoá.";
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+            }
+            return "Lỗi hệ thống khi xoá biến thể";
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException ex) {
+            }
+        }
+    }
 
     /** Hoàn tồn kho khi hủy đơn (đã từng trừ kho). */
     public int incrementStock(int variantId, int qty) {
@@ -195,7 +244,7 @@ public class ProductVariantDAO {
             return 0;
         }
         String sql = "UPDATE ProductVariant SET quantity = quantity + ? WHERE ID = ?";
-        try ( PreparedStatement st = conn.prepareStatement(sql)) {
+        try (PreparedStatement st = conn.prepareStatement(sql)) {
             st.setInt(1, qty);
             st.setInt(2, variantId);
             return st.executeUpdate();

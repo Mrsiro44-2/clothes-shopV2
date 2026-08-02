@@ -55,6 +55,13 @@
                             <option value="7" ${status=='7' ? 'selected' : '' }>Đã hoàn tiền</option>
                         </select>
                     </c:when>
+                    <c:when test="${not empty isBlog}">
+                        <select name="status" class="form-select w-auto">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1" ${status=='1' ? 'selected' : '' }>Đã xuất bản</option>
+                            <option value="0" ${status=='0' ? 'selected' : '' }>Bản nháp</option>
+                        </select>
+                    </c:when>
                     <c:otherwise>
                         <select name="status" class="form-select w-auto">
                             <option value="">Tất cả trạng thái</option>

@@ -111,9 +111,22 @@ public class AdminColorController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(name)) {
-            request.getSession().setAttribute("adminFlash", "Vui lòng nhập tên màu");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/colors/add");
+            request.setAttribute("error", "Vui lòng nhập tên màu");
+            request.setAttribute("inputName", name);
+            request.setAttribute("inputStatus", status);
+            request.setAttribute("isEdit", false);
+            request.setAttribute("pageTitle", "Thêm Màu sắc");
+            request.getRequestDispatcher("/admin/catalog/color-form.jsp").forward(request, response);
+            return;
+        }
+        
+        if (colorDao.isExistName(name.trim(), 0)) {
+            request.setAttribute("error", "Tên màu sắc này đã tồn tại.");
+            request.setAttribute("inputName", name);
+            request.setAttribute("inputStatus", status);
+            request.setAttribute("isEdit", false);
+            request.setAttribute("pageTitle", "Thêm Màu sắc");
+            request.getRequestDispatcher("/admin/catalog/color-form.jsp").forward(request, response);
             return;
         }
 
@@ -141,9 +154,22 @@ public class AdminColorController extends HttpServlet {
         int status = validate.getInt(request.getParameter("status"));
 
         if (validate.isBlank(name)) {
-            request.getSession().setAttribute("adminFlash", "Vui lòng nhập tên màu");
-            request.getSession().setAttribute("adminFlashType", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/colors/edit/" + id);
+            request.setAttribute("error", "Vui lòng nhập tên màu");
+            ColorOption color = colorDao.getById(id);
+            request.setAttribute("color", color);
+            request.setAttribute("isEdit", true);
+            request.setAttribute("pageTitle", "Sửa Màu sắc");
+            request.getRequestDispatcher("/admin/catalog/color-form.jsp").forward(request, response);
+            return;
+        }
+        
+        if (colorDao.isExistName(name.trim(), id)) {
+            request.setAttribute("error", "Tên màu sắc này đã tồn tại.");
+            ColorOption color = colorDao.getById(id);
+            request.setAttribute("color", color);
+            request.setAttribute("isEdit", true);
+            request.setAttribute("pageTitle", "Sửa Màu sắc");
+            request.getRequestDispatcher("/admin/catalog/color-form.jsp").forward(request, response);
             return;
         }
 

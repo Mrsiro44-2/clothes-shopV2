@@ -48,6 +48,8 @@ public class AdminProductVariantController extends HttpServlet {
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.startsWith("/delete/")) {
             deleteVariant(request, response);
+        } else if (pathInfo != null && pathInfo.startsWith("/hard-delete/")) {
+            hardDeleteVariant(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -195,6 +197,32 @@ public class AdminProductVariantController extends HttpServlet {
             v.setStatus(newStatus);
             variantDao.update(v);
             request.getSession().setAttribute("success", newStatus == 0 ? "Đã khoá biến thể" : "Đã mở khoá biến thể");
+        }
+
+        if (productIdStr != null && !productIdStr.isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/products/edit/" + productIdStr);
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/products");
+        }
+    }
+
+    private void hardDeleteVariant(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = ServletPaths.getIdFromPath(request.getPathInfo());
+        String productIdStr = request.getParameter("productID");
+        
+        if (variantDao.hasOrders(id)) {
+            request.getSession().setAttribute("adminFlash", "Không thể xoá biến thể này vì đã có đơn hàng.");
+            request.getSession().setAttribute("adminFlashType", "danger");
+        } else {
+            String error = variantDao.delete(id);
+            if (error == null) {
+                request.getSession().setAttribute("adminFlash", "Đã xoá biến thể vĩnh viễn.");
+                request.getSession().setAttribute("adminFlashType", "success");
+            } else {
+                request.getSession().setAttribute("adminFlash", error);
+                request.getSession().setAttribute("adminFlashType", "danger");
+            }
         }
 
         if (productIdStr != null && !productIdStr.isEmpty()) {

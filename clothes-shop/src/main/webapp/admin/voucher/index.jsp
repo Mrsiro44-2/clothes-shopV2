@@ -1,4 +1,4 @@
-﻿<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <c:set var="pageTitle" value="Quản lý mã giảm giá" scope="request"/>
@@ -112,6 +112,7 @@
                     </tbody>
                 </table>
             </div>
+            <jsp:include page="../components/pagination.jsp"/>
         </div>
 
     </div>

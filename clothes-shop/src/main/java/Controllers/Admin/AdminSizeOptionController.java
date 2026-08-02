@@ -183,10 +183,11 @@ public class AdminSizeOptionController extends HttpServlet {
         int id = ServletPaths.getIdFromPath(request.getPathInfo());
         String redirectUrl = request.getParameter("redirectUrl");
         if (redirectUrl == null) redirectUrl = request.getContextPath() + "/admin/sizeoptions";
-        if (sizeOptionDao.delete(id) > 0) {
-            request.getSession().setAttribute("success", "Xoá thành công");
+        String error = sizeOptionDao.delete(id);
+        if (error == null) {
+            request.getSession().setAttribute("success", "Xoá kích cỡ thành công");
         } else {
-            request.getSession().setAttribute("error", "Xoá thất bại");
+            request.getSession().setAttribute("error", error);
         }
         response.sendRedirect(redirectUrl);
     }

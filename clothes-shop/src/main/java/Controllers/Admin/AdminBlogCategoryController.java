@@ -37,8 +37,28 @@ public class AdminBlogCategoryController extends HttpServlet {
         String relative = ServletPaths.relative(request);
 
         if (relative.equals("/admin/blog-categories") || relative.equals("/admin/blog-categories/")) {
-            List<BlogCategory> categories = blogCategoryDAO.listAll();
+            int page = 1;
+            int limit = 15;
+            int status = -1;
+            String keyword = request.getParameter("q");
+
+            try { if (request.getParameter("page") != null) page = Integer.parseInt(request.getParameter("page")); } catch (Exception e) {}
+            try { if (request.getParameter("limit") != null) limit = Integer.parseInt(request.getParameter("limit")); } catch (Exception e) {}
+            try { if (request.getParameter("status") != null && !request.getParameter("status").isEmpty()) status = Integer.parseInt(request.getParameter("status")); } catch (Exception e) {}
+
+            int totalRows = blogCategoryDAO.countAll(keyword, status);
+            int totalPages = (int) Math.ceil((double) totalRows / limit);
+            int offset = (page - 1) * limit;
+
+            List<BlogCategory> categories = blogCategoryDAO.listAllPaginated(keyword, status, offset, limit);
+            
             request.setAttribute("categories", categories);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("totalPages", totalPages);
+            request.setAttribute("limit", limit);
+            request.setAttribute("q", keyword);
+            if(status != -1) request.setAttribute("status", status);
+
             request.setAttribute("pageTitle", "Danh mục Blog");
             request.getRequestDispatcher("/admin/blog/category.jsp").forward(request, response);
 
