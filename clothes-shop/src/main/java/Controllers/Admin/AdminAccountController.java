@@ -77,27 +77,6 @@ public class AdminAccountController extends HttpServlet {
             request.setAttribute("pageTitle", "Sửa tài khoản");
             request.getRequestDispatcher("/admin/user/form.jsp").forward(request, response);
 
-        } else if (relative.startsWith("/admin/accounts/delete/")) {
-            int id = ServletPaths.idAfter(request, "/admin/accounts/delete");
-            if (id > 0) {
-                // Không cho xoá chính mình
-                Integer myId = (Integer) request.getSession().getAttribute("adminAccountId");
-                if (myId != null && myId == id) {
-                    request.getSession().setAttribute("adminFlash", "Bạn không thể xoá tài khoản của chính mình.");
-                    request.getSession().setAttribute("adminFlashType", "danger");
-                } else {
-                    int result = accountDao.delete(id);
-                    if (result > 0) {
-                        request.getSession().setAttribute("adminFlash", "Đã xoá tài khoản thành công.");
-                        request.getSession().setAttribute("adminFlashType", "success");
-                    } else {
-                        request.getSession().setAttribute("adminFlash", "Không thể xoá tài khoản (có thể tài khoản này có dữ liệu liên quan).");
-                        request.getSession().setAttribute("adminFlashType", "danger");
-                    }
-                }
-            }
-            response.sendRedirect(request.getContextPath() + "/admin/accounts");
-
         } else if (relative.startsWith("/admin/accounts/toggle-lock/")) {
             int id = ServletPaths.idAfter(request, "/admin/accounts/toggle-lock");
             if (id > 0) {

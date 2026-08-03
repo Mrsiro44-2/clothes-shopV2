@@ -262,19 +262,6 @@ public class AccountDAO {
         return result;
     }
 
-    public int delete(int id) {
-        int result = 0;
-        String sql = "delete from Account where id=?";
-        try {
-            PreparedStatement st = conn.prepareStatement(sql);
-            st.setInt(1, id);
-            result = st.executeUpdate();
-        } catch (SQLException er) {
-            System.out.println("Delete account: " + er);
-        }
-        return result;
-    }
-
     private Account getAccount(ResultSet rs) {
         try {
             int id = rs.getInt("ID");
